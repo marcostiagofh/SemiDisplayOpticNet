@@ -1,0 +1,7 @@
+.metadata
+binaries/bin/
+*.class
+input/
+input
+logs/
+src/projects/defaultProject/appConfig.xml
