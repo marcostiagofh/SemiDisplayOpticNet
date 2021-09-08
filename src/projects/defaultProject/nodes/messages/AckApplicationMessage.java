@@ -1,7 +1,5 @@
 package projects.defaultProject.nodes.messages;
 
-import projects.displaynet.nodes.tableEntry.Request;
-
 public class AckApplicationMessage extends NetworkMessage {
 
   private Request request;

@@ -3,11 +3,11 @@ package projects.cbOptNet;
 import java.util.ArrayList;
 import java.util.Random;
 
-import projects.opticalNet.DataCollection;
-import projects.opticalNet.RequestQueue;
-import projects.opticalNet.nodes.nodeImplementations.NetworkNode;
 import projects.cbOptNet.nodes.timers.TriggerNodeOperation;
 import projects.cbOptNet.nodes.nodeImplementations.CBNetController;
+import projects.opticalNet.nodes.nodeImplementations.NetworkNode;
+import projects.defaultProject.DataCollection;
+import projects.defaultProject.RequestQueue;
 
 import sinalgo.configuration.Configuration;
 import sinalgo.runtime.AbstractCustomGlobal;
