@@ -12,6 +12,7 @@ import projects.opticalNet.nodes.infrastructureImplementations.SynchronizerLayer
 
 import sinalgo.nodes.messages.Inbox;
 import sinalgo.nodes.messages.Message;
+import sinalgo.tools.Tools;
 import sinalgo.gui.transformation.PositionTransformation;
 
 public class NetworkNode extends SynchronizerLayer {
@@ -52,12 +53,14 @@ public class NetworkNode extends SynchronizerLayer {
     }
 
     public void setChild (InputNode node, int subtreeId) {
-        if (this.ID < node.getIndex()) {
+        if (this.ID < node.getOutputNode().getIndex()) {
             this.setRightChild(node, subtreeId);
 
-        } else {
+        } else if (this.ID > node.getOutputNode().getIndex()) {
             this.setLeftChild(node, subtreeId);
 
+        } else {
+        	Tools.fatalError("Not clear which child to remove from node " + this.ID);
         }
     }
 
@@ -66,13 +69,27 @@ public class NetworkNode extends SynchronizerLayer {
         this.setMinIdInSubtree(minId);
     }
 
+    public void removeLeftChild () {
+    	this.leftChild = null;
+        this.setMinIdInSubtree(this.ID);
+    }
+
     public InputNode getLeftChild () {
         return this.leftChild;
+    }
+
+    public InputNode getRightChild () {
+        return this.rightChild;
     }
 
     public void setRightChild (InputNode node, int maxId) {
         this.rightChild = node;
         this.setMaxIdInSubtree(maxId);
+    }
+
+    public void removeRightChild () {
+    	this.rightChild = null;
+        this.setMaxIdInSubtree(this.ID);
     }
 
     public void setMinIdInSubtree (int value) {
@@ -154,29 +171,40 @@ public class NetworkNode extends SynchronizerLayer {
     public void handleMessages (Inbox inbox) {
         while (inbox.hasNext()) {
             Message msg = inbox.next();
-            if (!(msg instanceof NetworkMessage)) {
-                continue;
+            if ((msg instanceof NetworkMessage)) {
+                NetworkMessage optmsg = (NetworkMessage) msg;
+                if (optmsg.getDst() == this.ID) {
+                	this.sendDirect(optmsg, this.controller);
+                    continue;
 
-            }
+                }
 
-            NetworkMessage optmsg = (NetworkMessage) msg;
-            if (optmsg.getDst() == this.ID) {
-            	this.sendDirect(optmsg, this.controller);
-                continue;
+                if (this.minIdInSubtree <= optmsg.getDst() && optmsg.getDst() < this.ID) {
+                    this.send(optmsg, this.leftChild);
 
-            }
+                } else if (this.ID < optmsg.getDst() && optmsg.getDst() <= this.maxIdInSubtree) {
+                    this.send(optmsg, this.rightChild);
 
-            if (this.minIdInSubtree <= optmsg.getDst() && optmsg.getDst() < this.ID) {
-                this.send(optmsg, this.leftChild);
+                } else {
+                    this.send(optmsg, this.parent);
 
-            } else if (this.ID < optmsg.getDst() && optmsg.getDst() <= this.maxIdInSubtree) {
-                this.send(optmsg, this.rightChild);
+                }
 
             } else {
-                this.send(optmsg, this.parent);
+            	continue;
 
             }
         }
+    }
+
+    public void debugNode () {
+        System.out.println(
+        	"NETID: " + this.getId()
+        	+ " lftID: " + (this.leftChild == null ? -1 : this.leftChild.getOutputNode().getIndex())
+        	+ " rgtID: " + (this.rightChild == null ? -1 : this.rightChild.getOutputNode().getIndex())
+        	+ " parentId: " + (this.parent == null ? -1 : this.parent.getOutputNode().getIndex())
+            + " leftSUB: " + this.minIdInSubtree + " rightSUB: " + this.maxIdInSubtree
+        );
     }
 
     //-----------------------------------------------------------------------------------

@@ -16,6 +16,7 @@ public abstract class NetworkController extends SynchronizerLayer {
 
     /* Attributes */
 
+	private ArrayList<Boolean> usedNodes;
     protected ArrayList<InfraNode> tree;
     protected ArrayList<NetworkSwitch> switches;
     protected ArrayList<NetworkNode> netNodes;
@@ -39,7 +40,7 @@ public abstract class NetworkController extends SynchronizerLayer {
     public NetworkController (
         int numNodes, int switchSize, ArrayList<NetworkNode> netNodes, ArrayList<Integer> edgeList
     ) {
-   
+
         this.numNodes = numNodes;
     	this.switchSize = switchSize;
     	this.tree = new ArrayList<>();
@@ -124,8 +125,11 @@ public abstract class NetworkController extends SynchronizerLayer {
         super.init();
     }
 
-    private void setupTree (ArrayList<Integer> edgeList) {    	
+    private void setupTree (ArrayList<Integer> edgeList) {
+    	this.usedNodes = new ArrayList<>();
+
         for (int i = 0; i <= this.numNodes; i++) {
+            this.usedNodes.add(false);
             this.tree.add(new InfraNode());
             if (edgeList.size() < this.numNodes) {
             	edgeList.add(i + 1);
@@ -153,19 +157,19 @@ public abstract class NetworkController extends SynchronizerLayer {
         InfraNode z = y.getParent();
         InfraNode w = z.getParent();
 
-        w.debugNode();
-        z.debugNode();
-        y.debugNode();
-        x.debugNode();
-
         boolean leftZigZig = (y.getId() == z.getLeftChild().getId());
         InfraNode c = (leftZigZig) ? y.getRightChild() : y.getLeftChild();
 
-        this.mapConn(z, c, y);
-        this.mapConn(y, z);
-        this.mapConn(w, y);
 
-        return leftZigZig;
+        if (this.areAvailableNodes(w, z, y, c)) {
+            this.mapConn(z, c, y);
+            this.mapConn(y, z);
+            this.mapConn(w, y);
+
+            return true;
+        }
+
+        return false;
     }
 
     protected boolean zigZagBottomUp (InfraNode x) {
@@ -189,21 +193,20 @@ public abstract class NetworkController extends SynchronizerLayer {
         InfraNode b = (leftZigZag) ? x.getLeftChild() : x.getRightChild();
         InfraNode c = (leftZigZag) ? x.getRightChild() : x.getLeftChild();
 
-        w.debugNode();
-        z.debugNode();
-        y.debugNode();
-        x.debugNode();
+        if (this.areAvailableNodes(w, z, y, x, b, c)) {
+            this.mapConn(y, b, x);
+            this.mapConn(x, y);
+            this.mapConn(z, c, x);
+            this.mapConn(x, z);
+            this.mapConn(w, x);
 
-        this.mapConn(y, b, x);
-        this.mapConn(x, y);
-        this.mapConn(z, c, x);
-        this.mapConn(x, z);
-        this.mapConn(w, x);
+            return true;
+        }
 
-        return leftZigZag;
+        return false;
     }
 
-    protected void zigZigLeftTopDown (InfraNode z) {
+    protected boolean zigZigLeftTopDown (InfraNode z) {
         /*
                  *z                    y
                  / \                 /   \
@@ -217,30 +220,34 @@ public abstract class NetworkController extends SynchronizerLayer {
         InfraNode y = z.getLeftChild();
         InfraNode c = y.getRightChild();
 
-        w.debugNode();
-        z.debugNode();
-        y.debugNode();
+        if (this.areAvailableNodes(w, z, y, c)) {
+            this.mapConn(z, c, y);
+            this.mapConn(y, z);
+            this.mapConn(w, y);
 
-        this.mapConn(z, c, y);
-        this.mapConn(y, z);
-        this.mapConn(w, y);
+            return true;
+        }
+
+        return false;
     }
 
-    protected void zigZigRightTopDown (InfraNode z) {
+    protected boolean zigZigRightTopDown (InfraNode z) {
     	InfraNode w = z.getParent();
         InfraNode y = z.getRightChild();
         InfraNode c = y.getLeftChild();
 
-        w.debugNode();
-        z.debugNode();
-        y.debugNode();
+        if (this.areAvailableNodes(w, z, y, c)) {
+            this.mapConn(z, c, y);
+            this.mapConn(y, z);
+            this.mapConn(w, y);
 
-        this.mapConn(z, c, y);
-        this.mapConn(y, z);
-        this.mapConn(w, y);
+            return true;
+        }
+
+        return false;
     }
 
-    protected void zigZagLeftTopDown (InfraNode z) {
+    protected boolean zigZagLeftTopDown (InfraNode z) {
         /*
                  *z                     x
                  / \        -->       /   \
@@ -256,35 +263,54 @@ public abstract class NetworkController extends SynchronizerLayer {
         InfraNode b = x.getLeftChild();
         InfraNode c = x.getRightChild();
 
-        w.debugNode();
-        z.debugNode();
-        y.debugNode();
-        x.debugNode();
+        if (this.areAvailableNodes(w, z, y, x, b, c)) {
+            this.mapConn(y, b, x);
+            this.mapConn(x, y);
+            this.mapConn(z, c, x);
+            this.mapConn(x, z);
+            this.mapConn(w, x);
 
-        this.mapConn(y, b, x);
-        this.mapConn(x, y);
-        this.mapConn(z, c, x);
-        this.mapConn(x, z);
-        this.mapConn(w, x);
+            return true;
+        }
+
+        return false;
     }
 
-    protected void zigZagRightTopDown (InfraNode z) {
+    protected boolean zigZagRightTopDown (InfraNode z) {
     	InfraNode w = z.getParent();
         InfraNode y = z.getRightChild();
         InfraNode x = y.getLeftChild();
         InfraNode b = x.getRightChild();
         InfraNode c = x.getLeftChild();
 
-        w.debugNode();
-        z.debugNode();
-        y.debugNode();
-        x.debugNode();
+        if (this.areAvailableNodes(w, z, y, x, b, c)) {
+            this.mapConn(y, b, x);
+            this.mapConn(x, y);
+            this.mapConn(z, c, x);
+            this.mapConn(x, z);
+            this.mapConn(w, x);
 
-        this.mapConn(y, b, x);
-        this.mapConn(x, y);
-        this.mapConn(z, c, x);
-        this.mapConn(x, z);
-        this.mapConn(w, x);
+            return true;
+        }
+
+        return false;
+    }
+
+    private boolean areAvailableNodes (InfraNode... nodes) {
+    	for (InfraNode infNode: nodes) {
+    		if (infNode.getId() != -1 && this.usedNodes.get(infNode.getId())) {
+    			return false;
+
+    		}
+    	}
+
+    	for (InfraNode infNode: nodes) {
+    		if (infNode.getId() != -1) {
+    			this.usedNodes.set(infNode.getId(), true);
+    		}
+    	}
+
+    	return true;
     }
     /* End of Rotations */
 
@@ -334,8 +360,12 @@ public abstract class NetworkController extends SynchronizerLayer {
         return ret;
     }
 
-    public InfraNode getNode (int nodeId) {
+    public InfraNode getInfraNode (int nodeId) {
         return this.tree.get(nodeId);
+    }
+
+    public NetworkNode getNetNode (int nodeId) {
+        return this.netNodes.get(nodeId - 1);
     }
 
     protected int getClusterId (InfraNode fromNode, InfraNode toNode) {
@@ -431,25 +461,25 @@ public abstract class NetworkController extends SynchronizerLayer {
     private void mapConn (InfraNode fromNode, InfraNode toNode, InfraNode oldParent) {
         int swtId = this.getSwitchId(fromNode, toNode);
         int subtreeId = fromNode.setChild(toNode, oldParent) + 1;
-        System.out.println("From Node: " + fromNode.getId() + " to node: " + toNode.getId() + " in switch: " + swtId);
 
         if (fromNode.getId() == this.numNodes) {
         	return;
-        } else if (toNode.getId() == -1) {
+
+        } else if (toNode.getId() == -1 && fromNode.getId() > oldParent.getId()) {
+        	this.getNetNode(fromNode.getId() + 1).removeLeftChild();
         	return;
+
+        } else if (toNode.getId() == -1 && fromNode.getId() < oldParent.getId()) {
+        	this.getNetNode(fromNode.getId() + 1).removeRightChild();
+        	return;
+
         } else if (toNode.getId() == this.numNodes) {
         	Tools.fatalError("Trying to make root node as a child");
+
         }
 
-        if (swtId >= 8) {
-        	System.out.println("UnioPos: " + this.unionPos(
-                    this.getClusterId(fromNode), this.getClusterId(toNode)
-            ));
-            this.switches.get(swtId).debugSwitch();
-        }
-
-        this.sendConnectNodesMessage(swtId, fromNode.getId() + 1, toNode.getId() + 1, subtreeId);
-        this.sendConnectNodesMessage(swtId + 1, toNode.getId() + 1, fromNode.getId() + 1);
+        this.getSwitch(swtId).updateSwitch(fromNode.getId() + 1, toNode.getId() + 1, subtreeId);
+        this.getSwitch(swtId + 1).updateSwitch(toNode.getId() + 1, fromNode.getId() + 1);
     }
 
     private void sendConnectNodesMessage (int switchId, int from, int to) {
@@ -534,24 +564,19 @@ public abstract class NetworkController extends SynchronizerLayer {
     }
 
     public void debugTree () {
-        InfraNode root = null;
-        for (int i = 0; i < this.numNodes; i++)
-            if (this.tree.get(i).getParent().getId() == -1)
-                root = this.tree.get(i);
-
-        this.debugTree(root);
+        this.debugTree(this.tree.get(this.numNodes));
     }
 
     public void debugTree (InfraNode node) {
         if (node.getId() == -1)
             return;
 
-        System.out.println("Node ID: " + node.getId());
+        node.debugNode();
 
-        System.out.println("MIN SUBTREE: " + node.getMinId());
+        System.out.println("Left");
         this.debugTree(node.getLeftChild());
 
-        System.out.println("MAX SUBTREE: " + node.getMaxId());
+        System.out.println("Right");
         this.debugTree(node.getRightChild());
     }
 
@@ -559,10 +584,35 @@ public abstract class NetworkController extends SynchronizerLayer {
 
     @Override
     public void controllerStep () {
+    	for (int i = 0; i <= this.numNodes; i++)
+    		this.usedNodes.set(i, false);
+
     	this.updateConn();
     }
 
-    @Override
+    private boolean validTree () {
+    	return this.validSubtree(this.tree.get(this.numNodes).getLeftChild(), 0, this.numNodes - 1);
+    }
+
+    private boolean validSubtree (InfraNode x, int min, int max) {
+    	if (x.getId() != -1) {
+    		return true;
+
+    	}
+
+    	if (x.getId() < min || x.getId() > max) {
+    		x.debugNode();
+    		return false;
+
+    	}
+
+    	return (
+            this.validSubtree(x.getLeftChild(), min, x.getId() - 1) &&
+            this.validSubtree(x.getRightChild(), x.getId() + 1, max)
+        );
+    }
+
+	@Override
     public void draw (Graphics g, PositionTransformation pt, boolean highlight) {
         String text = "" + ID;
         // draw the node as a circle with the text inside

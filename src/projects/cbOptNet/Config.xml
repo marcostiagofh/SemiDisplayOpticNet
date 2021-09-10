@@ -237,7 +237,7 @@
         <!--*****************************************************-->
         <!--  DiSplayNet's Input Parameter                       -->
         <!--*****************************************************-->
-        <input value ="" />
+        <input value ="input/tor_128.txt" />
         <output value ="test" />
         <seedId value = "10" />
         <mu value ="20" />

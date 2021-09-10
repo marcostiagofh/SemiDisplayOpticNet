@@ -96,22 +96,16 @@ public class NetworkSwitch extends Node {
         InputNode inNode = this.inputId2Node.get(in);
         OutputNode outNode = this.outputId2Node.get(out);
 
-        System.out.println("In: " + in + " out: " + out);
-        if (this.index > 8)
-        	this.debugSwitch();
-
-        inNode.getConnectedNode().setChild(inNode, subtreeId);
         this.connectNodes(inNode, outNode);
+    	inNode.getConnectedNode().setChild(inNode, subtreeId);
     }
 
     public void updateSwitch (int in, int out) {
         InputNode inNode = this.inputId2Node.get(in);
         OutputNode outNode = this.outputId2Node.get(out);
 
-        System.out.println("In: " + in + " out: " + out);
-
-        inNode.getConnectedNode().setParent(inNode);
         this.connectNodes(inNode, outNode);
+        inNode.getConnectedNode().setParent(inNode);
     }
 
     public void connectNodes (InputNode inNode, OutputNode outNode) {

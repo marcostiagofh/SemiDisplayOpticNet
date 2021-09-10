@@ -218,10 +218,19 @@ public class InfraNode {
 
     /* Auxiliary Functions */
     public void debugNode () {
-        System.out.println("ID: " + this.getId() + " lftID: "
-            + this.getLeftChild().getId()
-            + " rgtID: " + this.getRightChild().getId() + " parentId: " + this.getParent().getId()
-        );
+    	if (this.id == -1) {
+    		System.out.println("Dummy Node");
+
+    	} else {
+	        System.out.println(
+                "INFRAID: " + this.getId()
+                + " lftID: " + this.getLeftChild().getId()
+	            + " rgtID: " + this.getRightChild().getId()
+                + " parentId: " + this.getParent().getId()
+	            + " leftSUB: " + this.getMinId() + " rightSUB: " + this.getMaxId()
+	        );
+
+    	}
     }
     /* End of Auxiliary Functions */
 }

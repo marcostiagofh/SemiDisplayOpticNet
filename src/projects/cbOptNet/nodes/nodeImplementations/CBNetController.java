@@ -12,155 +12,179 @@ import sinalgo.nodes.messages.Message;
 
 public class CBNetController extends NetworkController {
 
-	private double epsilon = -1.5;
+private double epsilon = -1.5;
 
     public CBNetController (int numNodes, int switchSize, ArrayList<NetworkNode> netNodes) {
-		super(numNodes, switchSize, netNodes);
-	}
+        super(numNodes, switchSize, netNodes);
+    }
 
     public CBNetController (
         int numNodes, int switchSize, ArrayList<NetworkNode> netNodes, ArrayList<Integer> edgeList
     ) {
-		super(numNodes, switchSize, netNodes, edgeList);
+        super(numNodes, switchSize, netNodes, edgeList);
     }
 
     /* Rotations */
 
     @Override
     protected boolean zigZigBottomUp (InfraNode x) {
-        boolean leftZigZig = super.zigZigBottomUp(x);
-
         InfraNode y = x.getParent();
         InfraNode z = y.getParent();
+
+        boolean leftZigZig = (y.getId() == z.getLeftChild().getId());
         InfraNode b = (leftZigZig ? y.getRightChild() : y.getLeftChild());
 
-        long yOldWeight = y.getWeight();
-        long zOldWeight = z.getWeight();
-
-        long bWeight = (b.getId() != -1) ? b.getWeight() : 0;
-
-        long zNewWeight = zOldWeight - yOldWeight + bWeight;
-        long yNewWeight = yOldWeight - bWeight + zNewWeight;
-
-        z.setWeight(zNewWeight);
-        y.setWeight(yNewWeight);
-
-        return leftZigZig;
+        if (super.zigZigBottomUp(x)) {
+	        long yOldWeight = y.getWeight();
+	        long zOldWeight = z.getWeight();
+	
+	        long bWeight = (b.getId() != -1) ? b.getWeight() : 0;
+	
+	        long zNewWeight = zOldWeight - yOldWeight + bWeight;
+	        long yNewWeight = yOldWeight - bWeight + zNewWeight;
+	
+	        z.setWeight(zNewWeight);
+	        y.setWeight(yNewWeight);
+	        
+	        return true;
+        }
+        
+        return false;
     }
 
     @Override
     protected boolean zigZagBottomUp (InfraNode x) {
-        boolean leftZigZag = super.zigZagBottomUp(x);
-
         InfraNode y = x.getParent();
         InfraNode z = y.getParent();
+
+        boolean leftZigZag = (y.getId() == z.getLeftChild().getId());
         InfraNode b = (leftZigZag) ? x.getLeftChild() : x.getRightChild();
         InfraNode c = (leftZigZag) ? x.getRightChild() : x.getLeftChild();
 
-        long xOldWeight = x.getWeight();
-        long yOldWeight = y.getWeight();
-        long zOldWeight = z.getWeight();
-
-        long bWeight = (b.getId() != -1) ? b.getWeight() : 0;
-        long cWeight = (c.getId() != -1) ? c.getWeight() : 0;
-
-        long yNewWeight = yOldWeight - xOldWeight + bWeight;
-        long zNewWeight = zOldWeight - yOldWeight + cWeight;
-        long xNewWeight = xOldWeight - bWeight - cWeight + yNewWeight + zNewWeight;
-
-        y.setWeight(yNewWeight);
-        z.setWeight(zNewWeight);
-        x.setWeight(xNewWeight);
-
-        return leftZigZag;
+        if (super.zigZagBottomUp(x)) {
+	        long xOldWeight = x.getWeight();
+	        long yOldWeight = y.getWeight();
+	        long zOldWeight = z.getWeight();
+	
+	        long bWeight = (b.getId() != -1) ? b.getWeight() : 0;
+	        long cWeight = (c.getId() != -1) ? c.getWeight() : 0;
+	
+	        long yNewWeight = yOldWeight - xOldWeight + bWeight;
+	        long zNewWeight = zOldWeight - yOldWeight + cWeight;
+	        long xNewWeight = xOldWeight - bWeight - cWeight + yNewWeight + zNewWeight;
+	
+	        y.setWeight(yNewWeight);
+	        z.setWeight(zNewWeight);
+	        x.setWeight(xNewWeight);
+	        
+	        return true;
+        }
+        
+        return false;
     }
 
     @Override
-    protected void zigZigLeftTopDown (InfraNode z) {
-        super.zigZigLeftTopDown(z);
-
+    protected boolean zigZigLeftTopDown (InfraNode z) {
         InfraNode y = z.getLeftChild();
         InfraNode b = y.getRightChild();
 
-        long yOldWeight = y.getWeight();
-        long zOldWeight = z.getWeight();
-
-        long bWeight = (b.getId() != -1) ? b.getWeight() : 0;
-
-        long zNewWeight = zOldWeight - yOldWeight + bWeight;
-        long yNewWeight = yOldWeight - bWeight + zNewWeight;
-
-        z.setWeight(zNewWeight);
-        y.setWeight(yNewWeight);
+        if (super.zigZigLeftTopDown(z)) {	
+	        long yOldWeight = y.getWeight();
+	        long zOldWeight = z.getWeight();
+	
+	        long bWeight = (b.getId() != -1) ? b.getWeight() : 0;
+	
+	        long zNewWeight = zOldWeight - yOldWeight + bWeight;
+	        long yNewWeight = yOldWeight - bWeight + zNewWeight;
+	
+	        z.setWeight(zNewWeight);
+	        y.setWeight(yNewWeight);
+	    
+	        return true;
+        }
+        
+        return false;
     }
 
     @Override
-    protected void zigZigRightTopDown (InfraNode z) {
-        super.zigZigRightTopDown(z);
-
+    protected boolean zigZigRightTopDown (InfraNode z) {
         InfraNode y = z.getRightChild();
         InfraNode b = y.getLeftChild();
 
-        long yOldWeight = y.getWeight();
-        long zOldWeight = z.getWeight();
-
-        long bWeight = (b.getId() != -1) ? b.getWeight() : 0;
-
-        long zNewWeight = zOldWeight - yOldWeight + bWeight;
-        long yNewWeight = yOldWeight - bWeight + zNewWeight;
-
-        z.setWeight(zNewWeight);
-        y.setWeight(yNewWeight);
+        if (super.zigZigRightTopDown(z)) {
+	        long yOldWeight = y.getWeight();
+	        long zOldWeight = z.getWeight();
+	
+	        long bWeight = (b.getId() != -1) ? b.getWeight() : 0;
+	
+	        long zNewWeight = zOldWeight - yOldWeight + bWeight;
+	        long yNewWeight = yOldWeight - bWeight + zNewWeight;
+	
+	        z.setWeight(zNewWeight);
+	        y.setWeight(yNewWeight);
+	        
+	        return true;
+        }
+        
+        return false;
     }
 
     @Override
-    protected void zigZagLeftTopDown (InfraNode z) {
-        super.zigZagLeftTopDown(z);
-
+    protected boolean zigZagLeftTopDown (InfraNode z) {
         InfraNode y = z.getLeftChild();
         InfraNode x = y.getRightChild();
         InfraNode b = x.getLeftChild();
         InfraNode c = x.getRightChild();
 
-        long xOldWeight = x.getWeight();
-        long yOldWeight = y.getWeight();
-        long zOldWeight = z.getWeight();
-
-        long bWeight = (b.getId() != -1) ? b.getWeight() : 0;
-        long cWeight = (c.getId() != -1) ? c.getWeight() : 0;
-
-        long yNewWeight = yOldWeight - xOldWeight + bWeight;
-        long zNewWeight = zOldWeight - yOldWeight + cWeight;
-        long xNewWeight = xOldWeight - bWeight - cWeight + yNewWeight + zNewWeight;
-
-        y.setWeight(yNewWeight);
-        z.setWeight(zNewWeight);
-        x.setWeight(xNewWeight);
+        if (super.zigZagLeftTopDown(z)) {
+	        long xOldWeight = x.getWeight();
+	        long yOldWeight = y.getWeight();
+	        long zOldWeight = z.getWeight();
+	
+	        long bWeight = (b.getId() != -1) ? b.getWeight() : 0;
+	        long cWeight = (c.getId() != -1) ? c.getWeight() : 0;
+	
+	        long yNewWeight = yOldWeight - xOldWeight + bWeight;
+	        long zNewWeight = zOldWeight - yOldWeight + cWeight;
+	        long xNewWeight = xOldWeight - bWeight - cWeight + yNewWeight + zNewWeight;
+	
+	        y.setWeight(yNewWeight);
+	        z.setWeight(zNewWeight);
+	        x.setWeight(xNewWeight);
+	        
+	        return true;
+        }
+        
+        return false;
     }
 
     @Override
-    protected void zigZagRightTopDown (InfraNode z) {
-        super.zigZagRightTopDown(z);
-
+    protected boolean zigZagRightTopDown (InfraNode z) {
         InfraNode y = z.getRightChild();
         InfraNode x = y.getLeftChild();
         InfraNode b = x.getRightChild();
         InfraNode c = x.getLeftChild();
 
-        long xOldWeight = x.getWeight();
-        long yOldWeight = y.getWeight();
-        long zOldWeight = z.getWeight();
-
-        long bWeight = (b.getId() != -1) ? b.getWeight() : 0;
-        long cWeight = (c.getId() != -1) ? c.getWeight() : 0;
-
-        long yNewWeight = yOldWeight - xOldWeight + bWeight;
-        long zNewWeight = zOldWeight - yOldWeight + cWeight;
-        long xNewWeight = xOldWeight - bWeight - cWeight + yNewWeight + zNewWeight;
-
-        y.setWeight(yNewWeight);
-        z.setWeight(zNewWeight);
-        x.setWeight(xNewWeight);
+        if (super.zigZagRightTopDown(z)) {
+	        long xOldWeight = x.getWeight();
+	        long yOldWeight = y.getWeight();
+	        long zOldWeight = z.getWeight();
+	
+	        long bWeight = (b.getId() != -1) ? b.getWeight() : 0;
+	        long cWeight = (c.getId() != -1) ? c.getWeight() : 0;
+	
+	        long yNewWeight = yOldWeight - xOldWeight + bWeight;
+	        long zNewWeight = zOldWeight - yOldWeight + cWeight;
+	        long xNewWeight = xOldWeight - bWeight - cWeight + yNewWeight + zNewWeight;
+	
+	        y.setWeight(yNewWeight);
+	        z.setWeight(zNewWeight);
+	        x.setWeight(xNewWeight);
+	        
+	        return true;
+        }
+        
+        return false;
     }
     /* End of Rotations */
 
@@ -238,7 +262,7 @@ public class CBNetController extends NetworkController {
     }
 
     @Override
-	public int getRotationToPerform (InfraNode x) {
+    public int getRotationToPerform (InfraNode x) {
         double maxDelta = 0;
         int operation = 0;
 
@@ -248,7 +272,7 @@ public class CBNetController extends NetworkController {
             InfraNode y = x.getParent();
             InfraNode z = y.getParent();
             if (this.isValidNode(y.getLeftChild()) && x.getId() == y.getLeftChild().getId() &&
-            		this.isValidNode(z.getLeftChild()) && y.getId() == z.getLeftChild().getId()) {
+                    this.isValidNode(z.getLeftChild()) && y.getId() == z.getLeftChild().getId()) {
                     // zigzigLeft
                     double aux = zigDiffRank(y, z);
                     if (aux < maxDelta) {
@@ -335,10 +359,10 @@ public class CBNetController extends NetworkController {
         }
 
         if (maxDelta < this.epsilon) {
-        	if (operation == 3) return -1;
-        	return operation;
+            if (operation == 3) return -1;
+            return operation;
         } else {
-        	return -1;
+            return -1;
         }
     }
 
