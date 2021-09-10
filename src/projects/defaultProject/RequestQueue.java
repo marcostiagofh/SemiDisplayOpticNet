@@ -69,7 +69,7 @@ public class RequestQueue {
 	public Tuple<Integer, Integer> getNextRequest() {
 		String line = this.queue.poll();
 		String[] fields = line.split(this.separator);
-		Tuple<Integer, Integer> r = new Tuple<>(Integer.valueOf(fields[0]) + 1, Integer.valueOf(fields[1]) + 1);
+		Tuple<Integer, Integer> r = new Tuple<>(Integer.valueOf(fields[0]), Integer.valueOf(fields[1]));
 		return r;
 	}
 

@@ -2,8 +2,9 @@ package projects.cbOptNet.nodes.nodeImplementations;
 
 import java.util.ArrayList;
 
+import projects.defaultProject.DataCollection;
+import projects.opticalNet.nodes.messages.CompletionMessage;
 import projects.opticalNet.nodes.infrastructureImplementations.InfraNode;
-import projects.opticalNet.nodes.messages.NetworkMessage;
 import projects.opticalNet.nodes.nodeImplementations.NetworkController;
 import projects.opticalNet.nodes.nodeImplementations.NetworkNode;
 
@@ -14,14 +15,14 @@ public class CBNetController extends NetworkController {
 
 private double epsilon = -1.5;
 
-    public CBNetController (int numNodes, int switchSize, ArrayList<NetworkNode> netNodes) {
-        super(numNodes, switchSize, netNodes);
+    public CBNetController (int numNodes, int switchSize, ArrayList<NetworkNode> netNodes, DataCollection data) {
+        super(numNodes, switchSize, netNodes, data);
     }
 
     public CBNetController (
-        int numNodes, int switchSize, ArrayList<NetworkNode> netNodes, ArrayList<Integer> edgeList
+        int numNodes, int switchSize, ArrayList<NetworkNode> netNodes, DataCollection data, ArrayList<Integer> edgeList
     ) {
-        super(numNodes, switchSize, netNodes, edgeList);
+        super(numNodes, switchSize, netNodes, data, edgeList);
     }
 
     /* Rotations */
@@ -37,18 +38,18 @@ private double epsilon = -1.5;
         if (super.zigZigBottomUp(x)) {
 	        long yOldWeight = y.getWeight();
 	        long zOldWeight = z.getWeight();
-	
+
 	        long bWeight = (b.getId() != -1) ? b.getWeight() : 0;
-	
+
 	        long zNewWeight = zOldWeight - yOldWeight + bWeight;
 	        long yNewWeight = yOldWeight - bWeight + zNewWeight;
-	
+
 	        z.setWeight(zNewWeight);
 	        y.setWeight(yNewWeight);
-	        
+
 	        return true;
         }
-        
+
         return false;
     }
 
@@ -65,21 +66,21 @@ private double epsilon = -1.5;
 	        long xOldWeight = x.getWeight();
 	        long yOldWeight = y.getWeight();
 	        long zOldWeight = z.getWeight();
-	
+
 	        long bWeight = (b.getId() != -1) ? b.getWeight() : 0;
 	        long cWeight = (c.getId() != -1) ? c.getWeight() : 0;
-	
+
 	        long yNewWeight = yOldWeight - xOldWeight + bWeight;
 	        long zNewWeight = zOldWeight - yOldWeight + cWeight;
 	        long xNewWeight = xOldWeight - bWeight - cWeight + yNewWeight + zNewWeight;
-	
+
 	        y.setWeight(yNewWeight);
 	        z.setWeight(zNewWeight);
 	        x.setWeight(xNewWeight);
-	        
+
 	        return true;
         }
-        
+
         return false;
     }
 
@@ -88,21 +89,21 @@ private double epsilon = -1.5;
         InfraNode y = z.getLeftChild();
         InfraNode b = y.getRightChild();
 
-        if (super.zigZigLeftTopDown(z)) {	
+        if (super.zigZigLeftTopDown(z)) {
 	        long yOldWeight = y.getWeight();
 	        long zOldWeight = z.getWeight();
-	
+
 	        long bWeight = (b.getId() != -1) ? b.getWeight() : 0;
-	
+
 	        long zNewWeight = zOldWeight - yOldWeight + bWeight;
 	        long yNewWeight = yOldWeight - bWeight + zNewWeight;
-	
+
 	        z.setWeight(zNewWeight);
 	        y.setWeight(yNewWeight);
-	    
+
 	        return true;
         }
-        
+
         return false;
     }
 
@@ -114,18 +115,18 @@ private double epsilon = -1.5;
         if (super.zigZigRightTopDown(z)) {
 	        long yOldWeight = y.getWeight();
 	        long zOldWeight = z.getWeight();
-	
+
 	        long bWeight = (b.getId() != -1) ? b.getWeight() : 0;
-	
+
 	        long zNewWeight = zOldWeight - yOldWeight + bWeight;
 	        long yNewWeight = yOldWeight - bWeight + zNewWeight;
-	
+
 	        z.setWeight(zNewWeight);
 	        y.setWeight(yNewWeight);
-	        
+
 	        return true;
         }
-        
+
         return false;
     }
 
@@ -140,21 +141,21 @@ private double epsilon = -1.5;
 	        long xOldWeight = x.getWeight();
 	        long yOldWeight = y.getWeight();
 	        long zOldWeight = z.getWeight();
-	
+
 	        long bWeight = (b.getId() != -1) ? b.getWeight() : 0;
 	        long cWeight = (c.getId() != -1) ? c.getWeight() : 0;
-	
+
 	        long yNewWeight = yOldWeight - xOldWeight + bWeight;
 	        long zNewWeight = zOldWeight - yOldWeight + cWeight;
 	        long xNewWeight = xOldWeight - bWeight - cWeight + yNewWeight + zNewWeight;
-	
+
 	        y.setWeight(yNewWeight);
 	        z.setWeight(zNewWeight);
 	        x.setWeight(xNewWeight);
-	        
+
 	        return true;
         }
-        
+
         return false;
     }
 
@@ -169,21 +170,21 @@ private double epsilon = -1.5;
 	        long xOldWeight = x.getWeight();
 	        long yOldWeight = y.getWeight();
 	        long zOldWeight = z.getWeight();
-	
+
 	        long bWeight = (b.getId() != -1) ? b.getWeight() : 0;
 	        long cWeight = (c.getId() != -1) ? c.getWeight() : 0;
-	
+
 	        long yNewWeight = yOldWeight - xOldWeight + bWeight;
 	        long zNewWeight = zOldWeight - yOldWeight + cWeight;
 	        long xNewWeight = xOldWeight - bWeight - cWeight + yNewWeight + zNewWeight;
-	
+
 	        y.setWeight(yNewWeight);
 	        z.setWeight(zNewWeight);
 	        x.setWeight(xNewWeight);
-	        
+
 	        return true;
         }
-        
+
         return false;
     }
     /* End of Rotations */
@@ -374,13 +375,14 @@ private double epsilon = -1.5;
     public void handleMessages (Inbox inbox) {
         while (inbox.hasNext()) {
             Message msg = inbox.next();
-            if (!(msg instanceof NetworkMessage)) {
+            if (!(msg instanceof CompletionMessage)) {
                 continue;
 
             }
 
-            NetworkMessage optmsg = (NetworkMessage) msg;
-            this.incrementPathWeight(optmsg.getSrc(), optmsg.getDst());
+            CompletionMessage cmpmsg = (CompletionMessage) msg;
+            this.data.incrementCompletedRequests();
+            this.incrementPathWeight(cmpmsg.getSrc(), cmpmsg.getDst());
         }
     }
 }

@@ -73,7 +73,9 @@ public class CustomGlobal extends AbstractCustomGlobal {
             netNodes.add(newNetNode);
         }
 
-        this.controller = new CBNetController(this.numberOfNodes, this.switchSize, netNodes);
+        this.controller = new CBNetController(
+            this.numberOfNodes, this.switchSize, netNodes, this.data
+        );
         this.controller.finishInitializationWithDefaultModels(true);
 
         for (int i = 0; i < this.numberOfNodes; i++) {
@@ -85,6 +87,8 @@ public class CustomGlobal extends AbstractCustomGlobal {
 
     @Override
     public void preRound () {
+    	System.out.println(this.data.getCompletedRequests() + " " + MAX_REQ);
+
         if (mustGenerateSplay && this.requestQueue.hasNextRequest()) {
             mustGenerateSplay = false;
 

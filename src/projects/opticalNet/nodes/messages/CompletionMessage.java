@@ -7,34 +7,22 @@ public class CompletionMessage extends Message {
     private int src;
     private int dst;
 
-    private NetworkMessage message;
+    private NetworkMessage msg;
 
     public CompletionMessage (NetworkMessage msg) {
-        this.message = msg;
+        this.msg = msg;
     }
 
     public int getSrc () {
-        return src;
+        return this.msg.getSrc();
     }
 
     public int getDst () {
-        return dst;
+        return this.msg.getDst();
     }
 
     public NetworkMessage getMessage () {
-        return message;
-    }
-
-    public void setSrc (int src) {
-        this.src = src;
-    }
-
-    public void setDst (int dst) {
-        this.dst = dst;
-    }
-
-    public void setMessage (NetworkMessage message) {
-        this.message = message;
+        return this.msg;
     }
 
     @Override

@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.util.ArrayList;
 
+import projects.defaultProject.DataCollection;
 import projects.opticalNet.nodes.infrastructureImplementations.InfraNode;
 import projects.opticalNet.nodes.infrastructureImplementations.AltNetwork;
 import projects.opticalNet.nodes.infrastructureImplementations.SynchronizerLayer;
@@ -28,17 +29,19 @@ public abstract class NetworkController extends SynchronizerLayer {
     protected int numUnionClusters = 0;
     protected int clusterSize;
 
+    protected DataCollection data;
+
     private static final int SIZE_CLUSTER_TYPE1 = 4;
     private static final int SIZE_CLUSTER_TYPE2 = 4;
 
     /* End of Attributes */
 
-    public NetworkController (int numNodes, int switchSize, ArrayList<NetworkNode> netNodes) {
-        this(numNodes, switchSize, netNodes, new ArrayList<Integer>());
+    public NetworkController (int numNodes, int switchSize, ArrayList<NetworkNode> netNodes, DataCollection data) {
+        this(numNodes, switchSize, netNodes, data, new ArrayList<Integer>());
     }
 
     public NetworkController (
-        int numNodes, int switchSize, ArrayList<NetworkNode> netNodes, ArrayList<Integer> edgeList
+        int numNodes, int switchSize, ArrayList<NetworkNode> netNodes, DataCollection data, ArrayList<Integer> edgeList
     ) {
 
         this.numNodes = numNodes;
@@ -46,6 +49,8 @@ public abstract class NetworkController extends SynchronizerLayer {
     	this.tree = new ArrayList<>();
     	this.switches = new ArrayList<>();
     	this.netNodes = netNodes;
+
+    	this.data = data;
 
     	this.clusterSize = this.switchSize / 2;
         this.numClusters = (this.numNodes - this.clusterSize + 1) / this.clusterSize + 1;

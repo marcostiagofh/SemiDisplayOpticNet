@@ -18,8 +18,9 @@ public class TriggerNodeOperation extends Timer {
 
     @Override
     public void fire () {
-        NetworkNode srcnode = (NetworkNode) Tools.getNodeByID(src);
-        srcnode.newMessage(dst);
+    	System.out.println("FROM: " + this.src + " TO: " + this.dst);
+        NetworkNode srcnode = (NetworkNode) Tools.getNodeByID(this.src);
+        srcnode.newMessage(this.dst);
 
         CustomGlobal.mustGenerateSplay = true;
     }

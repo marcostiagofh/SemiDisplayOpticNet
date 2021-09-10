@@ -93,11 +93,11 @@ public class DataCollection {
   public void addRoundsPerSplay(long num) {
     this.rounds_per_splay.logln(num + "");
   }
-  
+
   public void addByPassPerSplay(long num) {
 	this.bypass_per_splay.logln(num + "");
   }
-  
+
   public void addPausesPerSplay(long num) {
 	this.pauses_per_splay.logln(num + "");
   }

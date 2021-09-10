@@ -7,6 +7,7 @@ import java.util.LinkedList;
 import java.util.Queue;
 
 import projects.opticalNet.nodes.messages.NetworkMessage;
+import projects.opticalNet.nodes.messages.CompletionMessage;
 import projects.opticalNet.nodes.infrastructureImplementations.InputNode;
 import projects.opticalNet.nodes.infrastructureImplementations.SynchronizerLayer;
 
@@ -29,6 +30,8 @@ public class NetworkNode extends SynchronizerLayer {
 
     private int minIdInSubtree = 0;
     private int maxIdInSubtree = 0;
+
+    private static int notSent = 0;
 
     public NetworkNode () {
     	this.minIdInSubtree = this.ID;
@@ -72,6 +75,27 @@ public class NetworkNode extends SynchronizerLayer {
     public void removeLeftChild () {
     	this.leftChild = null;
         this.setMinIdInSubtree(this.ID);
+    }
+
+    public int getLeftChildId() {
+    	if (this.leftChild == null)
+    		return -1;
+
+    	return this.leftChild.getOutputNode().getIndex();
+    }
+
+    public int getRightChildId() {
+    	if (this.rightChild == null)
+    		return -1;
+
+    	return this.rightChild.getOutputNode().getIndex();
+    }
+
+    public int getParentId() {
+    	if (this.parent == null)
+    		return -1;
+
+    	return this.parent.getOutputNode().getIndex();
     }
 
     public InputNode getLeftChild () {
@@ -171,22 +195,28 @@ public class NetworkNode extends SynchronizerLayer {
     public void handleMessages (Inbox inbox) {
         while (inbox.hasNext()) {
             Message msg = inbox.next();
+
             if ((msg instanceof NetworkMessage)) {
                 NetworkMessage optmsg = (NetworkMessage) msg;
                 if (optmsg.getDst() == this.ID) {
-                	this.sendDirect(optmsg, this.controller);
+                    System.out.println("Message received from node " + optmsg.getSrc());
+                    CompletionMessage cmpmsg = new CompletionMessage(optmsg);
+                	this.sendDirect(cmpmsg, this.controller);
                     continue;
 
                 }
 
                 if (this.minIdInSubtree <= optmsg.getDst() && optmsg.getDst() < this.ID) {
+                    System.out.println(ID + " sending to left left node: " + this.getLeftChildId());
                     this.send(optmsg, this.leftChild);
 
                 } else if (this.ID < optmsg.getDst() && optmsg.getDst() <= this.maxIdInSubtree) {
                     this.send(optmsg, this.rightChild);
+                    System.out.println(ID + " sending right through node: " + this.getRightChildId());
 
                 } else {
                     this.send(optmsg, this.parent);
+                    System.out.println(ID + " sending parent through node: " + this.getParentId());
 
                 }
 
