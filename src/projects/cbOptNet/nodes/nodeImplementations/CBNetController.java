@@ -3,6 +3,7 @@ package projects.cbOptNet.nodes.nodeImplementations;
 import java.util.ArrayList;
 
 import projects.defaultProject.DataCollection;
+import projects.opticalNet.nodes.messages.NewMessage;
 import projects.opticalNet.nodes.messages.CompletionMessage;
 import projects.opticalNet.nodes.infrastructureImplementations.InfraNode;
 import projects.opticalNet.nodes.nodeImplementations.NetworkController;
@@ -87,9 +88,10 @@ private double epsilon = -1.5;
     @Override
     protected boolean zigZigLeftTopDown (InfraNode z) {
         InfraNode y = z.getLeftChild();
-        InfraNode b = y.getRightChild();
 
         if (super.zigZigLeftTopDown(z)) {
+            InfraNode b = y.getRightChild();
+
 	        long yOldWeight = y.getWeight();
 	        long zOldWeight = z.getWeight();
 
@@ -110,9 +112,10 @@ private double epsilon = -1.5;
     @Override
     protected boolean zigZigRightTopDown (InfraNode z) {
         InfraNode y = z.getRightChild();
-        InfraNode b = y.getLeftChild();
 
         if (super.zigZigRightTopDown(z)) {
+            InfraNode b = y.getLeftChild();
+
 	        long yOldWeight = y.getWeight();
 	        long zOldWeight = z.getWeight();
 
@@ -202,7 +205,7 @@ private double epsilon = -1.5;
                  / \                       / \
                 a   b                     b    c
         */
-        boolean leftZig = (y.getLeftChild() != null && x.getId() == y.getLeftChild().getId());
+        boolean leftZig = (x.getId() == y.getLeftChild().getId());
 
         InfraNode b = (leftZig) ? x.getRightChild() : x.getLeftChild();
 
@@ -234,7 +237,7 @@ private double epsilon = -1.5;
                 / \
                b   c
         */
-        boolean lefZigZag = (z.getLeftChild() != null && y.getId() == z.getLeftChild().getId());
+        boolean lefZigZag = (y.getId() == z.getLeftChild().getId());
 
         InfraNode b = lefZigZag ? x.getLeftChild() : x.getRightChild();
         InfraNode c = lefZigZag ? x.getRightChild() : x.getLeftChild();
@@ -272,35 +275,40 @@ private double epsilon = -1.5;
         {
             InfraNode y = x.getParent();
             InfraNode z = y.getParent();
-            if (this.isValidNode(y.getLeftChild()) && x.getId() == y.getLeftChild().getId() &&
-                    this.isValidNode(z.getLeftChild()) && y.getId() == z.getLeftChild().getId()) {
+            if (
+                this.isValidNode(y.getLeftChild()) && x.getId() == y.getLeftChild().getId() &&
+                this.isValidNode(z.getLeftChild()) && y.getId() == z.getLeftChild().getId()
+            ) {
                     // zigzigLeft
                     double aux = zigDiffRank(y, z);
                     if (aux < maxDelta) {
                             maxDelta = aux;
                             operation = 1;
                     }
-            } else
-            if (this.isValidNode(y.getRightChild()) && x.getId() == y.getRightChild().getId() &&
-                    this.isValidNode(z.getRightChild()) && y.getId() == z.getRightChild().getId()) {
+            } else if (
+                this.isValidNode(y.getRightChild()) && x.getId() == y.getRightChild().getId() &&
+                this.isValidNode(z.getRightChild()) && y.getId() == z.getRightChild().getId()
+            ) {
                     // zigzigRight
                     double aux = zigDiffRank(y, z);
                     if (aux < maxDelta) {
                             maxDelta = aux;
                             operation = 2;
                     }
-            } else
-            if (this.isValidNode(y.getRightChild()) && x.getId() == y.getRightChild().getId() &&
-                    this.isValidNode(z.getLeftChild()) && y.getId() == z.getLeftChild().getId()) {
+            } else if (
+                this.isValidNode(y.getRightChild()) && x.getId() == y.getRightChild().getId() &&
+                this.isValidNode(z.getLeftChild()) && y.getId() == z.getLeftChild().getId()
+            ) {
                     // zigzagLeft
                     double aux = zigZagDiffRank(x, y, z);
                     if (aux < maxDelta) {
                             maxDelta = aux;
                             operation = 3;
                     }
-            } else
-            if (this.isValidNode(y.getLeftChild()) && x.getId() == y.getLeftChild().getId() &&
-                    this.isValidNode(z.getRightChild()) && y.getId() == z.getRightChild().getId()) {
+            } else if (
+                this.isValidNode(y.getLeftChild()) && x.getId() == y.getLeftChild().getId() &&
+                this.isValidNode(z.getRightChild()) && y.getId() == z.getRightChild().getId()
+            ) {
                     // zigzagRight
                     double aux = zigZagDiffRank(x, y, z);
                     if (aux < maxDelta) {
@@ -375,14 +383,23 @@ private double epsilon = -1.5;
     public void handleMessages (Inbox inbox) {
         while (inbox.hasNext()) {
             Message msg = inbox.next();
-            if (!(msg instanceof CompletionMessage)) {
-                continue;
+            if (msg instanceof CompletionMessage) {
+                CompletionMessage cmpmsg = (CompletionMessage) msg;
+                this.data.incrementCompletedRequests();
+                this.incrementPathWeight(cmpmsg.getSrc(), cmpmsg.getDst());
+
+                this.remainingMessage.set(cmpmsg.getSrc(), this.remainingMessage.get(cmpmsg.getSrc()) - 1);
+
+                this.sinceCompleted = 0;
+
+            } else if (msg instanceof NewMessage) {
+            	NewMessage newmsg = (NewMessage) msg;
+
+            	this.rcvMsgs++;
+                this.remainingMessage.set(newmsg.getSrc(), this.remainingMessage.get(newmsg.getSrc()) + 1);
 
             }
 
-            CompletionMessage cmpmsg = (CompletionMessage) msg;
-            this.data.incrementCompletedRequests();
-            this.incrementPathWeight(cmpmsg.getSrc(), cmpmsg.getDst());
         }
     }
 }

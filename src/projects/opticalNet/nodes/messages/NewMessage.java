@@ -2,11 +2,11 @@ package projects.opticalNet.nodes.messages;
 
 import sinalgo.nodes.messages.Message;
 
-public class CompletionMessage extends Message {
+public class NewMessage extends Message {
 
-    private NetworkMessage msg;
+	private NetworkMessage msg;
 
-    public CompletionMessage (NetworkMessage msg) {
+    public NewMessage (NetworkMessage msg) {
         this.msg = msg;
     }
 

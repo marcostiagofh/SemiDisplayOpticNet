@@ -18,7 +18,8 @@ public abstract class NetworkController extends SynchronizerLayer {
     /* Attributes */
 
 	private ArrayList<Boolean> usedNodes;
-    protected ArrayList<InfraNode> tree;
+
+	protected ArrayList<InfraNode> tree;
     protected ArrayList<NetworkSwitch> switches;
     protected ArrayList<NetworkNode> netNodes;
 
@@ -29,7 +30,12 @@ public abstract class NetworkController extends SynchronizerLayer {
     protected int numUnionClusters = 0;
     protected int clusterSize;
 
+    protected int rcvMsgs = 0;
+    protected int rotations = 0;
     protected DataCollection data;
+    protected ArrayList<Integer> remainingMessage;
+
+    public int sinceCompleted = 0;
 
     private static final int SIZE_CLUSTER_TYPE1 = 4;
     private static final int SIZE_CLUSTER_TYPE2 = 4;
@@ -51,6 +57,7 @@ public abstract class NetworkController extends SynchronizerLayer {
     	this.netNodes = netNodes;
 
     	this.data = data;
+    	this.remainingMessage = new ArrayList<>();
 
     	this.clusterSize = this.switchSize / 2;
         this.numClusters = (this.numNodes - this.clusterSize + 1) / this.clusterSize + 1;
@@ -136,6 +143,9 @@ public abstract class NetworkController extends SynchronizerLayer {
         for (int i = 0; i <= this.numNodes; i++) {
             this.usedNodes.add(false);
             this.tree.add(new InfraNode());
+
+            this.remainingMessage.add(0);
+
             if (edgeList.size() < this.numNodes) {
             	edgeList.add(i + 1);
             }
@@ -164,7 +174,6 @@ public abstract class NetworkController extends SynchronizerLayer {
 
         boolean leftZigZig = (y.getId() == z.getLeftChild().getId());
         InfraNode c = (leftZigZig) ? y.getRightChild() : y.getLeftChild();
-
 
         if (this.areAvailableNodes(w, z, y, c)) {
             this.mapConn(z, c, y);
@@ -385,6 +394,7 @@ public abstract class NetworkController extends SynchronizerLayer {
         */
         if (this.areSameCluster(fromNode, toNode)) {
                 return this.getClusterId(fromNode);
+
         } else {
                 return this.numClusters + this.unionPos(
                         this.getClusterId(fromNode), this.getClusterId(toNode)
@@ -435,9 +445,12 @@ public abstract class NetworkController extends SynchronizerLayer {
     protected boolean isValidNode (InfraNode node) {
     	if (node.getId() == -1) {
     		return false;
+
     	} else if (node.getId() == this.numNodes) {
     		return false;
+
     	}
+
     	return true;
     }
     /* End of Getters */
@@ -449,8 +462,10 @@ public abstract class NetworkController extends SynchronizerLayer {
 
         if (fromNode.getId() == this.numNodes) {
         	return;
+
         } else if (toNode.getId() == this.numNodes) {
         	Tools.fatalError("Trying to make root node as a child");
+
         }
 
         this.getSwitch(swtId).updateSwitch(fromNode.getId() + 1, toNode.getId() + 1, subtreeId);
@@ -468,6 +483,7 @@ public abstract class NetworkController extends SynchronizerLayer {
         int subtreeId = fromNode.setChild(toNode, oldParent) + 1;
 
         if (fromNode.getId() == this.numNodes) {
+        	this.getNetNode(toNode.getId() + 1).removeParent();
         	return;
 
         } else if (toNode.getId() == -1 && fromNode.getId() > oldParent.getId()) {
@@ -505,7 +521,6 @@ public abstract class NetworkController extends SynchronizerLayer {
             summation from (NUM_CLUSTERS - 1) to (NUM_CLUSTER - minimum(clsId1, clsId2))
             and add to the result the distance between clsId1 to clsId2.
         */
-
         if (clsId1 > clsId2) {
             int aux = clsId1;
             clsId1 = clsId2;
@@ -535,32 +550,45 @@ public abstract class NetworkController extends SynchronizerLayer {
         	int op = this.getRotationToPerform(node);
 
         	if (op == -1) continue;
+
             switch (op) {
                 case 1:
                 case 2:
                 		System.out.println("zigZigBottomUp");
-                        this.zigZigBottomUp(node);
+                        if (this.zigZigBottomUp(node))
+                            this.data.addRotations(1);
+
                         break;
                 case 3:
                 case 4:
                 		System.out.println("zigZagBottomUp");
-                        this.zigZagBottomUp(node);
+                        if (this.zigZagBottomUp(node))
+                            this.data.addRotations(1);
+
                         break;
                 case 5:
                 		System.out.println("zigZigLeftTopDown");
-                        this.zigZigLeftTopDown(node);
+                        if (this.zigZigLeftTopDown(node))
+                            this.data.addRotations(1);
+
                         break;
                 case 6:
                 		System.out.println("zigZagLeftTopDown");
-                        this.zigZagLeftTopDown(node);
+                        if (this.zigZagLeftTopDown(node))
+                            this.data.addRotations(1);
+
                         break;
                 case 7:
                 		System.out.println("zigZigRightTopDown");
-                        this.zigZigRightTopDown(node);
+                        if (this.zigZigRightTopDown(node))
+                            this.data.addRotations(1);
+
                         break;
                 case 8:
                 		System.out.println("zigZagRightTopDown");
-                        this.zigZagRightTopDown(node);
+                        if (this.zigZagRightTopDown(node))
+                            this.data.addRotations(1);
+
                         break;
                 default:
                         break;
@@ -568,31 +596,88 @@ public abstract class NetworkController extends SynchronizerLayer {
         }
     }
 
-    public void debugTree () {
-        this.debugTree(this.tree.get(this.numNodes));
+    public void debugInfraTree () {
+        this.debugInfraTree(this.tree.get(this.numNodes));
     }
 
-    public void debugTree (InfraNode node) {
+    public void debugInfraTree (InfraNode node) {
         if (node.getId() == -1)
             return;
 
         node.debugNode();
 
         System.out.println("Left");
-        this.debugTree(node.getLeftChild());
+        this.debugInfraTree(node.getLeftChild());
 
         System.out.println("Right");
-        this.debugTree(node.getRightChild());
+        this.debugInfraTree(node.getRightChild());
     }
 
     /* End of Auxiliary Functions */
 
     @Override
     public void controllerStep () {
+    	if (!this.validTree()) {
+        	Tools.fatalError("Invalid infra tree");
+    	}
+
+    	for (int i = 0; i < this.numNodes; i++)  {
+    		if (!this.equivalentNodes(i)) {
+            	Tools.fatalError("InfraNode: " + i + " not equivalent to its network correspondent");
+
+    		}
+    	}
+
+        this.sinceCompleted++;
     	for (int i = 0; i <= this.numNodes; i++)
     		this.usedNodes.set(i, false);
 
     	this.updateConn();
+
+    	int missingMessages = 0;
+    	for (int i = 0; i <= this.numNodes; i++) {
+    		if (this.remainingMessage.get(i) >= 1) {
+    			System.out.println(
+                    "Node: " + i + " still has " +
+                    this.remainingMessage.get(i) + " messages on the network"
+                );
+    		}
+    		missingMessages += this.remainingMessage.get(i);
+
+    	}
+
+    	System.out.println("Received Messages: " + this.rcvMsgs + " Missing Messages: " + missingMessages);
+    }
+
+    private boolean equivalentNodes (int nodeId) {
+    	InfraNode infraNode = this.tree.get(nodeId);
+    	NetworkNode netNode = this.netNodes.get(nodeId);
+
+    	boolean flag = infraNode.getId() == netNode.getId() - 1;
+    	flag &= (
+    			infraNode.getLeftChild().getId() != -1 ?
+    			infraNode.getLeftChild().getId() == netNode.getLeftChildId() - 1 :
+    			netNode.getLeftChildId() == -1
+    	);
+    	flag &= (
+    			infraNode.getRightChild().getId() != -1 ?
+    			infraNode.getRightChild().getId() == netNode.getRightChildId() - 1 :
+				netNode.getRightChildId() == -1
+		);
+    	flag &= (
+    			infraNode.getParent().getId() != -1 && infraNode.getParent().getId() != 128 ?
+    			infraNode.getParent().getId() == netNode.getParentId() - 1 :
+				netNode.getParentId() == -1
+		);
+    	flag &= infraNode.getMinId() == netNode.getMinIdInSubtree() - 1;
+    	flag &= infraNode.getMaxId() == netNode.getMaxIdInSubtree() - 1;
+
+    	if (!flag) {
+    		infraNode.debugNode();
+    		netNode.debugNode();
+    	}
+
+    	return flag;
     }
 
     private boolean validTree () {

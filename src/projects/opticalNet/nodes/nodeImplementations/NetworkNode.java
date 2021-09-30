@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
 
+import projects.opticalNet.nodes.messages.NewMessage;
 import projects.opticalNet.nodes.messages.NetworkMessage;
 import projects.opticalNet.nodes.messages.CompletionMessage;
 import projects.opticalNet.nodes.infrastructureImplementations.InputNode;
@@ -31,8 +32,6 @@ public class NetworkNode extends SynchronizerLayer {
     private int minIdInSubtree = 0;
     private int maxIdInSubtree = 0;
 
-    private static int notSent = 0;
-
     public NetworkNode () {
     	this.minIdInSubtree = this.ID;
     	this.maxIdInSubtree = this.ID;
@@ -53,6 +52,10 @@ public class NetworkNode extends SynchronizerLayer {
 
     public InputNode getParent () {
         return this.parent;
+    }
+
+    public void removeParent () {
+    	this.parent = null;
     }
 
     public void setChild (InputNode node, int subtreeId) {
@@ -168,8 +171,10 @@ public class NetworkNode extends SynchronizerLayer {
             System.out.println("Message received from node " + msg.getSrc());
             return;
 
-        }
+    	}
 
+        msg.incrementRouting();
+    	this.sendDirect(new NewMessage(msg), this.controller);
         if (this.minIdInSubtree <= msg.getDst() && msg.getDst() < this.ID) {
             this.send(netmsg, this.leftChild);
 
@@ -199,15 +204,16 @@ public class NetworkNode extends SynchronizerLayer {
             if ((msg instanceof NetworkMessage)) {
                 NetworkMessage optmsg = (NetworkMessage) msg;
                 if (optmsg.getDst() == this.ID) {
-                    System.out.println("Message received from node " + optmsg.getSrc());
+                	System.out.println("Message received from node " + optmsg.getSrc());
                     CompletionMessage cmpmsg = new CompletionMessage(optmsg);
                 	this.sendDirect(cmpmsg, this.controller);
                     continue;
 
                 }
 
+                msg.incrementRouting();
                 if (this.minIdInSubtree <= optmsg.getDst() && optmsg.getDst() < this.ID) {
-                    System.out.println(ID + " sending to left left node: " + this.getLeftChildId());
+                    System.out.println(ID + " sending to left node: " + this.getLeftChildId());
                     this.send(optmsg, this.leftChild);
 
                 } else if (this.ID < optmsg.getDst() && optmsg.getDst() <= this.maxIdInSubtree) {
@@ -230,9 +236,9 @@ public class NetworkNode extends SynchronizerLayer {
     public void debugNode () {
         System.out.println(
         	"NETID: " + this.getId()
-        	+ " lftID: " + (this.leftChild == null ? -1 : this.leftChild.getOutputNode().getIndex())
-        	+ " rgtID: " + (this.rightChild == null ? -1 : this.rightChild.getOutputNode().getIndex())
-        	+ " parentId: " + (this.parent == null ? -1 : this.parent.getOutputNode().getIndex())
+        	+ " lftID: " + this.getLeftChildId()
+        	+ " rgtID: " + this.getRightChildId()
+        	+ " parentId: " + this.getParentId()
             + " leftSUB: " + this.minIdInSubtree + " rightSUB: " + this.maxIdInSubtree
         );
     }

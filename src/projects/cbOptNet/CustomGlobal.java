@@ -108,7 +108,7 @@ public class CustomGlobal extends AbstractCustomGlobal {
 
     @Override
     public boolean hasTerminated () {
-        if (this.data.getCompletedRequests() >= MAX_REQ) {
+        if (this.controller.sinceCompleted >= 20) {
             return true;
 
         }

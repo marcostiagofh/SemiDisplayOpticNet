@@ -7,14 +7,12 @@ public class NetworkMessage extends Message {
     private int src;
     private int dst;
 
-    private long rotations;
     private long routing;
 
     public NetworkMessage (int src, int dst) {
         this.src = src;
         this.dst = dst;
 
-        this.rotations = 0;
         this.routing = 0;
     }
 
@@ -35,16 +33,8 @@ public class NetworkMessage extends Message {
         this.dst = dst;
     }
 
-    public long getRotations () {
-        return rotations;
-    }
-
     public long getRouting () {
         return routing;
-    }
-
-    public void incrementRotations () {
-        this.rotations++;
     }
 
     public void incrementRouting () {
