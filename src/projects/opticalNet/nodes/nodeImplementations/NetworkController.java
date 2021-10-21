@@ -6,7 +6,6 @@ import java.util.ArrayList;
 
 import projects.defaultProject.DataCollection;
 import projects.opticalNet.nodes.infrastructureImplementations.InfraNode;
-import projects.opticalNet.nodes.infrastructureImplementations.AltNetwork;
 import projects.opticalNet.nodes.infrastructureImplementations.SynchronizerLayer;
 import projects.opticalNet.nodes.messages.ConnectNodesMessage;
 
@@ -346,32 +345,6 @@ public abstract class NetworkController extends SynchronizerLayer {
     }
     public int getSwitchSize () {
         return this.switchSize;
-    }
-
-    public ArrayList<AltNetwork> getTreeConfiguration () {
-        ArrayList<AltNetwork> ret = new ArrayList<>();
-
-        for (int i = 0; i < this.numNodes; i++) {
-            InfraNode node = this.tree.get(i);
-            if (node.getLeftChild() != null) {
-                InfraNode child = node.getLeftChild();
-                ret.add(new AltNetwork(
-                    this.getSwitchId(
-                        this.tree.get(node.getId()), this.tree.get(child.getId())
-                    ), node.getId(), child.getId()
-                ));
-            }
-            if (node.getRightChild() != null) {
-                InfraNode child = node.getRightChild();
-                ret.add(new AltNetwork(
-                    this.getSwitchId(
-                        this.tree.get(node.getId()), this.tree.get(child.getId())
-                    ), node.getId(), child.getId()
-                ));
-            }
-        }
-
-        return ret;
     }
 
     public InfraNode getInfraNode (int nodeId) {

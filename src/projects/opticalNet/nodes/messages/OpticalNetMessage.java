@@ -2,14 +2,14 @@ package projects.opticalNet.nodes.messages;
 
 import sinalgo.nodes.messages.Message;
 
-public class NetworkMessage extends Message {
+public class OpticalNetMessage extends Message {
 
     private int src;
     private int dst;
 
     private long routing;
 
-    public NetworkMessage (int src, int dst) {
+    public OpticalNetMessage (int src, int dst) {
         this.src = src;
         this.dst = dst;
 

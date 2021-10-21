@@ -18,6 +18,7 @@ public class CustomGlobal extends AbstractCustomGlobal {
 
     /* Final Condition */
     public long MAX_REQ;
+    private long temp_reqs;
 
     /* Simulation */
     public int numberOfNodes = 128;
@@ -87,28 +88,30 @@ public class CustomGlobal extends AbstractCustomGlobal {
 
     @Override
     public void preRound () {
-    	System.out.println(this.data.getCompletedRequests() + " " + MAX_REQ);
-
+        
         if (mustGenerateSplay && this.requestQueue.hasNextRequest()) {
             mustGenerateSplay = false;
-
+            
             double u = random.nextDouble();
             double x = Math.log(1 - u) / (-lambda);
             x = (int) x;
             if (x <= 0) {
                 x = 1;
             }
-
+            
             Tuple<Integer, Integer> r = this.requestQueue.getNextRequest();
             TriggerNodeOperation ted = new TriggerNodeOperation(r.first + 1, r.second + 1);
             ted.startGlobalTimer(x);
-
+            
+            this.temp_reqs++;
         }
+
+        System.out.println(this.data.getCompletedRequests() + " " + MAX_REQ);
     }
 
     @Override
     public boolean hasTerminated () {
-        if (this.controller.sinceCompleted >= 20) {
+        if (this.data.getCompletedRequests() == MAX_REQ) {
             return true;
 
         }

@@ -97,9 +97,9 @@ public class InputNode extends Node {
     @Override
     public void handleMessages (Inbox inbox) {
         while (inbox.hasNext()) {
-
             Message msg = inbox.next();
             this.sendToOutputNode(msg);
+            
         }
     }
 

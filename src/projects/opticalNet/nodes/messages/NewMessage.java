@@ -4,9 +4,9 @@ import sinalgo.nodes.messages.Message;
 
 public class NewMessage extends Message {
 
-	private NetworkMessage msg;
+	private OpticalNetMessage msg;
 
-    public NewMessage (NetworkMessage msg) {
+    public NewMessage (OpticalNetMessage msg) {
         this.msg = msg;
     }
 
@@ -18,7 +18,7 @@ public class NewMessage extends Message {
         return this.msg.getDst();
     }
 
-    public NetworkMessage getMessage () {
+    public OpticalNetMessage getMessage () {
         return this.msg;
     }
 

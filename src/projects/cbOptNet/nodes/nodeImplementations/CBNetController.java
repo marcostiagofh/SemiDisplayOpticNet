@@ -4,7 +4,8 @@ import java.util.ArrayList;
 
 import projects.defaultProject.DataCollection;
 import projects.opticalNet.nodes.messages.NewMessage;
-import projects.opticalNet.nodes.messages.CompletionMessage;
+import projects.opticalNet.nodes.messages.WeightMessage;
+import projects.opticalNet.nodes.messages.OpticalNetMessage;
 import projects.opticalNet.nodes.infrastructureImplementations.InfraNode;
 import projects.opticalNet.nodes.nodeImplementations.NetworkController;
 import projects.opticalNet.nodes.nodeImplementations.NetworkNode;
@@ -88,9 +89,9 @@ private double epsilon = -1.5;
     @Override
     protected boolean zigZigLeftTopDown (InfraNode z) {
         InfraNode y = z.getLeftChild();
+        InfraNode b = y.getRightChild();
 
         if (super.zigZigLeftTopDown(z)) {
-            InfraNode b = y.getRightChild();
 
 	        long yOldWeight = y.getWeight();
 	        long zOldWeight = z.getWeight();
@@ -112,9 +113,9 @@ private double epsilon = -1.5;
     @Override
     protected boolean zigZigRightTopDown (InfraNode z) {
         InfraNode y = z.getRightChild();
+        InfraNode b = y.getLeftChild();
 
         if (super.zigZigRightTopDown(z)) {
-            InfraNode b = y.getLeftChild();
 
 	        long yOldWeight = y.getWeight();
 	        long zOldWeight = z.getWeight();
@@ -271,8 +272,7 @@ private double epsilon = -1.5;
         int operation = 0;
 
         /*bottom-up - BEGIN*/
-        if (this.isValidNode(x.getParent()) && this.isValidNode(x.getParent().getParent()))
-        {
+        if (this.isValidNode(x.getParent()) && this.isValidNode(x.getParent().getParent())) {
             InfraNode y = x.getParent();
             InfraNode z = y.getParent();
             if (
@@ -374,22 +374,22 @@ private double epsilon = -1.5;
             return -1;
         }
     }
-
-    private void incrementPathWeight (int from, int to) {
-        this.tree.get(from - 1).incrementPathWeight(to - 1, false);
+    
+    private void incrementNodeWeight (int from) {
+        this.tree.get(from - 1).incrementWeight();
     }
 
     @Override
     public void handleMessages (Inbox inbox) {
         while (inbox.hasNext()) {
             Message msg = inbox.next();
-            if (msg instanceof CompletionMessage) {
-                CompletionMessage cmpmsg = (CompletionMessage) msg;
+            
+            if (msg instanceof OpticalNetMessage) {
+            	OpticalNetMessage optmsg = (OpticalNetMessage) msg;
                 this.data.incrementCompletedRequests();
-                this.incrementPathWeight(cmpmsg.getSrc(), cmpmsg.getDst());
+                this.data.addRouting(optmsg.getRouting());
 
-                this.remainingMessage.set(cmpmsg.getSrc(), this.remainingMessage.get(cmpmsg.getSrc()) - 1);
-
+                this.remainingMessage.set(optmsg.getSrc(), this.remainingMessage.get(optmsg.getSrc()) - 1);
                 this.sinceCompleted = 0;
 
             } else if (msg instanceof NewMessage) {
@@ -398,6 +398,10 @@ private double epsilon = -1.5;
             	this.rcvMsgs++;
                 this.remainingMessage.set(newmsg.getSrc(), this.remainingMessage.get(newmsg.getSrc()) + 1);
 
+            } else if (msg instanceof WeightMessage) {
+            	WeightMessage wgtmsg = (WeightMessage) msg;
+            	
+            	this.incrementNodeWeight(wgtmsg.getSrc());
             }
 
         }

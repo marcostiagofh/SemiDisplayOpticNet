@@ -2,13 +2,12 @@ package projects.opticalNet.nodes.nodeImplementations;
 
 import java.awt.Color;
 import java.awt.Graphics;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
 
 import projects.opticalNet.nodes.messages.NewMessage;
-import projects.opticalNet.nodes.messages.NetworkMessage;
-import projects.opticalNet.nodes.messages.CompletionMessage;
+import projects.opticalNet.nodes.messages.WeightMessage;
+import projects.opticalNet.nodes.messages.OpticalNetMessage;
 import projects.opticalNet.nodes.infrastructureImplementations.InputNode;
 import projects.opticalNet.nodes.infrastructureImplementations.SynchronizerLayer;
 
@@ -18,10 +17,8 @@ import sinalgo.tools.Tools;
 import sinalgo.gui.transformation.PositionTransformation;
 
 public class NetworkNode extends SynchronizerLayer {
-
-    private int weights = 0;
-    private ArrayList<InputNode> interfaces = new ArrayList<>();
-    private Queue<NetworkMessage> buffer = new LinkedList<>();
+	
+    private Queue<OpticalNetMessage> buffer = new LinkedList<>();
 
     private InputNode parent = null;
     private InputNode leftChild = null;
@@ -38,7 +35,6 @@ public class NetworkNode extends SynchronizerLayer {
     }
 
     public void connectToInputNode (InputNode node) {
-        this.interfaces.add(node);
         this.addConnectionTo(node);
     }
 
@@ -147,10 +143,6 @@ public class NetworkNode extends SynchronizerLayer {
         return this.maxIdInSubtree;
     }
 
-    public int getWeight () {
-        return this.weights;
-    }
-
     public int getId () {
         return this.ID;
     }
@@ -161,39 +153,43 @@ public class NetworkNode extends SynchronizerLayer {
     }
 
     public void newMessage (int to) {
-    	NetworkMessage netmsg = new NetworkMessage(this.ID, to);
-    	this.buffer.add(netmsg);
+    	OpticalNetMessage optmsg = new OpticalNetMessage(this.ID, to);
+
+    	this.buffer.add(optmsg);
+        this.sendDirect(new NewMessage(optmsg), this.controller);
     }
 
-    public void sendMsg (NetworkMessage msg) {
-    	NetworkMessage netmsg = new NetworkMessage(this.ID, msg.getDst());
-    	if (msg.getDst() == this.ID) {
-            System.out.println("Message received from node " + msg.getSrc());
+    public void sendMsg (OpticalNetMessage optmsg) {
+        this.sendDirect(new WeightMessage(this.ID), this.controller);
+
+    	if (optmsg.getDst() == this.ID) {
+            System.out.println("Message received from node " + optmsg.getSrc());
+            this.sendDirect(optmsg, this.controller);
+
             return;
 
-    	}
+    	} 
 
-        msg.incrementRouting();
-    	this.sendDirect(new NewMessage(msg), this.controller);
-        if (this.minIdInSubtree <= msg.getDst() && msg.getDst() < this.ID) {
-            this.send(netmsg, this.leftChild);
+        optmsg.incrementRouting();  
+        if (this.minIdInSubtree <= optmsg.getDst() && optmsg.getDst() < this.ID) {
+            this.send(optmsg, this.leftChild);
 
-        } else if (this.ID < msg.getDst() && msg.getDst() <= this.maxIdInSubtree) {
-            this.send(netmsg, this.rightChild);
+        } else if (this.ID < optmsg.getDst() && optmsg.getDst() <= this.maxIdInSubtree) {
+            this.send(optmsg, this.rightChild);
 
         } else {
-            this.send(netmsg, this.parent);
+            this.send(optmsg, this.parent);
 
         }
     }
 
     @Override
     public void nodeStep () {
-    	if (buffer.isEmpty())
-            return;
-
-    	NetworkMessage netmsg = this.buffer.poll();
-    	this.sendMsg(netmsg);
+    	while (!buffer.isEmpty()) {
+	        OpticalNetMessage optmsg = this.buffer.poll();
+	        this.sendMsg(optmsg);
+	        
+    	}
     }
 
     @Override
@@ -201,33 +197,9 @@ public class NetworkNode extends SynchronizerLayer {
         while (inbox.hasNext()) {
             Message msg = inbox.next();
 
-            if ((msg instanceof NetworkMessage)) {
-                NetworkMessage optmsg = (NetworkMessage) msg;
-                if (optmsg.getDst() == this.ID) {
-                	System.out.println("Message received from node " + optmsg.getSrc());
-                    CompletionMessage cmpmsg = new CompletionMessage(optmsg);
-                	this.sendDirect(cmpmsg, this.controller);
-                    continue;
-
-                }
-
-                msg.incrementRouting();
-                if (this.minIdInSubtree <= optmsg.getDst() && optmsg.getDst() < this.ID) {
-                    System.out.println(ID + " sending to left node: " + this.getLeftChildId());
-                    this.send(optmsg, this.leftChild);
-
-                } else if (this.ID < optmsg.getDst() && optmsg.getDst() <= this.maxIdInSubtree) {
-                    this.send(optmsg, this.rightChild);
-                    System.out.println(ID + " sending right through node: " + this.getRightChildId());
-
-                } else {
-                    this.send(optmsg, this.parent);
-                    System.out.println(ID + " sending parent through node: " + this.getParentId());
-
-                }
-
-            } else {
-            	continue;
+            if ((msg instanceof OpticalNetMessage)) { 
+            	OpticalNetMessage optmsg = (OpticalNetMessage) msg;
+            	this.buffer.add(optmsg);
 
             }
         }
