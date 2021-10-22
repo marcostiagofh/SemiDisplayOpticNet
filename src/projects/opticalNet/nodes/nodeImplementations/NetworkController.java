@@ -15,7 +15,6 @@ import sinalgo.tools.Tools;
 public abstract class NetworkController extends SynchronizerLayer {
 
     /* Attributes */
-
 	private ArrayList<Boolean> usedNodes;
 
 	protected ArrayList<InfraNode> tree;
@@ -390,7 +389,7 @@ public abstract class NetworkController extends SynchronizerLayer {
                 prior to our. Then adding 2 to the result if it is a right edge.
 
                 To find the switchId between two nodes from different clusters
-                we neet to multiply by 4 the numbers of clusters of type 1.
+                we need to multiply by 4 the numbers of clusters of type 1.
                 Then we add 4 times the number clusters of type 2 prior to our.
         */
         int previousSwitches = (

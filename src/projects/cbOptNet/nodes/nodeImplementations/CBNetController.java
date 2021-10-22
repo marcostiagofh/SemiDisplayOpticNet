@@ -1,8 +1,10 @@
 package projects.cbOptNet.nodes.nodeImplementations;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 import projects.defaultProject.DataCollection;
+import projects.opticalNet.nodes.messages.HasMessage;
 import projects.opticalNet.nodes.messages.NewMessage;
 import projects.opticalNet.nodes.messages.WeightMessage;
 import projects.opticalNet.nodes.messages.OpticalNetMessage;
@@ -15,16 +17,33 @@ import sinalgo.nodes.messages.Message;
 
 public class CBNetController extends NetworkController {
 
-private double epsilon = -1.5;
+    private double epsilon = -1.5;
+    private ArrayList<Boolean> nodesWithMsg;
 
     public CBNetController (int numNodes, int switchSize, ArrayList<NetworkNode> netNodes, DataCollection data) {
         super(numNodes, switchSize, netNodes, data);
+
+        this.nodesWithMsg = new ArrayList<Boolean>(numNodes);
+        for (int i = 0; i < 128; i++)
+            this.nodesWithMsg.add(Boolean.FALSE);
     }
 
     public CBNetController (
         int numNodes, int switchSize, ArrayList<NetworkNode> netNodes, DataCollection data, ArrayList<Integer> edgeList
     ) {
         super(numNodes, switchSize, netNodes, data, edgeList);
+
+        this.nodesWithMsg = new ArrayList<Boolean>(numNodes);
+        for (int i = 0; i < 128; i++)
+            this.nodesWithMsg.add(Boolean.FALSE);
+    }
+
+    @Override
+    public void controllerStep () {
+        super.controllerStep();
+
+        Collections.fill(this.nodesWithMsg, Boolean.FALSE);
+
     }
 
     /* Rotations */
@@ -37,7 +56,7 @@ private double epsilon = -1.5;
         boolean leftZigZig = (y.getId() == z.getLeftChild().getId());
         InfraNode b = (leftZigZig ? y.getRightChild() : y.getLeftChild());
 
-        if (super.zigZigBottomUp(x)) {
+        if (this.nodesWithMsg.get(x.getId()) && super.zigZigBottomUp(x)) {
 	        long yOldWeight = y.getWeight();
 	        long zOldWeight = z.getWeight();
 
@@ -64,7 +83,7 @@ private double epsilon = -1.5;
         InfraNode b = (leftZigZag) ? x.getLeftChild() : x.getRightChild();
         InfraNode c = (leftZigZag) ? x.getRightChild() : x.getLeftChild();
 
-        if (super.zigZagBottomUp(x)) {
+        if (this.nodesWithMsg.get(x.getId()) && super.zigZagBottomUp(x)) {
 	        long xOldWeight = x.getWeight();
 	        long yOldWeight = y.getWeight();
 	        long zOldWeight = z.getWeight();
@@ -91,7 +110,7 @@ private double epsilon = -1.5;
         InfraNode y = z.getLeftChild();
         InfraNode b = y.getRightChild();
 
-        if (super.zigZigLeftTopDown(z)) {
+        if (this.nodesWithMsg.get(z.getId()) && super.zigZigLeftTopDown(z)) {
 
 	        long yOldWeight = y.getWeight();
 	        long zOldWeight = z.getWeight();
@@ -115,7 +134,7 @@ private double epsilon = -1.5;
         InfraNode y = z.getRightChild();
         InfraNode b = y.getLeftChild();
 
-        if (super.zigZigRightTopDown(z)) {
+        if (this.nodesWithMsg.get(z.getId()) && super.zigZigRightTopDown(z)) {
 
 	        long yOldWeight = y.getWeight();
 	        long zOldWeight = z.getWeight();
@@ -141,7 +160,7 @@ private double epsilon = -1.5;
         InfraNode b = x.getLeftChild();
         InfraNode c = x.getRightChild();
 
-        if (super.zigZagLeftTopDown(z)) {
+        if (this.nodesWithMsg.get(z.getId()) && super.zigZagLeftTopDown(z)) {
 	        long xOldWeight = x.getWeight();
 	        long yOldWeight = y.getWeight();
 	        long zOldWeight = z.getWeight();
@@ -170,7 +189,7 @@ private double epsilon = -1.5;
         InfraNode b = x.getRightChild();
         InfraNode c = x.getLeftChild();
 
-        if (super.zigZagRightTopDown(z)) {
+        if (this.nodesWithMsg.get(z.getId()) && super.zigZagRightTopDown(z)) {
 	        long xOldWeight = x.getWeight();
 	        long yOldWeight = y.getWeight();
 	        long zOldWeight = z.getWeight();
@@ -402,6 +421,12 @@ private double epsilon = -1.5;
             	WeightMessage wgtmsg = (WeightMessage) msg;
             	
             	this.incrementNodeWeight(wgtmsg.getSrc());
+
+            } else if (msg instanceof HasMessage) {
+                HasMessage hasmsg = (HasMessage) msg;
+
+                this.nodesWithMsg.set(hasmsg.getNodeId() - 1, true);
+
             }
 
         }

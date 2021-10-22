@@ -6,6 +6,7 @@ import java.util.LinkedList;
 import java.util.Queue;
 
 import projects.opticalNet.nodes.messages.NewMessage;
+import projects.opticalNet.nodes.messages.HasMessage;
 import projects.opticalNet.nodes.messages.WeightMessage;
 import projects.opticalNet.nodes.messages.OpticalNetMessage;
 import projects.opticalNet.nodes.infrastructureImplementations.InputNode;
@@ -194,6 +195,9 @@ public class NetworkNode extends SynchronizerLayer {
 
     @Override
     public void handleMessages (Inbox inbox) {
+        if (inbox.hasNext())
+            this.sendDirect(new HasMessage(this.ID), this.controller);
+
         while (inbox.hasNext()) {
             Message msg = inbox.next();
 
