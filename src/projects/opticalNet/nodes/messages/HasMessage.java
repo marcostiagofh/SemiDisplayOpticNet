@@ -1,17 +1,25 @@
 package projects.opticalNet.nodes.messages;
 
+import projects.opticalNet.nodes.infrastructureImplementations.Direction;
+
 import sinalgo.nodes.messages.Message;
 
 public class HasMessage extends Message {
-    
-    private int nodeId;
 
-    public HasMessage (int nodeId) {
-        this.nodeId = nodeId;
+    private int currId;
+    private Direction direction;
+
+    public HasMessage (int currId, Direction direction) {
+        this.currId = currId;
+        this.direction = direction;
     }
 
-    public int getNodeId () {
-        return this.nodeId;
+    public int getCurrId () {
+        return this.currId;
+    }
+
+    public Direction getDirection () {
+        return this.direction;
     }
 
     @Override

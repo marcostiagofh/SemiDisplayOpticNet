@@ -1,25 +1,29 @@
 package projects.opticalNet.nodes.nodeImplementations;
 
 import java.awt.Color;
+import java.util.Random;
 import java.awt.Graphics;
-import java.util.LinkedList;
-import java.util.Queue;
+import java.util.PriorityQueue;
 
 import projects.opticalNet.nodes.messages.NewMessage;
 import projects.opticalNet.nodes.messages.HasMessage;
 import projects.opticalNet.nodes.messages.WeightMessage;
 import projects.opticalNet.nodes.messages.OpticalNetMessage;
+import projects.opticalNet.nodes.infrastructureImplementations.Direction;
 import projects.opticalNet.nodes.infrastructureImplementations.InputNode;
 import projects.opticalNet.nodes.infrastructureImplementations.SynchronizerLayer;
 
+import sinalgo.tools.Tools;
+import sinalgo.runtime.Global;
 import sinalgo.nodes.messages.Inbox;
 import sinalgo.nodes.messages.Message;
-import sinalgo.tools.Tools;
 import sinalgo.gui.transformation.PositionTransformation;
 
+// to break ties in priority
+
 public class NetworkNode extends SynchronizerLayer {
-	
-    private Queue<OpticalNetMessage> buffer = new LinkedList<>();
+
+    private PriorityQueue<OpticalNetMessage> buffer = new PriorityQueue<OpticalNetMessage>();
 
     private InputNode parent = null;
     private InputNode leftChild = null;
@@ -29,6 +33,8 @@ public class NetworkNode extends SynchronizerLayer {
 
     private int minIdInSubtree = 0;
     private int maxIdInSubtree = 0;
+
+    private Random rand = Tools.getRandomNumberGenerator();
 
     public NetworkNode () {
     	this.minIdInSubtree = this.ID;
@@ -154,7 +160,8 @@ public class NetworkNode extends SynchronizerLayer {
     }
 
     public void newMessage (int to) {
-    	OpticalNetMessage optmsg = new OpticalNetMessage(this.ID, to);
+        double priority = Global.currentTime + this.rand.nextDouble();
+    	OpticalNetMessage optmsg = new OpticalNetMessage(this.ID, to, priority);
 
     	this.buffer.add(optmsg);
         this.sendDirect(new NewMessage(optmsg), this.controller);
@@ -169,16 +176,19 @@ public class NetworkNode extends SynchronizerLayer {
 
             return;
 
-    	} 
+    	}
 
-        optmsg.incrementRouting();  
+        optmsg.incrementRouting();
         if (this.minIdInSubtree <= optmsg.getDst() && optmsg.getDst() < this.ID) {
+            this.sendDirect(new HasMessage(this.ID, Direction.LEFT), this.controller);
             this.send(optmsg, this.leftChild);
 
         } else if (this.ID < optmsg.getDst() && optmsg.getDst() <= this.maxIdInSubtree) {
+            this.sendDirect(new HasMessage(this.ID, Direction.RIGHT), this.controller);
             this.send(optmsg, this.rightChild);
 
         } else {
+            this.sendDirect(new HasMessage(this.ID, Direction.PARENT), this.controller);
             this.send(optmsg, this.parent);
 
         }
@@ -186,22 +196,19 @@ public class NetworkNode extends SynchronizerLayer {
 
     @Override
     public void nodeStep () {
-    	while (!buffer.isEmpty()) {
+    	if (!buffer.isEmpty()) {
 	        OpticalNetMessage optmsg = this.buffer.poll();
 	        this.sendMsg(optmsg);
-	        
+
     	}
     }
 
     @Override
     public void handleMessages (Inbox inbox) {
-        if (inbox.hasNext())
-            this.sendDirect(new HasMessage(this.ID), this.controller);
-
         while (inbox.hasNext()) {
             Message msg = inbox.next();
 
-            if ((msg instanceof OpticalNetMessage)) { 
+            if ((msg instanceof OpticalNetMessage)) {
             	OpticalNetMessage optmsg = (OpticalNetMessage) msg;
             	this.buffer.add(optmsg);
 
