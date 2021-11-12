@@ -186,8 +186,8 @@ public abstract class NetworkController extends SynchronizerLayer {
 
     protected boolean zigZagBottomUp (InfraNode x) {
         /*
-                  w               w
-                 /               /
+                  w              w
+                 /              /
                 z		      *x
                / \            /   \
               y   d          y     z
@@ -330,18 +330,23 @@ public abstract class NetworkController extends SynchronizerLayer {
     public int getNumNodes () {
         return this.numNodes;
     }
+
     public int getNumSwitches () {
         return this.numSwitches;
     }
+
     public int getNumClusters () {
         return this.numClusters;
     }
+
     public int getNumUnionClusters () {
         return this.numUnionClusters;
     }
+
     public int getClusterSize () {
         return this.clusterSize;
     }
+
     public int getSwitchSize () {
         return this.switchSize;
     }
@@ -373,6 +378,7 @@ public abstract class NetworkController extends SynchronizerLayer {
                 );
         }
     }
+
     protected int getClusterId (InfraNode node) {
         /*
                 The clusterId of a given node is calculated by the floor of the
@@ -406,6 +412,7 @@ public abstract class NetworkController extends SynchronizerLayer {
     public NetworkSwitch getSwitch (InfraNode fromNode, InfraNode toNode) {
         return this.switches.get(this.getSwitchId(fromNode, toNode));
     }
+
     public NetworkSwitch getSwitch (int switchId) {
         return this.switches.get(switchId);
     }
@@ -425,6 +432,7 @@ public abstract class NetworkController extends SynchronizerLayer {
 
     	return true;
     }
+
     /* End of Getters */
 
     /* Setters */

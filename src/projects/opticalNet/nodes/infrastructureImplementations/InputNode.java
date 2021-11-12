@@ -99,7 +99,7 @@ public class InputNode extends Node {
         while (inbox.hasNext()) {
             Message msg = inbox.next();
             this.sendToOutputNode(msg);
-            
+
         }
     }
 
