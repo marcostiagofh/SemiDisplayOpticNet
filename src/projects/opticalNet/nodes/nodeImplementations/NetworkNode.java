@@ -180,15 +180,33 @@ public class NetworkNode extends SynchronizerLayer {
 
         optmsg.incrementRouting();
         if (this.minIdInSubtree <= optmsg.getDst() && optmsg.getDst() < this.ID) {
-            this.sendDirect(new HasMessage(this.ID, Direction.LEFT), this.controller);
+            if (this.leftChild.getIndex() == optmsg.getDst()) {
+                this.sendDirect(new HasMessage(this.ID, Direction.LEFTROUT), this.controller);
+                
+            } else {
+                this.sendDirect(new HasMessage(this.ID, Direction.LEFT), this.controller);
+
+            }
             this.send(optmsg, this.leftChild);
 
         } else if (this.ID < optmsg.getDst() && optmsg.getDst() <= this.maxIdInSubtree) {
-            this.sendDirect(new HasMessage(this.ID, Direction.RIGHT), this.controller);
+            if (this.rightChild.getIndex() == optmsg.getDst()) {
+                this.sendDirect(new HasMessage(this.ID, Direction.RIGHTROUT), this.controller);
+                
+            } else {
+                this.sendDirect(new HasMessage(this.ID, Direction.RIGHT), this.controller);
+            
+            }
             this.send(optmsg, this.rightChild);
 
         } else {
-            this.sendDirect(new HasMessage(this.ID, Direction.PARENT), this.controller);
+            if (this.parent.getIndex() == optmsg.getDst()) {
+                this.sendDirect(new HasMessage(this.ID, Direction.PARENTROUT), this.controller);
+                
+            } else {
+                this.sendDirect(new HasMessage(this.ID, Direction.PARENT), this.controller);
+
+            }
             this.send(optmsg, this.parent);
 
         }

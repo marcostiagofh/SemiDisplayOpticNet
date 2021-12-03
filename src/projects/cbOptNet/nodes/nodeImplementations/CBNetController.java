@@ -291,6 +291,29 @@ public class CBNetController extends NetworkController {
         double maxDelta = 0;
         int operation = 0;
 
+        if (this.nodesWithMsg.get(x.getId()) == Direction.PARENTROUT) {
+            y = x.getParent();
+            if (this.areAvailableNodes(x, y))
+                return 9;
+
+            return -1;
+
+        } else if (this.nodesWithMsg.get(x.getId()) == Direction.LEFTROUT) {
+            y = x.getLeftChild();
+            if (this.areAvailableNodes(x, y))
+                return 9;
+
+            return -1;
+
+        } else if (this.nodesWithMsg.get(x.getId()) == Direction.LEFTROUT) {
+            y = x.getRightChild();
+            if (this.areAvailableNodes(x, y))
+                return 9;
+
+            return -1;
+
+        }
+
         /*bottom-up - BEGIN*/
         if (this.isValidNode(x.getParent()) && this.isValidNode(x.getParent().getParent())) {
             InfraNode y = x.getParent();
