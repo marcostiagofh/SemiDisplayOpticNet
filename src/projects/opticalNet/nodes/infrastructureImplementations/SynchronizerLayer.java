@@ -5,7 +5,7 @@ import sinalgo.nodes.Node;
 
 public abstract class SynchronizerLayer extends Node {
 
-    private int MAX_TIMESLOT = 7;
+    private int MAX_TIMESLOT = 6;
     private int timeslot;
     private long round;
 
@@ -28,14 +28,16 @@ public abstract class SynchronizerLayer extends Node {
             case 0:
                 controllerStep();
                 break;
-            case 1: break;
-            case 2: break;
-            case 3:
+            case 1:
+                switchFirstRotationStep();
+                break;
+            case 2:
                 nodeStep();
                 break;
-            case 4: break;
-            case 5: break;
-            case 6:
+            case 3: break;
+            case 4:
+                break;
+            case 5:
                 posRound();
                 this.round++;
                 break;
@@ -43,9 +45,12 @@ public abstract class SynchronizerLayer extends Node {
         this.timeslot = (this.timeslot + 1) % MAX_TIMESLOT;
     }
 
+    public void controllerStep () { }
+    
+    public void switchFirstRotationStep () { }
+                                     
     public void nodeStep () { }
 
-    public void controllerStep () { }
 
     public void posRound () { }
 

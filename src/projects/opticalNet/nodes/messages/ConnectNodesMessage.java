@@ -2,22 +2,25 @@ package projects.opticalNet.nodes.messages;
 
 import sinalgo.nodes.messages.Message;
 
-public class ConnectNodesMessage extends Message {
+public class ConnectNodesMessage extends Message implements Comparable<ConnectNodesMessage> {
 
 	private int from;
     private int to;
     private int subtreeId;
+    private int priority;
 
-    public ConnectNodesMessage (int to, int from) {
+    public ConnectNodesMessage (int from, int to, int priority) {
     	this.from = from;
     	this.to = to;
     	this.subtreeId = -1;
+    	this.priority = priority;
     }
 
-    public ConnectNodesMessage (int to, int from, int subtreeId) {
+    public ConnectNodesMessage (int from, int to, int subtreeId, int priority) {
     	this.from = from;
     	this.to = to;
     	this.subtreeId = subtreeId;
+    	this.priority = priority;
     }
 
     public int getFrom () {
@@ -32,6 +35,10 @@ public class ConnectNodesMessage extends Message {
     	return this.subtreeId;
     }
 
+    public int getPriority () {
+    	return this.priority;
+    }
+    
     public void setFrom (int from) {
     	this.from = from;
     }
@@ -44,6 +51,11 @@ public class ConnectNodesMessage extends Message {
     	this.subtreeId = subtreeId;
     }
 
+    @Override
+    public int compareTo (ConnectNodesMessage o) {
+        return Integer.compare(this.priority, o.priority);
+    }
+    
     @Override
     public Message clone () {
         return this;

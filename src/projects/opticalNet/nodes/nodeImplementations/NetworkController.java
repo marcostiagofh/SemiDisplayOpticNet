@@ -174,9 +174,9 @@ public abstract class NetworkController extends SynchronizerLayer {
         InfraNode c = (leftZigZig) ? y.getRightChild() : y.getLeftChild();
 
         if (this.areAvailableNodes(w, z, y, c)) {
-            this.mapConn(z, c, y);
-            this.mapConn(y, z);
-            this.mapConn(w, y);
+            this.mapConn(z, c, y, 1);
+            this.mapConn(y, z, 2);
+            this.mapConn(w, y, 3);
 
             return true;
         }
@@ -206,11 +206,11 @@ public abstract class NetworkController extends SynchronizerLayer {
         InfraNode c = (leftZigZag) ? x.getRightChild() : x.getLeftChild();
 
         if (this.areAvailableNodes(w, z, y, x, b, c)) {
-            this.mapConn(y, b, x);
-            this.mapConn(x, y);
-            this.mapConn(z, c, x);
-            this.mapConn(x, z);
-            this.mapConn(w, x);
+            this.mapConn(y, b, x, 1);
+            this.mapConn(x, y, 2);
+            this.mapConn(z, c, x, 3);
+            this.mapConn(x, z, 4);
+            this.mapConn(w, x, 5);
 
             return true;
         }
@@ -233,9 +233,9 @@ public abstract class NetworkController extends SynchronizerLayer {
         InfraNode c = y.getRightChild();
 
         if (this.areAvailableNodes(w, z, y, c)) {
-            this.mapConn(z, c, y);
-            this.mapConn(y, z);
-            this.mapConn(w, y);
+            this.mapConn(z, c, y, 1);
+            this.mapConn(y, z, 2);
+            this.mapConn(w, y, 3);
 
             return true;
         }
@@ -249,9 +249,9 @@ public abstract class NetworkController extends SynchronizerLayer {
         InfraNode c = y.getLeftChild();
 
         if (this.areAvailableNodes(w, z, y, c)) {
-            this.mapConn(z, c, y);
-            this.mapConn(y, z);
-            this.mapConn(w, y);
+            this.mapConn(z, c, y, 1);
+            this.mapConn(y, z, 2);
+            this.mapConn(w, y, 3);
 
             return true;
         }
@@ -276,11 +276,11 @@ public abstract class NetworkController extends SynchronizerLayer {
         InfraNode c = x.getRightChild();
 
         if (this.areAvailableNodes(w, z, y, x, b, c)) {
-            this.mapConn(y, b, x);
-            this.mapConn(x, y);
-            this.mapConn(z, c, x);
-            this.mapConn(x, z);
-            this.mapConn(w, x);
+            this.mapConn(y, b, x, 1);
+            this.mapConn(x, y, 2);
+            this.mapConn(z, c, x, 3);
+            this.mapConn(x, z, 4);
+            this.mapConn(w, x, 5);
 
             return true;
         }
@@ -296,11 +296,11 @@ public abstract class NetworkController extends SynchronizerLayer {
         InfraNode c = x.getLeftChild();
 
         if (this.areAvailableNodes(w, z, y, x, b, c)) {
-            this.mapConn(y, b, x);
-            this.mapConn(x, y);
-            this.mapConn(z, c, x);
-            this.mapConn(x, z);
-            this.mapConn(w, x);
+            this.mapConn(y, b, x, 1);
+            this.mapConn(x, y, 2);
+            this.mapConn(z, c, x, 3);
+            this.mapConn(x, z, 4);
+            this.mapConn(w, x, 5);
 
             return true;
         }
@@ -454,11 +454,11 @@ public abstract class NetworkController extends SynchronizerLayer {
         return;
     }
 
-    private void mapConn (InfraNode fromNode, InfraNode toNode) {
-        this.mapConn(fromNode, toNode, new InfraNode(-1));
+    private void mapConn (InfraNode fromNode, InfraNode toNode, int priority) {
+        this.mapConn(fromNode, toNode, new InfraNode(-1), priority);
     }
 
-    private void mapConn (InfraNode fromNode, InfraNode toNode, InfraNode oldParent) {
+    private void mapConn (InfraNode fromNode, InfraNode toNode, InfraNode oldParent, int priority) {
         int swtId = this.getSwitchId(fromNode, toNode);
         int subtreeId = fromNode.setChild(toNode, oldParent) + 1;
 
@@ -478,18 +478,18 @@ public abstract class NetworkController extends SynchronizerLayer {
         	Tools.fatalError("Trying to make root node as a child");
 
         }
-
-        this.getSwitch(swtId).updateSwitch(fromNode.getId() + 1, toNode.getId() + 1, subtreeId);
-        this.getSwitch(swtId + 1).updateSwitch(toNode.getId() + 1, fromNode.getId() + 1);
+	    
+	    this.sendConnectNodesMessage(swtId, fromNode.getId() + 1, toNode.getId() + 1, subtreeId, priority);
+        this.sendConnectNodesMessage(swtId + 1, toNode.getId() + 1, fromNode.getId() + 1, priority);
     }
 
-    private void sendConnectNodesMessage (int switchId, int from, int to) {
-    	ConnectNodesMessage msg = new ConnectNodesMessage(from, to);
+    private void sendConnectNodesMessage (int switchId, int from, int to, int priority) {
+    	ConnectNodesMessage msg = new ConnectNodesMessage(from, to, priority);
     	this.sendDirect(msg, this.getSwitch(switchId));
     }
 
-    private void sendConnectNodesMessage (int switchId, int from, int to, int subtreeId) {
-    	ConnectNodesMessage msg = new ConnectNodesMessage(from, to, subtreeId);
+    private void sendConnectNodesMessage (int switchId, int from, int to, int subtreeId, int priority) {
+    	ConnectNodesMessage msg = new ConnectNodesMessage(from, to, subtreeId, priority);
     	this.sendDirect(msg, this.getSwitch(switchId));
     }
     /* End of Setters
@@ -570,6 +570,8 @@ public abstract class NetworkController extends SynchronizerLayer {
                             this.data.addRotations(1);
 
                         break;
+                case 9:
+                    
                 default:
                         break;
             }
@@ -617,10 +619,10 @@ public abstract class NetworkController extends SynchronizerLayer {
     	int missingMessages = 0;
     	for (int i = 0; i <= this.numNodes; i++) {
     		if (this.remainingMessage.get(i) >= 1) {
-    			System.out.println(
-                    "Node: " + i + " still has " +
-                    this.remainingMessage.get(i) + " messages on the network"
-                );
+    			// System.out.println(
+                //     "Node: " + i + " still has " +
+                //     this.remainingMessage.get(i) + " messages on the network"
+                // );
     		}
     		missingMessages += this.remainingMessage.get(i);
 
