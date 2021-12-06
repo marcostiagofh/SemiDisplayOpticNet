@@ -300,7 +300,7 @@ public class CBNetController extends NetworkController {
             return Rotation.NULL;
 
         }
-        
+
         /*bottom-up - BEGIN*/
         if (this.isValidNode(x.getParent()) && this.isValidNode(x.getParent().getParent())) {
             InfraNode y = x.getParent();
@@ -310,7 +310,7 @@ public class CBNetController extends NetworkController {
                 this.isValidNode(z.getLeftChild()) && y.getId() == z.getLeftChild().getId()
             ) {
                     double aux = zigDiffRank(y, z);
-                   
+
                     if (aux < maxDelta) {
                             maxDelta = aux;
                             operation = Rotation.ZIGZIGLEFT_BOTTOMUP;
@@ -394,8 +394,31 @@ public class CBNetController extends NetworkController {
             return operation;
 
         } else {
+            if (direction == Direction.PARENT) {
+                InfraNode y = x.getParent();
+                if (this.areAvailableNodes(x, y)) {
+                    return Rotation.ROUTING;
+
+                }
+
+            } else if (direction == Direction.LEFT) {
+            	InfraNode y = x.getLeftChild();
+                if (this.areAvailableNodes(x, y)) {
+                    return Rotation.ROUTING;
+
+                }
+
+            } else if (direction == Direction.RIGHT) {
+            	InfraNode y = x.getRightChild();
+                if (this.areAvailableNodes(x, y)) {
+                    return Rotation.ROUTING;
+
+                }
+
+            }
+
             return Rotation.NULL;
-            
+
         }
     }
 
