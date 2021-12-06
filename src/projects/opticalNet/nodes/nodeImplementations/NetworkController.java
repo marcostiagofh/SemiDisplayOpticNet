@@ -3,12 +3,16 @@ package projects.opticalNet.nodes.nodeImplementations;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.util.ArrayList;
+import java.util.PriorityQueue;
 
 import projects.defaultProject.DataCollection;
+import projects.opticalNet.nodes.infrastructureImplementations.Direction;
 import projects.opticalNet.nodes.infrastructureImplementations.InfraNode;
+import projects.opticalNet.nodes.infrastructureImplementations.Rotation;
 import projects.opticalNet.nodes.infrastructureImplementations.SynchronizerLayer;
+import projects.opticalNet.nodes.messages.AllowRoutingMessage;
 import projects.opticalNet.nodes.messages.ConnectNodesMessage;
-
+import projects.opticalNet.nodes.messages.HasMessage;
 import sinalgo.gui.transformation.PositionTransformation;
 import sinalgo.tools.Tools;
 
@@ -16,6 +20,7 @@ public abstract class NetworkController extends SynchronizerLayer {
 
     /* Attributes */
 	private ArrayList<Boolean> usedNodes;
+	protected PriorityQueue<HasMessage> nodesWithMsg = new PriorityQueue<HasMessage>();
 
 	protected ArrayList<InfraNode> tree;
     protected ArrayList<NetworkSwitch> switches;
@@ -155,7 +160,7 @@ public abstract class NetworkController extends SynchronizerLayer {
     }
 
     /* Rotations */
-    protected boolean zigZigBottomUp (InfraNode x) {
+    protected boolean zigZigBottomUp (InfraNode x, Direction direction) {
         /*
                  z                 *y
                 / \               /   \
@@ -173,7 +178,7 @@ public abstract class NetworkController extends SynchronizerLayer {
         boolean leftZigZig = (y.getId() == z.getLeftChild().getId());
         InfraNode c = (leftZigZig) ? y.getRightChild() : y.getLeftChild();
 
-        if (this.areAvailableNodes(w, z, y, c)) {
+        if (direction == Direction.PARENT && this.areAvailableNodes(w, z, y, c)) {
             this.mapConn(z, c, y, 1);
             this.mapConn(y, z, 2);
             this.mapConn(w, y, 3);
@@ -184,7 +189,7 @@ public abstract class NetworkController extends SynchronizerLayer {
         return false;
     }
 
-    protected boolean zigZagBottomUp (InfraNode x) {
+    protected boolean zigZagBottomUp (InfraNode x, Direction direction) {
         /*
                   w              w
                  /              /
@@ -205,7 +210,7 @@ public abstract class NetworkController extends SynchronizerLayer {
         InfraNode b = (leftZigZag) ? x.getLeftChild() : x.getRightChild();
         InfraNode c = (leftZigZag) ? x.getRightChild() : x.getLeftChild();
 
-        if (this.areAvailableNodes(w, z, y, x, b, c)) {
+        if (direction == Direction.PARENT && this.areAvailableNodes(w, z, y, x, b, c)) {
             this.mapConn(y, b, x, 1);
             this.mapConn(x, y, 2);
             this.mapConn(z, c, x, 3);
@@ -218,7 +223,7 @@ public abstract class NetworkController extends SynchronizerLayer {
         return false;
     }
 
-    protected boolean zigZigLeftTopDown (InfraNode z) {
+    protected boolean zigZigLeftTopDown (InfraNode z, Direction direction) {
         /*
                  *z                    y
                  / \                 /   \
@@ -232,7 +237,7 @@ public abstract class NetworkController extends SynchronizerLayer {
         InfraNode y = z.getLeftChild();
         InfraNode c = y.getRightChild();
 
-        if (this.areAvailableNodes(w, z, y, c)) {
+        if (direction == Direction.LEFT && this.areAvailableNodes(w, z, y, c)) {
             this.mapConn(z, c, y, 1);
             this.mapConn(y, z, 2);
             this.mapConn(w, y, 3);
@@ -243,12 +248,12 @@ public abstract class NetworkController extends SynchronizerLayer {
         return false;
     }
 
-    protected boolean zigZigRightTopDown (InfraNode z) {
+    protected boolean zigZigRightTopDown (InfraNode z, Direction direction) {
     	InfraNode w = z.getParent();
         InfraNode y = z.getRightChild();
         InfraNode c = y.getLeftChild();
 
-        if (this.areAvailableNodes(w, z, y, c)) {
+        if (direction == Direction.RIGHT && this.areAvailableNodes(w, z, y, c)) {
             this.mapConn(z, c, y, 1);
             this.mapConn(y, z, 2);
             this.mapConn(w, y, 3);
@@ -259,7 +264,7 @@ public abstract class NetworkController extends SynchronizerLayer {
         return false;
     }
 
-    protected boolean zigZagLeftTopDown (InfraNode z) {
+    protected boolean zigZagLeftTopDown (InfraNode z, Direction direction) {
         /*
                  *z                     x
                  / \        -->       /   \
@@ -275,7 +280,7 @@ public abstract class NetworkController extends SynchronizerLayer {
         InfraNode b = x.getLeftChild();
         InfraNode c = x.getRightChild();
 
-        if (this.areAvailableNodes(w, z, y, x, b, c)) {
+        if (direction == Direction.LEFT && this.areAvailableNodes(w, z, y, x, b, c)) {
             this.mapConn(y, b, x, 1);
             this.mapConn(x, y, 2);
             this.mapConn(z, c, x, 3);
@@ -288,14 +293,14 @@ public abstract class NetworkController extends SynchronizerLayer {
         return false;
     }
 
-    protected boolean zigZagRightTopDown (InfraNode z) {
+    protected boolean zigZagRightTopDown (InfraNode z, Direction direction) {
     	InfraNode w = z.getParent();
         InfraNode y = z.getRightChild();
         InfraNode x = y.getLeftChild();
         InfraNode b = x.getRightChild();
         InfraNode c = x.getLeftChild();
 
-        if (this.areAvailableNodes(w, z, y, x, b, c)) {
+        if (direction == Direction.RIGHT && this.areAvailableNodes(w, z, y, x, b, c)) {
             this.mapConn(y, b, x, 1);
             this.mapConn(x, y, 2);
             this.mapConn(z, c, x, 3);
@@ -308,7 +313,7 @@ public abstract class NetworkController extends SynchronizerLayer {
         return false;
     }
 
-    private boolean areAvailableNodes (InfraNode... nodes) {
+    protected boolean areAvailableNodes (InfraNode... nodes) {
     	for (InfraNode infNode: nodes) {
     		if (infNode.getId() != -1 && this.usedNodes.get(infNode.getId())) {
     			return false;
@@ -478,7 +483,7 @@ public abstract class NetworkController extends SynchronizerLayer {
         	Tools.fatalError("Trying to make root node as a child");
 
         }
-	    
+
 	    this.sendConnectNodesMessage(swtId, fromNode.getId() + 1, toNode.getId() + 1, subtreeId, priority);
         this.sendConnectNodesMessage(swtId + 1, toNode.getId() + 1, fromNode.getId() + 1, priority);
     }
@@ -522,59 +527,100 @@ public abstract class NetworkController extends SynchronizerLayer {
         return apSum + clsId2 - clsId1 - 1;
     }
 
-    public abstract int getRotationToPerform (InfraNode x);
+    public abstract Rotation getRotationToPerform (InfraNode x, Direction direction);
 
     public void updateConn () {
-        for (int i = 0; i < this.numNodes; i++) {
-        	InfraNode node = this.tree.get(i);
-        	int op = this.getRotationToPerform(node);
+        while (!this.nodesWithMsg.isEmpty()) {
+            HasMessage hasmsg = this.nodesWithMsg.poll();
+            int nodeId = hasmsg.getCurrId();
+        	InfraNode node = this.tree.get(nodeId - 1);
+            Direction direction = hasmsg.getDirection();
 
-        	if (op == -1) continue;
+        	Rotation op = this.getRotationToPerform(node, direction);
+
+        	if (op == Rotation.NULL) continue;
 
             switch (op) {
-                case 1:
-                case 2:
-                		System.out.println("zigZigBottomUp");
-                        if (this.zigZigBottomUp(node))
-                            this.data.addRotations(1);
+                case ZIGZIGLEFT_BOTTOMUP:
+                case ZIGZIGRIGHT_BOTTOMUP:
+                    if (this.zigZigBottomUp(node, direction)) {
+                        System.out.println("zigZigBottomUp");
+                        this.data.addRotations(1);
+                        this.data.addAlterations(3);
 
-                        break;
-                case 3:
-                case 4:
-                		System.out.println("zigZagBottomUp");
-                        if (this.zigZagBottomUp(node))
-                            this.data.addRotations(1);
+                        this.sendDirect(new AllowRoutingMessage(), this.getNetNode(nodeId));
 
-                        break;
-                case 5:
-                		System.out.println("zigZigLeftTopDown");
-                        if (this.zigZigLeftTopDown(node))
-                            this.data.addRotations(1);
+                    }
 
-                        break;
-                case 6:
-                		System.out.println("zigZagLeftTopDown");
-                        if (this.zigZagLeftTopDown(node))
-                            this.data.addRotations(1);
+                    break;
 
-                        break;
-                case 7:
-                		System.out.println("zigZigRightTopDown");
-                        if (this.zigZigRightTopDown(node))
-                            this.data.addRotations(1);
+                case ZIGZAGLEFT_BOTTOMUP:
+                case ZIGZAGRIGHT_BOTTOMUP:
+                    if (this.zigZagBottomUp(node, direction)) {
+                        System.out.println("zigZagBottomUp");
+                        this.data.addRotations(1);
+                        this.data.addAlterations(5);
 
-                        break;
-                case 8:
-                		System.out.println("zigZagRightTopDown");
-                        if (this.zigZagRightTopDown(node))
-                            this.data.addRotations(1);
+                    }
 
-                        break;
-                case 9:
-                    
+                    break;
+
+                case ZIGZIGLEFT_TOPDOWN:
+                    if (this.zigZigLeftTopDown(node, direction)) {
+                        System.out.println("zigZigLeftTopDown");
+                        this.data.addRotations(1);
+                        this.data.addAlterations(3);
+
+                        this.sendDirect(new AllowRoutingMessage(), this.getNetNode(nodeId));
+
+                    }
+
+                    break;
+
+                case ZIGZAGLEFT_TOPDOWN:
+                    if (this.zigZagLeftTopDown(node, direction)) {
+                        System.out.println("zigZagLeftTopDown");
+                        this.data.addRotations(1);
+                        this.data.addAlterations(5);
+
+                        this.sendDirect(new AllowRoutingMessage(), this.getNetNode(nodeId));
+
+                    }
+
+                    break;
+
+                case ZIGZIGRIGHT_TOPDOWN:
+                    if (this.zigZigRightTopDown(node, direction)) {
+                        System.out.println("zigZigRightTopDown");
+                        this.data.addRotations(1);
+                        this.data.addAlterations(3);
+
+                        this.sendDirect(new AllowRoutingMessage(), this.getNetNode(nodeId));
+
+                    }
+
+                    break;
+
+                case ZIGZAGRIGHT_TOPDOWN:
+                    if (this.zigZagRightTopDown(node, direction)) {
+                        System.out.println("zigZagRightTopDown");
+                        this.data.addRotations(1);
+                        this.data.addAlterations(5);
+
+                        this.sendDirect(new AllowRoutingMessage(), this.getNetNode(nodeId));
+
+                    }
+
+                    break;
+
+                case ROUTING:
+                    this.sendDirect(new AllowRoutingMessage(), this.getNetNode(nodeId));
+                    break;
+
                 default:
                         break;
             }
+
         }
     }
 

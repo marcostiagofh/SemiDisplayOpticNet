@@ -1,14 +1,13 @@
 package projects.cbOptNet.nodes.nodeImplementations;
 
 import java.util.ArrayList;
-import java.util.Collections;
 
 import projects.defaultProject.DataCollection;
 import projects.opticalNet.nodes.messages.HasMessage;
 import projects.opticalNet.nodes.messages.NewMessage;
-import projects.opticalNet.nodes.messages.WeightMessage;
 import projects.opticalNet.nodes.messages.OpticalNetMessage;
 import projects.opticalNet.nodes.infrastructureImplementations.InfraNode;
+import projects.opticalNet.nodes.infrastructureImplementations.Rotation;
 import projects.opticalNet.nodes.infrastructureImplementations.Direction;
 import projects.opticalNet.nodes.nodeImplementations.NetworkController;
 import projects.opticalNet.nodes.nodeImplementations.NetworkNode;
@@ -19,45 +18,33 @@ import sinalgo.nodes.messages.Message;
 public class CBNetController extends NetworkController {
 
     private double epsilon = -1.5;
-    private ArrayList<Direction> nodesWithMsg;
 
     public CBNetController (int numNodes, int switchSize, ArrayList<NetworkNode> netNodes, DataCollection data) {
         super(numNodes, switchSize, netNodes, data);
-
-        this.nodesWithMsg = new ArrayList<Direction>(numNodes);
-        for (int i = 0; i < 128; i++)
-            this.nodesWithMsg.add(Direction.NULL);
     }
 
     public CBNetController (
         int numNodes, int switchSize, ArrayList<NetworkNode> netNodes, DataCollection data, ArrayList<Integer> edgeList
     ) {
         super(numNodes, switchSize, netNodes, data, edgeList);
-
-        this.nodesWithMsg = new ArrayList<Direction>(numNodes);
-        for (int i = 0; i < 128; i++)
-            this.nodesWithMsg.add(Direction.NULL);
     }
 
     @Override
     public void controllerStep () {
         super.controllerStep();
-
-        Collections.fill(this.nodesWithMsg, Direction.NULL);
-
     }
 
     /* Rotations */
 
     @Override
-    protected boolean zigZigBottomUp (InfraNode x) {
+    protected boolean zigZigBottomUp (InfraNode x, Direction direction) {
         InfraNode y = x.getParent();
         InfraNode z = y.getParent();
 
         boolean leftZigZig = (y.getId() == z.getLeftChild().getId());
         InfraNode b = (leftZigZig ? y.getRightChild() : y.getLeftChild());
 
-        if (this.nodesWithMsg.get(x.getId()) == Direction.PARENT && super.zigZigBottomUp(x)) {
+        if (super.zigZigBottomUp(x, direction)) {
 	        long yOldWeight = y.getWeight();
 	        long zOldWeight = z.getWeight();
 
@@ -76,7 +63,7 @@ public class CBNetController extends NetworkController {
     }
 
     @Override
-    protected boolean zigZagBottomUp (InfraNode x) {
+    protected boolean zigZagBottomUp (InfraNode x, Direction direction) {
         InfraNode y = x.getParent();
         InfraNode z = y.getParent();
 
@@ -84,7 +71,7 @@ public class CBNetController extends NetworkController {
         InfraNode b = (leftZigZag) ? x.getLeftChild() : x.getRightChild();
         InfraNode c = (leftZigZag) ? x.getRightChild() : x.getLeftChild();
 
-        if (this.nodesWithMsg.get(x.getId()) == Direction.PARENT && super.zigZagBottomUp(x)) {
+        if (super.zigZagBottomUp(x, direction)) {
 	        long xOldWeight = x.getWeight();
 	        long yOldWeight = y.getWeight();
 	        long zOldWeight = z.getWeight();
@@ -107,11 +94,11 @@ public class CBNetController extends NetworkController {
     }
 
     @Override
-    protected boolean zigZigLeftTopDown (InfraNode z) {
+    protected boolean zigZigLeftTopDown (InfraNode z, Direction direction) {
         InfraNode y = z.getLeftChild();
         InfraNode b = y.getRightChild();
 
-        if (this.nodesWithMsg.get(z.getId()) == Direction.LEFT && super.zigZigLeftTopDown(z)) {
+        if (super.zigZigLeftTopDown(z, direction)) {
 
 	        long yOldWeight = y.getWeight();
 	        long zOldWeight = z.getWeight();
@@ -131,11 +118,11 @@ public class CBNetController extends NetworkController {
     }
 
     @Override
-    protected boolean zigZigRightTopDown (InfraNode z) {
+    protected boolean zigZigRightTopDown (InfraNode z, Direction direction) {
         InfraNode y = z.getRightChild();
         InfraNode b = y.getLeftChild();
 
-        if (this.nodesWithMsg.get(z.getId()) == Direction.RIGHT && super.zigZigRightTopDown(z)) {
+        if (super.zigZigRightTopDown(z, direction)) {
 
 	        long yOldWeight = y.getWeight();
 	        long zOldWeight = z.getWeight();
@@ -155,13 +142,13 @@ public class CBNetController extends NetworkController {
     }
 
     @Override
-    protected boolean zigZagLeftTopDown (InfraNode z) {
+    protected boolean zigZagLeftTopDown (InfraNode z, Direction direction) {
         InfraNode y = z.getLeftChild();
         InfraNode x = y.getRightChild();
         InfraNode b = x.getLeftChild();
         InfraNode c = x.getRightChild();
 
-        if (this.nodesWithMsg.get(z.getId()) == Direction.LEFT && super.zigZagLeftTopDown(z)) {
+        if (super.zigZagLeftTopDown(z, direction)) {
 	        long xOldWeight = x.getWeight();
 	        long yOldWeight = y.getWeight();
 	        long zOldWeight = z.getWeight();
@@ -184,13 +171,13 @@ public class CBNetController extends NetworkController {
     }
 
     @Override
-    protected boolean zigZagRightTopDown (InfraNode z) {
+    protected boolean zigZagRightTopDown (InfraNode z, Direction direction) {
         InfraNode y = z.getRightChild();
         InfraNode x = y.getLeftChild();
         InfraNode b = x.getRightChild();
         InfraNode c = x.getLeftChild();
 
-        if (this.nodesWithMsg.get(z.getId()) == Direction.RIGHT && super.zigZagRightTopDown(z)) {
+        if (super.zigZagRightTopDown(z, direction)) {
 	        long xOldWeight = x.getWeight();
 	        long yOldWeight = y.getWeight();
 	        long zOldWeight = z.getWeight();
@@ -287,33 +274,33 @@ public class CBNetController extends NetworkController {
     }
 
     @Override
-    public int getRotationToPerform (InfraNode x) {
+    public Rotation getRotationToPerform (InfraNode x, Direction direction) {
         double maxDelta = 0;
-        int operation = 0;
+        Rotation operation = Rotation.NULL;
 
-        if (this.nodesWithMsg.get(x.getId()) == Direction.PARENTROUT) {
-            y = x.getParent();
+        if (direction == Direction.PARENTROUT) {
+            InfraNode y = x.getParent();
             if (this.areAvailableNodes(x, y))
-                return 9;
+                return Rotation.ROUTING;
 
-            return -1;
+            return Rotation.NULL;
 
-        } else if (this.nodesWithMsg.get(x.getId()) == Direction.LEFTROUT) {
-            y = x.getLeftChild();
+        } else if (direction == Direction.LEFTROUT) {
+        	InfraNode y = x.getLeftChild();
             if (this.areAvailableNodes(x, y))
-                return 9;
+                return Rotation.ROUTING;
 
-            return -1;
+            return Rotation.NULL;
 
-        } else if (this.nodesWithMsg.get(x.getId()) == Direction.LEFTROUT) {
-            y = x.getRightChild();
+        } else if (direction == Direction.LEFTROUT) {
+        	InfraNode y = x.getRightChild();
             if (this.areAvailableNodes(x, y))
-                return 9;
+                return Rotation.ROUTING;
 
-            return -1;
+            return Rotation.NULL;
 
         }
-
+        
         /*bottom-up - BEGIN*/
         if (this.isValidNode(x.getParent()) && this.isValidNode(x.getParent().getParent())) {
             InfraNode y = x.getParent();
@@ -322,41 +309,38 @@ public class CBNetController extends NetworkController {
                 this.isValidNode(y.getLeftChild()) && x.getId() == y.getLeftChild().getId() &&
                 this.isValidNode(z.getLeftChild()) && y.getId() == z.getLeftChild().getId()
             ) {
-                    // zigzigLeft
                     double aux = zigDiffRank(y, z);
+                   
                     if (aux < maxDelta) {
                             maxDelta = aux;
-                            operation = 1;
+                            operation = Rotation.ZIGZIGLEFT_BOTTOMUP;
                     }
             } else if (
                 this.isValidNode(y.getRightChild()) && x.getId() == y.getRightChild().getId() &&
                 this.isValidNode(z.getRightChild()) && y.getId() == z.getRightChild().getId()
             ) {
-                    // zigzigRight
                     double aux = zigDiffRank(y, z);
                     if (aux < maxDelta) {
                             maxDelta = aux;
-                            operation = 2;
+                            operation = Rotation.ZIGZIGRIGHT_BOTTOMUP;
                     }
             } else if (
                 this.isValidNode(y.getRightChild()) && x.getId() == y.getRightChild().getId() &&
                 this.isValidNode(z.getLeftChild()) && y.getId() == z.getLeftChild().getId()
             ) {
-                    // zigzagLeft
                     double aux = zigZagDiffRank(x, y, z);
                     if (aux < maxDelta) {
                             maxDelta = aux;
-                            operation = 3;
+                            operation = Rotation.ZIGZAGLEFT_BOTTOMUP;
                     }
             } else if (
                 this.isValidNode(y.getLeftChild()) && x.getId() == y.getLeftChild().getId() &&
                 this.isValidNode(z.getRightChild()) && y.getId() == z.getRightChild().getId()
             ) {
-                    // zigzagRight
                     double aux = zigZagDiffRank(x, y, z);
                     if (aux < maxDelta) {
                             maxDelta = aux;
-                            operation = 4;
+                            operation = Rotation.ZIGZAGRIGHT_BOTTOMUP;
                     }
             }
         }
@@ -365,23 +349,21 @@ public class CBNetController extends NetworkController {
         if (this.isValidNode(x.getLeftChild())) {
                 InfraNode y = x.getLeftChild();
 
-                // zigzig left top-down
                 if (this.isValidNode(y.getLeftChild())) {
                         InfraNode z = y.getLeftChild();
                         double aux = zigDiffRank(y, z);
                         if (aux < maxDelta) {
                                 maxDelta = aux;
-                                operation = 5;
+                                operation = Rotation.ZIGZIGLEFT_TOPDOWN;
                         }
                 }
 
-                // zigzag left top-down
                 if (this.isValidNode(y.getRightChild())) {
                         InfraNode z = y.getRightChild();
                         double aux = zigDiffRank(y, z);
                         if (aux < maxDelta) {
                                 maxDelta = aux;
-                                operation = 6;
+                                operation = Rotation.ZIGZAGLEFT_TOPDOWN;
                         }
                 }
         }
@@ -389,37 +371,36 @@ public class CBNetController extends NetworkController {
         if (this.isValidNode(x.getRightChild())) {
                 InfraNode y = x.getRightChild();
 
-                // zigzig right top-down
                 if (this.isValidNode(y.getRightChild())) {
                         InfraNode z = y.getRightChild();
                         double aux = zigDiffRank(y, z);
                         if (aux < maxDelta) {
                                 maxDelta = aux;
-                                operation = 7;
+                                operation = Rotation.ZIGZIGRIGHT_TOPDOWN;
                         }
                 }
 
-                // zigzag right top-down
                 if (this.isValidNode(y.getLeftChild())) {
                         InfraNode z = y.getLeftChild();
                         double aux = zigDiffRank(y, z);
                         if (aux < maxDelta) {
                                 maxDelta = aux;
-                                operation = 8;
+                                operation = Rotation.ZIGZAGRIGHT_TOPDOWN;
                         }
                 }
         }
 
         if (maxDelta < this.epsilon) {
-            if (operation == 3) return -1;
             return operation;
+
         } else {
-            return -1;
+            return Rotation.NULL;
+            
         }
     }
 
-    private void incrementNodeWeight (int from) {
-        this.tree.get(from - 1).incrementWeight();
+    private void incrementPathWeight (int from, int to) {
+        this.tree.get(from - 1).incrementPathWeight(to - 1, false);
     }
 
     @Override
@@ -432,6 +413,8 @@ public class CBNetController extends NetworkController {
                 this.data.incrementCompletedRequests();
                 this.data.addRouting(optmsg.getRouting());
 
+                this.incrementPathWeight(optmsg.getSrc(), optmsg.getDst());
+
                 this.remainingMessage.set(optmsg.getSrc(), this.remainingMessage.get(optmsg.getSrc()) - 1);
                 this.sinceCompleted = 0;
 
@@ -441,15 +424,9 @@ public class CBNetController extends NetworkController {
             	this.rcvMsgs++;
                 this.remainingMessage.set(newmsg.getSrc(), this.remainingMessage.get(newmsg.getSrc()) + 1);
 
-            } else if (msg instanceof WeightMessage) {
-            	WeightMessage wgtmsg = (WeightMessage) msg;
-
-            	this.incrementNodeWeight(wgtmsg.getSrc());
-
             } else if (msg instanceof HasMessage) {
                 HasMessage hasmsg = (HasMessage) msg;
-
-                this.nodesWithMsg.set(hasmsg.getCurrId() - 1, hasmsg.getDirection());
+                this.nodesWithMsg.add(hasmsg);
 
             }
 

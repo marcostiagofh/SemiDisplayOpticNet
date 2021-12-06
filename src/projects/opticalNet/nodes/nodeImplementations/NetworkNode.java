@@ -6,8 +6,8 @@ import java.awt.Graphics;
 import java.util.PriorityQueue;
 
 import projects.opticalNet.nodes.messages.NewMessage;
+import projects.opticalNet.nodes.messages.AllowRoutingMessage;
 import projects.opticalNet.nodes.messages.HasMessage;
-import projects.opticalNet.nodes.messages.WeightMessage;
 import projects.opticalNet.nodes.messages.OpticalNetMessage;
 import projects.opticalNet.nodes.infrastructureImplementations.Direction;
 import projects.opticalNet.nodes.infrastructureImplementations.InputNode;
@@ -24,6 +24,7 @@ import sinalgo.gui.transformation.PositionTransformation;
 public class NetworkNode extends SynchronizerLayer {
 
     private PriorityQueue<OpticalNetMessage> buffer = new PriorityQueue<OpticalNetMessage>();
+    private OpticalNetMessage currMsg = null;
 
     private InputNode parent = null;
     private InputNode leftChild = null;
@@ -34,6 +35,7 @@ public class NetworkNode extends SynchronizerLayer {
     private int minIdInSubtree = 0;
     private int maxIdInSubtree = 0;
 
+    private boolean allowRouting = false;
     private Random rand = Tools.getRandomNumberGenerator();
 
     public NetworkNode () {
@@ -167,58 +169,83 @@ public class NetworkNode extends SynchronizerLayer {
         this.sendDirect(new NewMessage(optmsg), this.controller);
     }
 
-    public void sendMsg (OpticalNetMessage optmsg) {
-        this.sendDirect(new WeightMessage(this.ID), this.controller);
-
+    public void informController (OpticalNetMessage optmsg) {
     	if (optmsg.getDst() == this.ID) {
             System.out.println("Message received from node " + optmsg.getSrc());
             this.sendDirect(optmsg, this.controller);
+            this.currMsg = null;
 
             return;
 
     	}
 
-        optmsg.incrementRouting();
         if (this.minIdInSubtree <= optmsg.getDst() && optmsg.getDst() < this.ID) {
-            if (this.leftChild.getIndex() == optmsg.getDst()) {
-                this.sendDirect(new HasMessage(this.ID, Direction.LEFTROUT), this.controller);
-                
+            if (this.getLeftChildId() == optmsg.getDst()) {
+                this.sendDirect(new HasMessage(this.ID, optmsg.getPriority(), Direction.LEFTROUT), this.controller);
+
             } else {
-                this.sendDirect(new HasMessage(this.ID, Direction.LEFT), this.controller);
+                this.sendDirect(new HasMessage(this.ID, optmsg.getPriority(), Direction.LEFT), this.controller);
 
             }
+
+        } else if (this.ID < optmsg.getDst() && optmsg.getDst() <= this.maxIdInSubtree) {
+            if (this.getRightChildId() == optmsg.getDst()) {
+                this.sendDirect(new HasMessage(this.ID, optmsg.getPriority(),Direction.RIGHTROUT), this.controller);
+
+            } else {
+                this.sendDirect(new HasMessage(this.ID, optmsg.getPriority(), Direction.RIGHT), this.controller);
+
+            }
+
+        } else {
+            if (this.getParentId() == optmsg.getDst()) {
+                this.sendDirect(new HasMessage(this.ID, optmsg.getPriority(), Direction.PARENTROUT), this.controller);
+
+            } else {
+                this.sendDirect(new HasMessage(this.ID, optmsg.getPriority(), Direction.PARENT), this.controller);
+
+            }
+
+        }
+    }
+
+    public void sendMsg (OpticalNetMessage optmsg) {
+        optmsg.incrementRouting();
+        if (this.minIdInSubtree <= optmsg.getDst() && optmsg.getDst() < this.ID) {
             this.send(optmsg, this.leftChild);
 
         } else if (this.ID < optmsg.getDst() && optmsg.getDst() <= this.maxIdInSubtree) {
-            if (this.rightChild.getIndex() == optmsg.getDst()) {
-                this.sendDirect(new HasMessage(this.ID, Direction.RIGHTROUT), this.controller);
-                
-            } else {
-                this.sendDirect(new HasMessage(this.ID, Direction.RIGHT), this.controller);
-            
-            }
             this.send(optmsg, this.rightChild);
 
         } else {
-            if (this.parent.getIndex() == optmsg.getDst()) {
-                this.sendDirect(new HasMessage(this.ID, Direction.PARENTROUT), this.controller);
-                
-            } else {
-                this.sendDirect(new HasMessage(this.ID, Direction.PARENT), this.controller);
-
-            }
             this.send(optmsg, this.parent);
 
         }
     }
 
     @Override
-    public void nodeStep () {
+    public void nodeInformStep () {
     	if (!buffer.isEmpty()) {
-	        OpticalNetMessage optmsg = this.buffer.poll();
-	        this.sendMsg(optmsg);
+	        this.currMsg = this.buffer.poll();
+	        this.informController(this.currMsg);
 
     	}
+    }
+
+    @Override
+    public void nodeRoutingStep () {
+    	if (this.allowRouting && this.currMsg == null) {
+    		Tools.fatalError("Node allowed routing non-existing message");
+
+    	}
+
+    	if (this.currMsg != null) {
+	        this.sendMsg(this.currMsg);
+
+    	}
+
+    	this.currMsg = null;
+        this.allowRouting = false;
     }
 
     @Override
@@ -229,6 +256,9 @@ public class NetworkNode extends SynchronizerLayer {
             if ((msg instanceof OpticalNetMessage)) {
             	OpticalNetMessage optmsg = (OpticalNetMessage) msg;
             	this.buffer.add(optmsg);
+
+            } else if ((msg instanceof AllowRoutingMessage)) {
+                this.allowRouting = true;
 
             }
         }
