@@ -8,6 +8,7 @@ public class DataCollection {
   private static DataCollection single_instance = null;
 
   private DataSeries rotationData = new DataSeries();
+  private DataSeries alterationData = new DataSeries();
   private DataSeries routingData = new DataSeries();
 
   private long activeSplays = 0;
@@ -17,6 +18,7 @@ public class DataCollection {
 
   // LOGS
   private Logging rotations_per_splay;
+  private Logging alterations_per_splay;
   private Logging routing_per_splay;
   private Logging rounds_per_splay;
   private Logging bypass_per_splay;
@@ -34,6 +36,7 @@ public class DataCollection {
 
   public void setPath(String path) {
     rotations_per_splay = Logging.getLogger(path + "/rotations_per_splay.txt");
+    alterations_per_splay = Logging.getLogger(path + "/alterations_per_splay.txt");
     routing_per_splay = Logging.getLogger(path + "/routing_per_splay.txt");
     rounds_per_splay = Logging.getLogger(path + "/rounds_per_splay.txt");
     bypass_per_splay = Logging.getLogger(path + "/bypass_per_splay.txt");
@@ -64,12 +67,18 @@ public class DataCollection {
     this.rotations_per_splay.logln(num + "");
   }
 
+  public void addAlterations (long num) {
+    this.alterationData.addSample(num);
+    this.alterations_per_splay.logln(num + "");
+  }
+
   public void addRouting(long num) {
     this.routingData.addSample(num);
     this.routing_per_splay.logln(num + "");
   }
 
   public void resetCollection() {
+    this.alterationData.reset();
     this.rotationData.reset();
     this.routingData.reset();
   }
@@ -142,12 +151,32 @@ public class DataCollection {
     this.sequence_log.logln(src + "," + dst);
   }
 
+  public DataSeries getAlterationDataSeries() {
+    return this.alterationData;
+  }
+
   public DataSeries getRotationDataSeries() {
     return this.rotationData;
   }
 
   public DataSeries getRoutingDataSeries() {
     return this.routingData;
+  }
+
+  public void printAlterationData() {
+    System.out.println("Alterations:");
+    System.out.println("Number of request: " + this.alterationData.getNumberOfSamples());
+    System.out.println("Mean: " + this.alterationData.getMean());
+    System.out.println("Standard Deviation: " + this.alterationData.getStandardDeviation());
+    System.out.println("Min: " + this.alterationData.getMinimum());
+    System.out.println("Max: " + this.alterationData.getMaximum());
+
+    this.operations_log.logln("rotation," +
+        this.alterationData.getSum() + "," +
+        this.alterationData.getMean() + "," +
+        this.alterationData.getStandardDeviation() + "," +
+        this.alterationData.getMinimum() + "," +
+        this.alterationData.getMaximum());
   }
 
   public void printRotationData() {
