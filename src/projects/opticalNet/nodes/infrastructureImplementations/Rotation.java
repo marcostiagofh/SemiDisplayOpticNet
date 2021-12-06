@@ -1,0 +1,14 @@
+package projects.opticalNet.nodes.infrastructureImplementations;
+
+public enum Rotation {
+    ZIGZIGLEFT_BOTTOMUP,
+    ZIGZIGRIGHT_BOTTOMUP,
+    ZIGZAGLEFT_BOTTOMUP,
+    ZIGZAGRIGHT_BOTTOMUP,
+    ZIGZIGLEFT_TOPDOWN,
+    ZIGZAGLEFT_TOPDOWN,
+    ZIGZIGRIGHT_TOPDOWN,
+    ZIGZAGRIGHT_TOPDOWN,
+    ROUTING,
+    NULL
+}
