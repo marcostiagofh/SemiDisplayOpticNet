@@ -6,7 +6,7 @@ public enum Direction {
     LEFTROUT,
     RIGHT,
     RIGHTROUT,
-    PARENT;
+    PARENT,
     PARENTROUT,
     
 }
