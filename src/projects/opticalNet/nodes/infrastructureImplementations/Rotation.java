@@ -9,6 +9,5 @@ public enum Rotation {
     ZIGZAGLEFT_TOPDOWN,
     ZIGZIGRIGHT_TOPDOWN,
     ZIGZAGRIGHT_TOPDOWN,
-    ROUTING,
     NULL
 }

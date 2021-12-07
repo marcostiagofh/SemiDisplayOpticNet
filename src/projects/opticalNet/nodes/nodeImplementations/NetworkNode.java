@@ -242,6 +242,9 @@ public class NetworkNode extends SynchronizerLayer {
     	if (this.allowRouting && this.currMsg != null) {
 	        this.sendMsg(this.currMsg);
 
+    	} else if (this.currMsg != null) {
+    		this.buffer.add(this.currMsg);
+    		
     	}
 
     	this.currMsg = null;

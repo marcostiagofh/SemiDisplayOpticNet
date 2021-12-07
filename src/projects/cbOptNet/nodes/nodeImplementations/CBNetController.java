@@ -279,24 +279,12 @@ public class CBNetController extends NetworkController {
         Rotation operation = Rotation.NULL;
 
         if (direction == Direction.PARENTROUT) {
-            InfraNode y = x.getParent();
-            if (this.areAvailableNodes(x, y))
-                return Rotation.ROUTING;
-
             return Rotation.NULL;
 
         } else if (direction == Direction.LEFTROUT) {
-        	InfraNode y = x.getLeftChild();
-            if (this.areAvailableNodes(x, y))
-                return Rotation.ROUTING;
-
             return Rotation.NULL;
 
         } else if (direction == Direction.LEFTROUT) {
-        	InfraNode y = x.getRightChild();
-            if (this.areAvailableNodes(x, y))
-                return Rotation.ROUTING;
-
             return Rotation.NULL;
 
         }
@@ -394,29 +382,6 @@ public class CBNetController extends NetworkController {
             return operation;
 
         } else {
-            if (direction == Direction.PARENT) {
-                InfraNode y = x.getParent();
-                if (this.areAvailableNodes(x, y)) {
-                    return Rotation.ROUTING;
-
-                }
-
-            } else if (direction == Direction.LEFT) {
-            	InfraNode y = x.getLeftChild();
-                if (this.areAvailableNodes(x, y)) {
-                    return Rotation.ROUTING;
-
-                }
-
-            } else if (direction == Direction.RIGHT) {
-            	InfraNode y = x.getRightChild();
-                if (this.areAvailableNodes(x, y)) {
-                    return Rotation.ROUTING;
-
-                }
-
-            }
-
             return Rotation.NULL;
 
         }
