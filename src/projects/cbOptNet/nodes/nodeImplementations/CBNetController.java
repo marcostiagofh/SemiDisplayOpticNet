@@ -45,18 +45,18 @@ public class CBNetController extends NetworkController {
         InfraNode b = (leftZigZig ? y.getRightChild() : y.getLeftChild());
 
         if (super.zigZigBottomUp(x, direction)) {
-	        long yOldWeight = y.getWeight();
-	        long zOldWeight = z.getWeight();
+            long yOldWeight = y.getWeight();
+            long zOldWeight = z.getWeight();
 
-	        long bWeight = (b.getId() != -1) ? b.getWeight() : 0;
+            long bWeight = (b.getId() != -1) ? b.getWeight() : 0;
 
-	        long zNewWeight = zOldWeight - yOldWeight + bWeight;
-	        long yNewWeight = yOldWeight - bWeight + zNewWeight;
+            long zNewWeight = zOldWeight - yOldWeight + bWeight;
+            long yNewWeight = yOldWeight - bWeight + zNewWeight;
 
-	        z.setWeight(zNewWeight);
-	        y.setWeight(yNewWeight);
+            z.setWeight(zNewWeight);
+            y.setWeight(yNewWeight);
 
-	        return true;
+            return true;
         }
 
         return false;
@@ -72,22 +72,22 @@ public class CBNetController extends NetworkController {
         InfraNode c = (leftZigZag) ? x.getRightChild() : x.getLeftChild();
 
         if (super.zigZagBottomUp(x, direction)) {
-	        long xOldWeight = x.getWeight();
-	        long yOldWeight = y.getWeight();
-	        long zOldWeight = z.getWeight();
+            long xOldWeight = x.getWeight();
+            long yOldWeight = y.getWeight();
+            long zOldWeight = z.getWeight();
 
-	        long bWeight = (b.getId() != -1) ? b.getWeight() : 0;
-	        long cWeight = (c.getId() != -1) ? c.getWeight() : 0;
+            long bWeight = (b.getId() != -1) ? b.getWeight() : 0;
+            long cWeight = (c.getId() != -1) ? c.getWeight() : 0;
 
-	        long yNewWeight = yOldWeight - xOldWeight + bWeight;
-	        long zNewWeight = zOldWeight - yOldWeight + cWeight;
-	        long xNewWeight = xOldWeight - bWeight - cWeight + yNewWeight + zNewWeight;
+            long yNewWeight = yOldWeight - xOldWeight + bWeight;
+            long zNewWeight = zOldWeight - yOldWeight + cWeight;
+            long xNewWeight = xOldWeight - bWeight - cWeight + yNewWeight + zNewWeight;
 
-	        y.setWeight(yNewWeight);
-	        z.setWeight(zNewWeight);
-	        x.setWeight(xNewWeight);
+            y.setWeight(yNewWeight);
+            z.setWeight(zNewWeight);
+            x.setWeight(xNewWeight);
 
-	        return true;
+            return true;
         }
 
         return false;
@@ -100,18 +100,18 @@ public class CBNetController extends NetworkController {
 
         if (super.zigZigLeftTopDown(z, direction)) {
 
-	        long yOldWeight = y.getWeight();
-	        long zOldWeight = z.getWeight();
+            long yOldWeight = y.getWeight();
+            long zOldWeight = z.getWeight();
 
-	        long bWeight = (b.getId() != -1) ? b.getWeight() : 0;
+            long bWeight = (b.getId() != -1) ? b.getWeight() : 0;
 
-	        long zNewWeight = zOldWeight - yOldWeight + bWeight;
-	        long yNewWeight = yOldWeight - bWeight + zNewWeight;
+            long zNewWeight = zOldWeight - yOldWeight + bWeight;
+            long yNewWeight = yOldWeight - bWeight + zNewWeight;
 
-	        z.setWeight(zNewWeight);
-	        y.setWeight(yNewWeight);
+            z.setWeight(zNewWeight);
+            y.setWeight(yNewWeight);
 
-	        return true;
+            return true;
         }
 
         return false;
@@ -124,18 +124,18 @@ public class CBNetController extends NetworkController {
 
         if (super.zigZigRightTopDown(z, direction)) {
 
-	        long yOldWeight = y.getWeight();
-	        long zOldWeight = z.getWeight();
+            long yOldWeight = y.getWeight();
+            long zOldWeight = z.getWeight();
 
-	        long bWeight = (b.getId() != -1) ? b.getWeight() : 0;
+            long bWeight = (b.getId() != -1) ? b.getWeight() : 0;
 
-	        long zNewWeight = zOldWeight - yOldWeight + bWeight;
-	        long yNewWeight = yOldWeight - bWeight + zNewWeight;
+            long zNewWeight = zOldWeight - yOldWeight + bWeight;
+            long yNewWeight = yOldWeight - bWeight + zNewWeight;
 
-	        z.setWeight(zNewWeight);
-	        y.setWeight(yNewWeight);
+            z.setWeight(zNewWeight);
+            y.setWeight(yNewWeight);
 
-	        return true;
+            return true;
         }
 
         return false;
@@ -149,22 +149,22 @@ public class CBNetController extends NetworkController {
         InfraNode c = x.getRightChild();
 
         if (super.zigZagLeftTopDown(z, direction)) {
-	        long xOldWeight = x.getWeight();
-	        long yOldWeight = y.getWeight();
-	        long zOldWeight = z.getWeight();
+            long xOldWeight = x.getWeight();
+            long yOldWeight = y.getWeight();
+            long zOldWeight = z.getWeight();
 
-	        long bWeight = (b.getId() != -1) ? b.getWeight() : 0;
-	        long cWeight = (c.getId() != -1) ? c.getWeight() : 0;
+            long bWeight = (b.getId() != -1) ? b.getWeight() : 0;
+            long cWeight = (c.getId() != -1) ? c.getWeight() : 0;
 
-	        long yNewWeight = yOldWeight - xOldWeight + bWeight;
-	        long zNewWeight = zOldWeight - yOldWeight + cWeight;
-	        long xNewWeight = xOldWeight - bWeight - cWeight + yNewWeight + zNewWeight;
+            long yNewWeight = yOldWeight - xOldWeight + bWeight;
+            long zNewWeight = zOldWeight - yOldWeight + cWeight;
+            long xNewWeight = xOldWeight - bWeight - cWeight + yNewWeight + zNewWeight;
 
-	        y.setWeight(yNewWeight);
-	        z.setWeight(zNewWeight);
-	        x.setWeight(xNewWeight);
+            y.setWeight(yNewWeight);
+            z.setWeight(zNewWeight);
+            x.setWeight(xNewWeight);
 
-	        return true;
+            return true;
         }
 
         return false;
@@ -178,22 +178,22 @@ public class CBNetController extends NetworkController {
         InfraNode c = x.getLeftChild();
 
         if (super.zigZagRightTopDown(z, direction)) {
-	        long xOldWeight = x.getWeight();
-	        long yOldWeight = y.getWeight();
-	        long zOldWeight = z.getWeight();
+            long xOldWeight = x.getWeight();
+            long yOldWeight = y.getWeight();
+            long zOldWeight = z.getWeight();
 
-	        long bWeight = (b.getId() != -1) ? b.getWeight() : 0;
-	        long cWeight = (c.getId() != -1) ? c.getWeight() : 0;
+            long bWeight = (b.getId() != -1) ? b.getWeight() : 0;
+            long cWeight = (c.getId() != -1) ? c.getWeight() : 0;
 
-	        long yNewWeight = yOldWeight - xOldWeight + bWeight;
-	        long zNewWeight = zOldWeight - yOldWeight + cWeight;
-	        long xNewWeight = xOldWeight - bWeight - cWeight + yNewWeight + zNewWeight;
+            long yNewWeight = yOldWeight - xOldWeight + bWeight;
+            long zNewWeight = zOldWeight - yOldWeight + cWeight;
+            long xNewWeight = xOldWeight - bWeight - cWeight + yNewWeight + zNewWeight;
 
-	        y.setWeight(yNewWeight);
-	        z.setWeight(zNewWeight);
-	        x.setWeight(xNewWeight);
+            y.setWeight(yNewWeight);
+            z.setWeight(zNewWeight);
+            x.setWeight(xNewWeight);
 
-	        return true;
+            return true;
         }
 
         return false;
@@ -397,7 +397,7 @@ public class CBNetController extends NetworkController {
             Message msg = inbox.next();
 
             if (msg instanceof OpticalNetMessage) {
-            	OpticalNetMessage optmsg = (OpticalNetMessage) msg;
+                OpticalNetMessage optmsg = (OpticalNetMessage) msg;
                 this.data.incrementCompletedRequests();
                 this.data.addRouting(optmsg.getRouting());
 
@@ -407,9 +407,9 @@ public class CBNetController extends NetworkController {
                 this.sinceCompleted = 0;
 
             } else if (msg instanceof NewMessage) {
-            	NewMessage newmsg = (NewMessage) msg;
+                NewMessage newmsg = (NewMessage) msg;
 
-            	this.rcvMsgs++;
+                this.rcvMsgs++;
                 this.remainingMessage.set(newmsg.getSrc(), this.remainingMessage.get(newmsg.getSrc()) + 1);
 
             } else if (msg instanceof HasMessage) {

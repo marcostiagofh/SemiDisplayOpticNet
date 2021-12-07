@@ -52,7 +52,7 @@ public class NetworkSwitch extends SynchronizerLayer {
     }
 
     // Type 2
-	public NetworkSwitch (
+    public NetworkSwitch (
         int minId1, int maxId1, int minId2, int maxId2, ArrayList<NetworkNode> netNodes
     ) {
         this.size = maxId1 - minId1 + 1;
@@ -92,14 +92,14 @@ public class NetworkSwitch extends SynchronizerLayer {
 
             inNode.addLinkToOutputNode(outNode);
         }
-	}
+    }
 
     public void updateSwitch (int in, int out, int subtreeId) {
         InputNode inNode = this.inputId2Node.get(in);
         OutputNode outNode = this.outputId2Node.get(out);
 
         this.connectNodes(inNode, outNode);
-    	inNode.getConnectedNode().setChild(inNode, subtreeId);
+        inNode.getConnectedNode().setChild(inNode, subtreeId);
     }
 
     public void updateSwitch (int in, int out) {
@@ -127,12 +127,12 @@ public class NetworkSwitch extends SynchronizerLayer {
     }
 
     public void debugSwitch () {
-    	System.out.println("SWITCH ID: " + this.index);
-    	System.out.println("Input Nodes: ");
+        System.out.println("SWITCH ID: " + this.index);
+        System.out.println("Input Nodes: ");
         for (int i = 0; i < this.size; i++) {
             System.out.println((i + 1) + " Node: " + this.inputNodes.get(i).getIndex());
         }
-    	System.out.println("Output Nodes: ");
+        System.out.println("Output Nodes: ");
         for (int i = 0; i < this.size; i++) {
             System.out.println((i + 1) + " Node: " + this.outputNodes.get(i).getIndex());
         }
@@ -141,20 +141,20 @@ public class NetworkSwitch extends SynchronizerLayer {
     @Override
     public void switchFirstRotationStep () {
         while (!this.operations.isEmpty()) {
-	        ConnectNodesMessage cntmsg = this.operations.poll();
+            ConnectNodesMessage cntmsg = this.operations.poll();
 
             if (cntmsg.getSubtreeId() == -1) {
-            	this.updateSwitch(cntmsg.getFrom(), cntmsg.getTo());
+                this.updateSwitch(cntmsg.getFrom(), cntmsg.getTo());
 
             } else {
-            	this.updateSwitch(cntmsg.getFrom(), cntmsg.getTo(), cntmsg.getSubtreeId());
+                this.updateSwitch(cntmsg.getFrom(), cntmsg.getTo(), cntmsg.getSubtreeId());
 
             }
         }
     }
 
     @Override
-    public void handleMessages (Inbox inbox) {        
+    public void handleMessages (Inbox inbox) {
         while (inbox.hasNext()) {
             Message msg = inbox.next();
             if (!(msg instanceof ConnectNodesMessage)) {

@@ -4,7 +4,7 @@ import sinalgo.nodes.messages.Message;
 
 public class NewMessage extends Message {
 
-	private OpticalNetMessage msg;
+    private OpticalNetMessage msg;
 
     public NewMessage (OpticalNetMessage msg) {
         this.msg = msg;

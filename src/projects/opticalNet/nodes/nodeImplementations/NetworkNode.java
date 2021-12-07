@@ -19,8 +19,6 @@ import sinalgo.nodes.messages.Inbox;
 import sinalgo.nodes.messages.Message;
 import sinalgo.gui.transformation.PositionTransformation;
 
-// to break ties in priority
-
 public class NetworkNode extends SynchronizerLayer {
 
     private PriorityQueue<OpticalNetMessage> buffer = new PriorityQueue<OpticalNetMessage>();
@@ -39,8 +37,8 @@ public class NetworkNode extends SynchronizerLayer {
     private Random rand = Tools.getRandomNumberGenerator();
 
     public NetworkNode () {
-    	this.minIdInSubtree = this.ID;
-    	this.maxIdInSubtree = this.ID;
+        this.minIdInSubtree = this.ID;
+        this.maxIdInSubtree = this.ID;
     }
 
     public void connectToInputNode (InputNode node) {
@@ -60,7 +58,7 @@ public class NetworkNode extends SynchronizerLayer {
     }
 
     public void removeParent () {
-    	this.parent = null;
+        this.parent = null;
     }
 
     public void setChild (InputNode node, int subtreeId) {
@@ -71,7 +69,7 @@ public class NetworkNode extends SynchronizerLayer {
             this.setLeftChild(node, subtreeId);
 
         } else {
-        	Tools.fatalError("Not clear which child to remove from node " + this.ID);
+            Tools.fatalError("Not clear which child to remove from node " + this.ID);
         }
     }
 
@@ -81,29 +79,29 @@ public class NetworkNode extends SynchronizerLayer {
     }
 
     public void removeLeftChild () {
-    	this.leftChild = null;
+        this.leftChild = null;
         this.setMinIdInSubtree(this.ID);
     }
 
     public int getLeftChildId() {
-    	if (this.leftChild == null)
-    		return -1;
+        if (this.leftChild == null)
+            return -1;
 
-    	return this.leftChild.getOutputNode().getIndex();
+        return this.leftChild.getOutputNode().getIndex();
     }
 
     public int getRightChildId() {
-    	if (this.rightChild == null)
-    		return -1;
+        if (this.rightChild == null)
+            return -1;
 
-    	return this.rightChild.getOutputNode().getIndex();
+        return this.rightChild.getOutputNode().getIndex();
     }
 
     public int getParentId() {
-    	if (this.parent == null)
-    		return -1;
+        if (this.parent == null)
+            return -1;
 
-    	return this.parent.getOutputNode().getIndex();
+        return this.parent.getOutputNode().getIndex();
     }
 
     public InputNode getLeftChild () {
@@ -120,18 +118,18 @@ public class NetworkNode extends SynchronizerLayer {
     }
 
     public void removeRightChild () {
-    	this.rightChild = null;
+        this.rightChild = null;
         this.setMaxIdInSubtree(this.ID);
     }
 
     public void setMinIdInSubtree (int value) {
-    	if (value == -1) {
-    		this.minIdInSubtree = this.ID;
+        if (value == -1) {
+            this.minIdInSubtree = this.ID;
 
-    	} else {
-    		this.minIdInSubtree = value;
+        } else {
+            this.minIdInSubtree = value;
 
-    	}
+        }
     }
 
     public int getMinIdInSubtree () {
@@ -139,13 +137,13 @@ public class NetworkNode extends SynchronizerLayer {
     }
 
     public void setMaxIdInSubtree (int value) {
-    	if (value == -1) {
-    		this.maxIdInSubtree = this.ID;
+        if (value == -1) {
+            this.maxIdInSubtree = this.ID;
 
-    	} else {
-    		this.maxIdInSubtree = value;
+        } else {
+            this.maxIdInSubtree = value;
 
-    	}
+        }
     }
 
     public int getMaxIdInSubtree () {
@@ -163,21 +161,21 @@ public class NetworkNode extends SynchronizerLayer {
 
     public void newMessage (int to) {
         double priority = Global.currentTime + this.rand.nextDouble();
-    	OpticalNetMessage optmsg = new OpticalNetMessage(this.ID, to, priority);
+        OpticalNetMessage optmsg = new OpticalNetMessage(this.ID, to, priority);
 
-    	this.buffer.add(optmsg);
+        this.buffer.add(optmsg);
         this.sendDirect(new NewMessage(optmsg), this.controller);
     }
 
     public void informController (OpticalNetMessage optmsg) {
-    	if (optmsg.getDst() == this.ID) {
+        if (optmsg.getDst() == this.ID) {
             System.out.println("Message received from node " + optmsg.getSrc());
             this.sendDirect(optmsg, this.controller);
             this.currMsg = null;
 
             return;
 
-    	}
+        }
 
         if (this.minIdInSubtree <= optmsg.getDst() && optmsg.getDst() < this.ID) {
             if (this.getLeftChildId() == optmsg.getDst()) {
@@ -225,29 +223,29 @@ public class NetworkNode extends SynchronizerLayer {
 
     @Override
     public void nodeInformStep () {
-    	if (!buffer.isEmpty()) {
-	        this.currMsg = this.buffer.poll();
-	        this.informController(this.currMsg);
+        if (!buffer.isEmpty()) {
+            this.currMsg = this.buffer.poll();
+            this.informController(this.currMsg);
 
-    	}
+        }
     }
 
     @Override
     public void nodeRoutingStep () {
-    	if (this.allowRouting && this.currMsg == null) {
-    		Tools.fatalError("Node allowed routing non-existing message");
+        if (this.allowRouting && this.currMsg == null) {
+            Tools.fatalError("Node allowed routing non-existing message");
 
-    	}
+        }
 
-    	if (this.allowRouting && this.currMsg != null) {
-	        this.sendMsg(this.currMsg);
+        if (this.allowRouting && this.currMsg != null) {
+            this.sendMsg(this.currMsg);
 
-    	} else if (this.currMsg != null) {
-    		this.buffer.add(this.currMsg);
-    		
-    	}
+        } else if (this.currMsg != null) {
+            this.buffer.add(this.currMsg);
 
-    	this.currMsg = null;
+        }
+
+        this.currMsg = null;
         this.allowRouting = false;
     }
 
@@ -257,8 +255,8 @@ public class NetworkNode extends SynchronizerLayer {
             Message msg = inbox.next();
 
             if ((msg instanceof OpticalNetMessage)) {
-            	OpticalNetMessage optmsg = (OpticalNetMessage) msg;
-            	this.buffer.add(optmsg);
+                OpticalNetMessage optmsg = (OpticalNetMessage) msg;
+                this.buffer.add(optmsg);
 
             } else if ((msg instanceof AllowRoutingMessage)) {
                 this.allowRouting = true;
@@ -269,10 +267,10 @@ public class NetworkNode extends SynchronizerLayer {
 
     public void debugNode () {
         System.out.println(
-        	"NETID: " + this.getId()
-        	+ " lftID: " + this.getLeftChildId()
-        	+ " rgtID: " + this.getRightChildId()
-        	+ " parentId: " + this.getParentId()
+            "NETID: " + this.getId()
+            + " lftID: " + this.getLeftChildId()
+            + " rgtID: " + this.getRightChildId()
+            + " parentId: " + this.getParentId()
             + " leftSUB: " + this.minIdInSubtree + " rightSUB: " + this.maxIdInSubtree
         );
     }

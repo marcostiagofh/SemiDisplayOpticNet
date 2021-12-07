@@ -4,7 +4,7 @@ import sinalgo.tools.Tools;
 
 public class InfraNode {
 
-	/* Attributes */
+    /* Attributes */
     private InfraNode parent = null;
     private InfraNode leftChild = null;
     private InfraNode rightChild = null;
@@ -14,33 +14,33 @@ public class InfraNode {
 
     private long weight = 0;
 
-	private int id = 0;
-	private static int ID = 0;
-	/* End of Attributes */
+    private int id = 0;
+    private static int ID = 0;
+    /* End of Attributes */
 
-	/* Constructors */
+    /* Constructors */
     public InfraNode () {
-    	this.id = ID++;
-    	this.parent = new InfraNode(-1);
-    	this.leftChild = new InfraNode(-1);
-    	this.rightChild = new InfraNode(-1);
-    	this.minId = this.id;
-    	this.maxId = this.id;
+        this.id = ID++;
+        this.parent = new InfraNode(-1);
+        this.leftChild = new InfraNode(-1);
+        this.rightChild = new InfraNode(-1);
+        this.minId = this.id;
+        this.maxId = this.id;
     }
 
     public InfraNode (int dummy) {
-    	this.id = dummy;
-    	this.minId = this.id;
-    	this.maxId = this.id;
+        this.id = dummy;
+        this.minId = this.id;
+        this.maxId = this.id;
     }
 
     public InfraNode (InfraNode parent, InfraNode leftChild, InfraNode rightChild) {
-    	this.id = ID++;
-    	this.parent = parent;
-    	this.leftChild = leftChild;
-    	this.rightChild = rightChild;
-    	this.minId = this.leftChild.getId() == -1 ? this.getId() : this.leftChild.getId();
-    	this.maxId = this.rightChild.getId() == -1 ? this.getId() : this.rightChild.getId();
+        this.id = ID++;
+        this.parent = parent;
+        this.leftChild = leftChild;
+        this.rightChild = rightChild;
+        this.minId = this.leftChild.getId() == -1 ? this.getId() : this.leftChild.getId();
+        this.maxId = this.rightChild.getId() == -1 ? this.getId() : this.rightChild.getId();
     }
     /* End of Constructors */
 
@@ -91,11 +91,11 @@ public class InfraNode {
             );
             return -1;
         } else if (this.getId() > child.getId()) {
-        	this.getLeftChild().resetParent(this);
+            this.getLeftChild().resetParent(this);
             return this.setLeftChild(child);
 
         } else {
-        	this.getRightChild().resetParent(this);
+            this.getRightChild().resetParent(this);
             return this.setRightChild(child);
 
         }
@@ -109,11 +109,11 @@ public class InfraNode {
                 return this.setRightChild(child);
 
         } else if (this.getId() > child.getId()) {
-        	this.getLeftChild().resetParent(this);
+            this.getLeftChild().resetParent(this);
             return this.setLeftChild(child);
 
         } else {
-        	this.getRightChild().resetParent(this);
+            this.getRightChild().resetParent(this);
             return this.setRightChild(child);
 
         }
@@ -144,11 +144,11 @@ public class InfraNode {
             return;
 
         if (this.leftChild.getId() != -1 && this.leftChild.getId() == rstNode.getId()) {
-        	this.updateMin(new InfraNode(-1));
+            this.updateMin(new InfraNode(-1));
             this.leftChild = new InfraNode(-1);
 
         } else if (this.rightChild.getId() != -1 && this.rightChild.getId() == rstNode.getId()) {
-        	this.updateMax(new InfraNode(-1));
+            this.updateMax(new InfraNode(-1));
             this.rightChild = new InfraNode(-1);
 
         }
@@ -187,7 +187,7 @@ public class InfraNode {
     }
 
     public void setWeight (long weight) {
-    	this.weight = weight;
+        this.weight = weight;
     }
 
     public void incrementPathWeight (int toId, boolean rooted) {
@@ -218,19 +218,19 @@ public class InfraNode {
 
     /* Auxiliary Functions */
     public void debugNode () {
-    	if (this.id == -1) {
-    		System.out.println("Dummy Node");
+        if (this.id == -1) {
+            System.out.println("Dummy Node");
 
-    	} else {
-	        System.out.println(
+        } else {
+            System.out.println(
                 "INFRAID: " + this.getId()
                 + " lftID: " + this.getLeftChild().getId()
-	            + " rgtID: " + this.getRightChild().getId()
+                + " rgtID: " + this.getRightChild().getId()
                 + " parentId: " + this.getParent().getId()
-	            + " leftSUB: " + this.getMinId() + " rightSUB: " + this.getMaxId()
-	        );
+                + " leftSUB: " + this.getMinId() + " rightSUB: " + this.getMaxId()
+            );
 
-    	}
+        }
     }
     /* End of Auxiliary Functions */
 }

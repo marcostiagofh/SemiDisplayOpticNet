@@ -484,8 +484,12 @@ public abstract class NetworkController extends SynchronizerLayer {
 
         }
 
-        this.sendConnectNodesMessage(swtId, fromNode.getId() + 1, toNode.getId() + 1, subtreeId, priority);
-        this.sendConnectNodesMessage(swtId + 1, toNode.getId() + 1, fromNode.getId() + 1, priority);
+        this.sendConnectNodesMessage(
+            swtId, fromNode.getId() + 1, toNode.getId() + 1, subtreeId, priority
+        );
+        this.sendConnectNodesMessage(
+            swtId + 1, toNode.getId() + 1, fromNode.getId() + 1, priority
+        );
     }
 
     private void sendConnectNodesMessage (int switchId, int from, int to, int priority) {
@@ -635,29 +639,29 @@ public abstract class NetworkController extends SynchronizerLayer {
             }
 
             if (allowRouting) {
-	            InfraNode x = node;
-	            if (direction == Direction.PARENT || direction == Direction.PARENTROUT) {
-	                InfraNode y = x.getParent();
-	                if (this.areAvailableNodes(x, y)) {
-	                    this.sendDirect(new AllowRoutingMessage(), this.getNetNode(nodeId));
-	
-	                }
-	
-	            } else if (direction == Direction.LEFT || direction == Direction.LEFTROUT) {
-	                InfraNode y = x.getLeftChild();
-	                if (this.areAvailableNodes(x, y)) {
-	                    this.sendDirect(new AllowRoutingMessage(), this.getNetNode(nodeId));
-	
-	                }
-	
-	            } else if (direction == Direction.RIGHT || direction == Direction.RIGHTROUT) {
-	                InfraNode y = x.getRightChild();
-	                if (this.areAvailableNodes(x, y)) {
-	                    this.sendDirect(new AllowRoutingMessage(), this.getNetNode(nodeId));
-	
-	                }
-	
-	            }
+                InfraNode x = node;
+                if (direction == Direction.PARENT || direction == Direction.PARENTROUT) {
+                    InfraNode y = x.getParent();
+                    if (this.areAvailableNodes(x, y)) {
+                        this.sendDirect(new AllowRoutingMessage(), this.getNetNode(nodeId));
+
+                    }
+
+                } else if (direction == Direction.LEFT || direction == Direction.LEFTROUT) {
+                    InfraNode y = x.getLeftChild();
+                    if (this.areAvailableNodes(x, y)) {
+                        this.sendDirect(new AllowRoutingMessage(), this.getNetNode(nodeId));
+
+                    }
+
+                } else if (direction == Direction.RIGHT || direction == Direction.RIGHTROUT) {
+                    InfraNode y = x.getRightChild();
+                    if (this.areAvailableNodes(x, y)) {
+                        this.sendDirect(new AllowRoutingMessage(), this.getNetNode(nodeId));
+
+                    }
+
+                }
             }
 
         }

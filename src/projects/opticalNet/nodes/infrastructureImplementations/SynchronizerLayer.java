@@ -56,13 +56,13 @@ public abstract class SynchronizerLayer extends Node {
     public void posRound () { }
 
     // unused methods ----------------------------------------------------
-	@Override
-	public void preStep () { }
+    @Override
+    public void preStep () { }
 
-	@Override
-	public void neighborhoodChange () { }
+    @Override
+    public void neighborhoodChange () { }
 
-	@Override
-	public void checkRequirements () throws WrongConfigurationException { }
+    @Override
+    public void checkRequirements () throws WrongConfigurationException { }
 
 }
