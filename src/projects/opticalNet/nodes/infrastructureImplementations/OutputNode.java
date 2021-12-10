@@ -51,7 +51,7 @@ public class OutputNode extends Node {
         while (inbox.hasNext()) {
             Message msg = inbox.next();
             this.sendToConnectedNode(msg);
-            
+
         }
     }
 

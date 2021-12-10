@@ -10,9 +10,9 @@ import projects.opticalNet.nodes.infrastructureImplementations.Direction;
 import projects.opticalNet.nodes.infrastructureImplementations.InfraNode;
 import projects.opticalNet.nodes.infrastructureImplementations.Rotation;
 import projects.opticalNet.nodes.infrastructureImplementations.SynchronizerLayer;
-import projects.opticalNet.nodes.messages.AllowRoutingMessage;
-import projects.opticalNet.nodes.messages.ConnectNodesMessage;
 import projects.opticalNet.nodes.messages.HasMessage;
+import projects.opticalNet.nodes.messages.RoutingInfoMessage;
+import projects.opticalNet.nodes.messages.ConnectNodesMessage;
 import sinalgo.gui.transformation.PositionTransformation;
 import sinalgo.tools.Tools;
 
@@ -21,6 +21,7 @@ public abstract class NetworkController extends SynchronizerLayer {
     /* Attributes */
     private ArrayList<Boolean> usedNodes;
     protected PriorityQueue<HasMessage> nodesWithMsg = new PriorityQueue<HasMessage>();
+    protected PriorityQueue<RoutingInfoMessage> routingNodes = new PriorityQueue<RoutingInfoMessage>();
 
     protected ArrayList<InfraNode> tree;
     protected ArrayList<NetworkSwitch> switches;
@@ -533,7 +534,27 @@ public abstract class NetworkController extends SynchronizerLayer {
 
     public abstract Rotation getRotationToPerform (InfraNode x, Direction direction);
 
+    private void lockRoutingNodes () {
+        while (!this.routingNodes.isEmpty()) {
+            RoutingInfoMessage routmsg = this.routingNodes.poll();
+            int nodeId = routmsg.getNodeId();
+            InfraNode node = this.tree.get(nodeId - 1);
+            InfraNode nxtNode = node.getRoutingNode(routmsg.getRoutedMsg().getDst());
+
+            if (this.areAvailableNodes(node, nxtNode)) {
+                this.sendDirect(routmsg, this.getNetNode(nodeId));
+
+            } else {
+                Tools.fatalError("Nodes that were supposed to rout are already occupied");
+
+            }
+        }
+
+    }
+
     public void updateConn () {
+        lockRoutingNodes();
+
         while (!this.nodesWithMsg.isEmpty()) {
             HasMessage hasmsg = this.nodesWithMsg.poll();
             int nodeId = hasmsg.getCurrId();
@@ -551,7 +572,7 @@ public abstract class NetworkController extends SynchronizerLayer {
                         this.data.addRotations(1);
                         this.data.addAlterations(3);
 
-                        this.sendDirect(new AllowRoutingMessage(), this.getNetNode(nodeId));
+                        this.sendDirect(new RoutingInfoMessage(1), this.getNetNode(nodeId));
 
                     } else {
                         allowRouting = true;
@@ -580,7 +601,7 @@ public abstract class NetworkController extends SynchronizerLayer {
                         this.data.addRotations(1);
                         this.data.addAlterations(3);
 
-                        this.sendDirect(new AllowRoutingMessage(), this.getNetNode(nodeId));
+                        this.sendDirect(new RoutingInfoMessage(2), this.getNetNode(nodeId));
 
                     } else {
                         allowRouting = true;
@@ -595,7 +616,7 @@ public abstract class NetworkController extends SynchronizerLayer {
                         this.data.addRotations(1);
                         this.data.addAlterations(5);
 
-                        this.sendDirect(new AllowRoutingMessage(), this.getNetNode(nodeId));
+                        this.sendDirect(new RoutingInfoMessage(1), this.getNetNode(nodeId));
 
                     } else {
                         allowRouting = true;
@@ -610,7 +631,7 @@ public abstract class NetworkController extends SynchronizerLayer {
                         this.data.addRotations(1);
                         this.data.addAlterations(3);
 
-                        this.sendDirect(new AllowRoutingMessage(), this.getNetNode(nodeId));
+                        this.sendDirect(new RoutingInfoMessage(2), this.getNetNode(nodeId));
 
                     } else {
                         allowRouting = true;
@@ -625,7 +646,7 @@ public abstract class NetworkController extends SynchronizerLayer {
                         this.data.addRotations(1);
                         this.data.addAlterations(5);
 
-                        this.sendDirect(new AllowRoutingMessage(), this.getNetNode(nodeId));
+                        this.sendDirect(new RoutingInfoMessage(1), this.getNetNode(nodeId));
 
                     } else {
                         allowRouting = true;
@@ -639,27 +660,9 @@ public abstract class NetworkController extends SynchronizerLayer {
             }
 
             if (allowRouting) {
-                InfraNode x = node;
-                if (direction == Direction.PARENT || direction == Direction.PARENTROUT) {
-                    InfraNode y = x.getParent();
-                    if (this.areAvailableNodes(x, y)) {
-                        this.sendDirect(new AllowRoutingMessage(), this.getNetNode(nodeId));
-
-                    }
-
-                } else if (direction == Direction.LEFT || direction == Direction.LEFTROUT) {
-                    InfraNode y = x.getLeftChild();
-                    if (this.areAvailableNodes(x, y)) {
-                        this.sendDirect(new AllowRoutingMessage(), this.getNetNode(nodeId));
-
-                    }
-
-                } else if (direction == Direction.RIGHT || direction == Direction.RIGHTROUT) {
-                    InfraNode y = x.getRightChild();
-                    if (this.areAvailableNodes(x, y)) {
-                        this.sendDirect(new AllowRoutingMessage(), this.getNetNode(nodeId));
-
-                    }
+                InfraNode nxtNode = node.getRoutingNode(direction);
+                if (this.areAvailableNodes(node, nxtNode)) {
+                    this.sendDirect(new RoutingInfoMessage(1), this.getNetNode(nodeId));
 
                 }
             }

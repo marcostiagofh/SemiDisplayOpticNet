@@ -6,6 +6,7 @@ import projects.defaultProject.DataCollection;
 import projects.opticalNet.nodes.messages.HasMessage;
 import projects.opticalNet.nodes.messages.NewMessage;
 import projects.opticalNet.nodes.messages.OpticalNetMessage;
+import projects.opticalNet.nodes.messages.RoutingInfoMessage;
 import projects.opticalNet.nodes.infrastructureImplementations.InfraNode;
 import projects.opticalNet.nodes.infrastructureImplementations.Rotation;
 import projects.opticalNet.nodes.infrastructureImplementations.Direction;
@@ -415,6 +416,10 @@ public class CBNetController extends NetworkController {
             } else if (msg instanceof HasMessage) {
                 HasMessage hasmsg = (HasMessage) msg;
                 this.nodesWithMsg.add(hasmsg);
+
+            } else if (msg instanceof RoutingInfoMessage) {
+            	RoutingInfoMessage routmsg = (RoutingInfoMessage) msg;
+                this.routingNodes.add(routmsg);
 
             }
 

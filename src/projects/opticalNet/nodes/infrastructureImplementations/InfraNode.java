@@ -1,5 +1,7 @@
 package projects.opticalNet.nodes.infrastructureImplementations;
 
+import projects.opticalNet.nodes.infrastructureImplementations.Direction;
+
 import sinalgo.tools.Tools;
 
 public class InfraNode {
@@ -192,6 +194,7 @@ public class InfraNode {
 
     public void incrementPathWeight (int toId, boolean rooted) {
         this.incrementWeight();
+        Direction direction = this.getRoutingDirection(toId);
 
         if (!rooted && this.parent.getId() != -1) {
             this.parent.incrementPathWeight(toId, false);
@@ -199,14 +202,45 @@ public class InfraNode {
         } else if (this.getId() == toId) {
             return;
 
-        } else if (this.getId() < toId && toId <= this.maxId) {
+        } else if (direction == Direction.RIGHT) {
             this.rightChild.incrementPathWeight(toId, true);
 
-        } else if (this.minId <= toId && toId < this.getId()) {
+        } else if (direction == Direction.LEFT) {
             this.leftChild.incrementPathWeight(toId, true);
 
         } else {
-            this.parent.incrementPathWeight(toId, true);
+            Tools.fatalError("Incrementing parent weigth after going to root");
+
+        }
+    }
+
+    public InfraNode getRoutingNode (int toId) {
+        return this.getRoutingNode(this.getRoutingDirection(toId));
+
+    }
+
+    public InfraNode getRoutingNode (Direction direction) {
+        if (direction == Direction.RIGHT || direction == Direction.RIGHTROUT) {
+            return this.rightChild;
+
+        } else if (direction == Direction.LEFT || direction == Direction.LEFTROUT) {
+            return this.leftChild;
+
+        } else {
+            return this.parent;
+
+        }
+    }
+
+    public Direction getRoutingDirection (int toId) {
+        if (this.getId() < toId && toId <= this.maxId) {
+            return Direction.RIGHT;
+
+        } else if (this.minId <= toId && toId < this.getId()) {
+            return Direction.LEFT;
+
+        } else {
+            return Direction.PARENT;
 
         }
     }
