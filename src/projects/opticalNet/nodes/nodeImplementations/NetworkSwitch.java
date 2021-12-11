@@ -6,13 +6,13 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.PriorityQueue;
+import java.util.LinkedList;
+import java.util.Queue;
 
 import projects.opticalNet.nodes.messages.ConnectNodesMessage;
 import projects.opticalNet.nodes.infrastructureImplementations.InputNode;
 import projects.opticalNet.nodes.infrastructureImplementations.OutputNode;
 import projects.opticalNet.nodes.infrastructureImplementations.SynchronizerLayer;
-import sinalgo.configuration.WrongConfigurationException;
 import sinalgo.gui.transformation.PositionTransformation;
 import sinalgo.nodes.messages.Inbox;
 import sinalgo.nodes.messages.Message;
@@ -36,7 +36,9 @@ public class NetworkSwitch extends SynchronizerLayer {
     private int unitSize = 0;
     private int internalNodeSize = 0;
 
-    private PriorityQueue<ConnectNodesMessage> operations = new PriorityQueue<ConnectNodesMessage>();
+    private Queue<ConnectNodesMessage> operations = new LinkedList<ConnectNodesMessage>();
+    private Queue<ConnectNodesMessage> firstRoundOperations = new LinkedList<ConnectNodesMessage>();
+    private Queue<ConnectNodesMessage> secondRoundOperations = new LinkedList<ConnectNodesMessage>();
 
     public void setIndex (int index) {
         this.index = index;

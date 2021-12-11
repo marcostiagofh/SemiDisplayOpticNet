@@ -30,18 +30,6 @@ public class OpticalNetMessage extends Message implements Comparable<OpticalNetM
         return this.priority;
     }
 
-    public void setPriority (double priority) {
-        this.priority = priority;
-    }
-
-    public void setSrc (int src) {
-        this.src = src;
-    }
-
-    public void setDst (int dst) {
-        this.dst = dst;
-    }
-
     public long getRouting () {
         return routing;
     }

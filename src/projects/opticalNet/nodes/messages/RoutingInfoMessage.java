@@ -6,10 +6,12 @@ public class RoutingInfoMessage extends Message implements Comparable<RoutingInf
 
     private int nodeId = -1;
     private int routingTimes = 0;
+    private int routingRound = -1;
     private OpticalNetMessage routedMsg = null;
 
-    public RoutingInfoMessage (int routingTimes) {
+    public RoutingInfoMessage (int routingTimes, int routingRound) {
         this.routingTimes = routingTimes;
+        this.routingRound = routingRound;
     }
 
     public void setNodeId (int nodeId) {
@@ -34,6 +36,11 @@ public class RoutingInfoMessage extends Message implements Comparable<RoutingInf
 
     public int getRoutingTimes () {
         return this.routingTimes;
+
+    }
+
+    public int getRoutingRound () {
+        return this.routingRound;
 
     }
 

@@ -237,8 +237,7 @@ public class NetworkNode extends SynchronizerLayer {
         }
     }
 
-    @Override
-    public void nodeSecondRoutingStep () {
+    public boolean configureRoutingMessage (int routingRound) {
         if (this.routMsg == null) {
             if (this.currMsg != null) {
                 this.buffer.add(this.currMsg);
@@ -246,7 +245,7 @@ public class NetworkNode extends SynchronizerLayer {
 
             }
 
-            return;
+            return false;
 
         } else if (this.currMsg == null && this.routMsg.getRoutedMsg() == null) {
             Tools.fatalError("Trying to route non-existing message");
@@ -254,16 +253,38 @@ public class NetworkNode extends SynchronizerLayer {
         } else if (this.currMsg != null && this.routMsg.getRoutedMsg() != null) {
             Tools.fatalError("Trying to route more than one message");
 
+        } else if (this.routMsg.getRoutingRound() != routingRound) {
+            return false;
+
         } else if (this.currMsg != null) {
             this.routMsg.setRoutedMsg(this.currMsg);
             this.currMsg = null;
 
         }
 
-        this.routMsg.decreaseRoutingTimes();
-        this.sendMsg(this.routMsg);
+        return true;
+    }
 
-        this.routMsg = null;
+    @Override
+    public void nodeSecondRoutingStep () {
+        if (this.configureRoutingMessage(2)) {
+            this.routMsg.decreaseRoutingTimes();
+            this.sendMsg(this.routMsg);
+
+            this.routMsg = null;
+
+        }
+    }
+
+    @Override
+    public void nodeFirstRoutingStep () {
+        if (this.configureRoutingMessage(1)) {
+            this.routMsg.decreaseRoutingTimes();
+            this.sendMsg(this.routMsg);
+
+            this.routMsg = null;
+
+        }
     }
 
     @Override
