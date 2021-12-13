@@ -1,6 +1,5 @@
 package projects.opticalNet.nodes.nodeImplementations;
 
-import java.awt.Color;
 import java.awt.Graphics;
 import java.util.ArrayList;
 import java.util.PriorityQueue;
@@ -179,7 +178,7 @@ public abstract class NetworkController extends SynchronizerLayer {
         boolean leftZigZig = (y.getId() == z.getLeftChild().getId());
         InfraNode c = (leftZigZig) ? y.getRightChild() : y.getLeftChild();
 
-        if (direction == Direction.PARENT && this.areAvailableNodes(w, z, y, c)) {
+        if (direction == Direction.PARENT && this.areAvailableNodes(w, x, z, y, c)) {
             this.mapConn(z, c, y);
             this.mapConn(y, z);
             this.mapConn(w, y);
@@ -236,9 +235,10 @@ public abstract class NetworkController extends SynchronizerLayer {
         */
         InfraNode w = z.getParent();
         InfraNode y = z.getLeftChild();
+        InfraNode x = y.getLeftChild();
         InfraNode c = y.getRightChild();
 
-        if (direction == Direction.LEFT && this.areAvailableNodes(w, z, y, c)) {
+        if (direction == Direction.LEFT && this.areAvailableNodes(w, x, z, y, c)) {
             this.mapConn(z, c, y);
             this.mapConn(y, z);
             this.mapConn(w, y);
@@ -252,9 +252,10 @@ public abstract class NetworkController extends SynchronizerLayer {
     protected boolean zigZigRightTopDown (InfraNode z, Direction direction) {
         InfraNode w = z.getParent();
         InfraNode y = z.getRightChild();
+        InfraNode x = y.getRightChild();
         InfraNode c = y.getLeftChild();
 
-        if (direction == Direction.RIGHT && this.areAvailableNodes(w, z, y, c)) {
+        if (direction == Direction.RIGHT && this.areAvailableNodes(w, x, z, y, c)) {
             this.mapConn(z, c, y);
             this.mapConn(y, z);
             this.mapConn(w, y);
@@ -538,10 +539,23 @@ public abstract class NetworkController extends SynchronizerLayer {
         while (!this.routingNodes.isEmpty()) {
             RoutingInfoMessage routmsg = this.routingNodes.poll();
             int nodeId = routmsg.getNodeId();
-            InfraNode node = this.tree.get(nodeId - 1);
-            InfraNode nxtNode = node.getRoutingNode(routmsg.getRoutedMsg().getDst());
 
-            if (this.areAvailableNodes(node, nxtNode)) {
+            ArrayList<InfraNode> lockNodes = new ArrayList<>();
+            InfraNode node = this.tree.get(nodeId - 1);
+            lockNodes.add(node);
+
+            for (int i = 1; i <= routmsg.getRoutingTimes(); i++) {
+                InfraNode nxtNode = node.getRoutingNode(routmsg.getDst() - 1);
+                if (nxtNode.getId() == -1 || nxtNode.getId() == node.getId()) {
+                    break;
+
+                }
+
+                lockNodes.add(nxtNode);
+                node = nxtNode;
+            }
+
+            if (this.areAvailableNodes(lockNodes.toArray(new InfraNode[0]))) {
                 this.sendDirect(routmsg, this.getNetNode(nodeId));
 
             } else {
@@ -553,13 +567,13 @@ public abstract class NetworkController extends SynchronizerLayer {
     }
 
     public void updateConn () {
-        lockRoutingNodes();
+        this.lockRoutingNodes();
 
         while (!this.nodesWithMsg.isEmpty()) {
             HasMessage hasmsg = this.nodesWithMsg.poll();
             int nodeId = hasmsg.getCurrId();
             InfraNode node = this.tree.get(nodeId - 1);
-            Direction direction = hasmsg.getDirection();
+            Direction direction = node.getRoutingDirection(hasmsg.getDst() - 1);
 
             Rotation op = this.getRotationToPerform(node, direction);
             boolean allowRouting = (op == Rotation.NULL);
@@ -572,7 +586,7 @@ public abstract class NetworkController extends SynchronizerLayer {
                         this.data.addRotations(1);
                         this.data.addAlterations(3);
 
-                        this.sendDirect(new RoutingInfoMessage(1, 2), this.getNetNode(nodeId));
+                        this.sendDirect(new RoutingInfoMessage(1), this.getNetNode(nodeId));
 
                     } else {
                         allowRouting = true;
@@ -601,7 +615,7 @@ public abstract class NetworkController extends SynchronizerLayer {
                         this.data.addRotations(1);
                         this.data.addAlterations(3);
 
-                        this.sendDirect(new RoutingInfoMessage(2, 2), this.getNetNode(nodeId));
+                        this.sendDirect(new RoutingInfoMessage(2), this.getNetNode(nodeId));
 
                     } else {
                         allowRouting = true;
@@ -616,7 +630,15 @@ public abstract class NetworkController extends SynchronizerLayer {
                         this.data.addRotations(1);
                         this.data.addAlterations(5);
 
-                        this.sendDirect(new RoutingInfoMessage(1, 2), this.getNetNode(nodeId));
+                        InfraNode rfrshNode = this.tree.get(nodeId - 1);
+                        InfraNode nxtNode = rfrshNode.getRoutingNode(hasmsg.getDst() - 1);
+                        if (nxtNode == rfrshNode.getParent()) {
+                            this.sendDirect(new RoutingInfoMessage(3), this.getNetNode(nodeId));
+
+                        } else {
+                            this.sendDirect(new RoutingInfoMessage(1), this.getNetNode(nodeId));
+
+                        }
 
                     } else {
                         allowRouting = true;
@@ -631,7 +653,7 @@ public abstract class NetworkController extends SynchronizerLayer {
                         this.data.addRotations(1);
                         this.data.addAlterations(3);
 
-                        this.sendDirect(new RoutingInfoMessage(2, 2), this.getNetNode(nodeId));
+                        this.sendDirect(new RoutingInfoMessage(2), this.getNetNode(nodeId));
 
                     } else {
                         allowRouting = true;
@@ -646,7 +668,15 @@ public abstract class NetworkController extends SynchronizerLayer {
                         this.data.addRotations(1);
                         this.data.addAlterations(5);
 
-                        this.sendDirect(new RoutingInfoMessage(1, 2), this.getNetNode(nodeId));
+                        InfraNode rfrshNode = this.tree.get(nodeId - 1);
+                        InfraNode nxtNode = rfrshNode.getRoutingNode(hasmsg.getDst() - 1);
+                        if (nxtNode == rfrshNode.getParent()) {
+                            this.sendDirect(new RoutingInfoMessage(3), this.getNetNode(nodeId));
+
+                        } else {
+                            this.sendDirect(new RoutingInfoMessage(1), this.getNetNode(nodeId));
+
+                        }
 
                     } else {
                         allowRouting = true;
@@ -660,9 +690,10 @@ public abstract class NetworkController extends SynchronizerLayer {
             }
 
             if (allowRouting) {
-                InfraNode nxtNode = node.getRoutingNode(direction);
-                if (this.areAvailableNodes(node, nxtNode)) {
-                    this.sendDirect(new RoutingInfoMessage(1, 2), this.getNetNode(nodeId));
+                InfraNode x = this.tree.get(nodeId - 1);
+                InfraNode y = x.getRoutingNode(direction);
+                if (this.areAvailableNodes(x, y)) {
+                    this.sendDirect(new RoutingInfoMessage(1), this.getNetNode(nodeId));
 
                 }
             }
@@ -710,12 +741,6 @@ public abstract class NetworkController extends SynchronizerLayer {
 
         int missingMessages = 0;
         for (int i = 0; i <= this.numNodes; i++) {
-            if (this.remainingMessage.get(i) >= 1) {
-                // System.out.println(
-                //     "Node: " + i + " still has " +
-                //     this.remainingMessage.get(i) + " messages on the network"
-                // );
-            }
             missingMessages += this.remainingMessage.get(i);
 
         }
@@ -777,11 +802,7 @@ public abstract class NetworkController extends SynchronizerLayer {
     }
 
     @Override
-    public void draw (Graphics g, PositionTransformation pt, boolean highlight) {
-        String text = "" + ID;
-        // draw the node as a circle with the text inside
-        super.drawNodeAsDiskWithText(g, pt, highlight, text, 12, Color.YELLOW);
-    }
+    public void draw (Graphics g, PositionTransformation pt, boolean highlight) { }
 
     public void renderTopology (int width, int height) {
         // set network nodes position

@@ -37,9 +37,7 @@ public class NetworkSwitch extends SynchronizerLayer {
     private int internalNodeSize = 0;
 
     private Queue<ConnectNodesMessage> operations = new LinkedList<ConnectNodesMessage>();
-    private Queue<ConnectNodesMessage> firstRoundOperations = new LinkedList<ConnectNodesMessage>();
-    private Queue<ConnectNodesMessage> secondRoundOperations = new LinkedList<ConnectNodesMessage>();
-
+    
     public void setIndex (int index) {
         this.index = index;
     }
@@ -141,7 +139,7 @@ public class NetworkSwitch extends SynchronizerLayer {
     }
 
     @Override
-    public void switchFirstRotationStep () {
+    public void switchRotationStep () {
         while (!this.operations.isEmpty()) {
             ConnectNodesMessage cntmsg = this.operations.poll();
 

@@ -32,15 +32,13 @@ public abstract class SynchronizerLayer extends Node {
                 controllerStep();
                 break;
             case 2:
-                switchFirstRotationStep();
-                nodeFirstRoutingStep();
+                switchRotationStep();
                 break;
             case 3:
-                nodeSecondRoutingStep();
+                nodeRoutingStep();
                 break;
             case 4: break;
             case 5:
-            	switchSecondRotationStep();
             case 6:
                 posRound();
                 this.round++;
@@ -53,11 +51,8 @@ public abstract class SynchronizerLayer extends Node {
     public void nodeInformStep () { }
     public void controllerStep () { }
 
-    public void switchFirstRotationStep () { }
-    public void nodeFirstRoutingStep () { }
-
-    public void switchSecondRotationStep () { }
-    public void nodeSecondRoutingStep () { }
+    public void switchRotationStep () { }
+    public void nodeRoutingStep () { }
 
     public void posRound () { }
 

@@ -1,31 +1,29 @@
 package projects.opticalNet.nodes.messages;
 
-import projects.opticalNet.nodes.infrastructureImplementations.Direction;
-
 import sinalgo.nodes.messages.Message;
 
 public class HasMessage extends Message implements Comparable<HasMessage>  {
 
+    private int dst;
     private int currId;
     private double priority;
-    private Direction direction;
 
-    public HasMessage (int currId, double priority, Direction direction) {
+    public HasMessage (int currId, double priority, int dst) {
+        this.dst = dst;
         this.currId = currId;
         this.priority = priority;
-        this.direction = direction;
     }
 
     public int getCurrId () {
         return this.currId;
     }
-    
+
     public double priority () {
     	return this.priority;
     }
 
-    public Direction getDirection () {
-        return this.direction;
+    public int getDst () {
+        return this.dst;
     }
 
     @Override

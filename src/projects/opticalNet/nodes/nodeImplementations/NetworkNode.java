@@ -1,6 +1,5 @@
 package projects.opticalNet.nodes.nodeImplementations;
 
-import java.awt.Color;
 import java.util.Random;
 import java.awt.Graphics;
 import java.util.PriorityQueue;
@@ -205,7 +204,7 @@ public class NetworkNode extends SynchronizerLayer {
 
     public void informController (OpticalNetMessage optmsg) {
         if (optmsg.getDst() == this.ID) {
-            System.out.println("Message received from node " + optmsg.getSrc());
+            System.out.println("OPT-Message received from node " + optmsg.getSrc());
             this.sendDirect(optmsg, this.controller);
             this.currMsg = null;
 
@@ -215,7 +214,7 @@ public class NetworkNode extends SynchronizerLayer {
 
         this.sendDirect(
             new HasMessage(
-            		this.ID, optmsg.getPriority(), this.getRoutingDirection(optmsg)
+            		this.ID, optmsg.getPriority(), optmsg.getDst()
             ), this.controller
         );
     }
@@ -237,7 +236,7 @@ public class NetworkNode extends SynchronizerLayer {
         }
     }
 
-    public boolean configureRoutingMessage (int routingRound) {
+    public boolean configureRoutingMessage () {
         if (this.routMsg == null) {
             if (this.currMsg != null) {
                 this.buffer.add(this.currMsg);
@@ -253,9 +252,6 @@ public class NetworkNode extends SynchronizerLayer {
         } else if (this.currMsg != null && this.routMsg.getRoutedMsg() != null) {
             Tools.fatalError("Trying to route more than one message");
 
-        } else if (this.routMsg.getRoutingRound() != routingRound) {
-            return false;
-
         } else if (this.currMsg != null) {
             this.routMsg.setRoutedMsg(this.currMsg);
             this.currMsg = null;
@@ -266,19 +262,17 @@ public class NetworkNode extends SynchronizerLayer {
     }
 
     @Override
-    public void nodeSecondRoutingStep () {
-        if (this.configureRoutingMessage(2)) {
-            this.routMsg.decreaseRoutingTimes();
-            this.sendMsg(this.routMsg);
+    public void nodeRoutingStep () {
+        if (this.configureRoutingMessage()) {
+            if (this.routMsg.getDst() == this.ID) {
+                System.out.println("ROUT-Message received from node " + this.routMsg.getSrc());
+                this.sendDirect(this.routMsg.getRoutedMsg(), this.controller);
+                this.routMsg = null;
 
-            this.routMsg = null;
+                return;
 
-        }
-    }
+            }
 
-    @Override
-    public void nodeFirstRoutingStep () {
-        if (this.configureRoutingMessage(1)) {
             this.routMsg.decreaseRoutingTimes();
             this.sendMsg(this.routMsg);
 
@@ -330,9 +324,5 @@ public class NetworkNode extends SynchronizerLayer {
     //-----------------------------------------------------------------------------------
 
     @Override
-    public void draw (Graphics g, PositionTransformation pt, boolean highlight) {
-        String text = "" + ID;
-        // draw the node as a circle with the text inside
-        super.drawNodeAsDiskWithText(g, pt, highlight, text, 12, Color.YELLOW);
-    }
+    public void draw (Graphics g, PositionTransformation pt, boolean highlight) { }
 }
