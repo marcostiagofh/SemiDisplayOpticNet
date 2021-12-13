@@ -220,7 +220,10 @@ public class InfraNode {
     }
 
     public InfraNode getRoutingNode (Direction direction) {
-        if (direction == Direction.RIGHT || direction == Direction.RIGHTROUT) {
+    	if (direction == Direction.NULL) {
+    		return this;
+
+    	} else if (direction == Direction.RIGHT || direction == Direction.RIGHTROUT) {
             return this.rightChild;
 
         } else if (direction == Direction.LEFT || direction == Direction.LEFTROUT) {
@@ -233,7 +236,10 @@ public class InfraNode {
     }
 
     public Direction getRoutingDirection (int toId) {
-        if (this.getId() < toId && toId <= this.maxId) {
+    	if (this.getId() == toId) {
+    		return Direction.NULL;
+
+    	} else if (this.getId() < toId && toId <= this.maxId) {
             return Direction.RIGHT;
 
         } else if (this.minId <= toId && toId < this.getId()) {
