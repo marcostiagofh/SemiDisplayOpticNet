@@ -6,7 +6,6 @@ import java.util.Random;
 import projects.cbOptNet.nodes.timers.TriggerNodeOperation;
 import projects.cbOptNet.nodes.nodeImplementations.CBNetController;
 import projects.opticalNet.nodes.nodeImplementations.NetworkNode;
-import projects.defaultProject.DataCollection;
 import projects.defaultProject.RequestQueue;
 
 import sinalgo.configuration.Configuration;
@@ -34,8 +33,6 @@ public class CustomGlobal extends AbstractCustomGlobal {
     public Random random = Tools.getRandomNumberGenerator();
     public double lambda = 0.05;
 
-    DataCollection data = DataCollection.getInstance();
-
     @Override
     public void preRun () {
         String input = "";
@@ -61,9 +58,6 @@ public class CustomGlobal extends AbstractCustomGlobal {
             System.out.println("Missing configuration parameters");
         }
 
-        /* Set Log Path */
-        this.data.setPath(output);
-
         this.requestQueue = new RequestQueue(input);
         MAX_REQ = this.requestQueue.getNumberOfRequests();
 
@@ -74,9 +68,12 @@ public class CustomGlobal extends AbstractCustomGlobal {
         }
 
         this.controller = new CBNetController(
-            this.numberOfNodes, this.switchSize, netNodes, this.data
+            this.numberOfNodes, this.switchSize, netNodes
         );
         this.controller.finishInitializationWithDefaultModels(true);
+
+        /* Set Log Path */
+        this.controller.setLogPath(output);
 
         for (int i = 0; i < this.numberOfNodes; i++) {
             netNodes.get(i).setController(this.controller);
@@ -87,21 +84,21 @@ public class CustomGlobal extends AbstractCustomGlobal {
 
     @Override
     public void preRound () {
-        
+
         if (mustGenerateSplay && this.requestQueue.hasNextRequest()) {
             mustGenerateSplay = false;
-            
+
             double u = random.nextDouble();
             double x = Math.log(1 - u) / (-lambda);
             x = (int) x;
             if (x <= 0) {
                 x = 1;
             }
-            
+
             Tuple<Integer, Integer> r = this.requestQueue.getNextRequest();
             TriggerNodeOperation ted = new TriggerNodeOperation(r.first + 1, r.second + 1);
             ted.startGlobalTimer(x);
-            
+
         }
 
         // System.out.println(this.data.getCompletedRequests() + " " + MAX_REQ);
@@ -109,7 +106,9 @@ public class CustomGlobal extends AbstractCustomGlobal {
 
     @Override
     public boolean hasTerminated () {
-        if (this.data.getCompletedRequests() == MAX_REQ) {
+        if (this.controller.getCompletedRequests() == MAX_REQ) {
+            this.controller.logEndOfSimulation();
+
             return true;
 
         }

@@ -20,6 +20,7 @@ public abstract class LoggerLayer extends SynchronizerLayer {
     private ArrayList<Long> alterationsPerSwitchRound;
     private ArrayList<Long> routingsPerNodeRound;
     private ArrayList<Long> rotationsPerNodeRound;
+    private ArrayList<Long> alterationsPerNodeRound;
 
     private ArrayList<Long> lockedNodes;
 
@@ -35,6 +36,7 @@ public abstract class LoggerLayer extends SynchronizerLayer {
 
     private Logging nodesRoutingsPerRound;
     private Logging nodesRotationsPerRound;
+    private Logging nodesAlterationsPerRound;
 
     private Logging clustersRoutingsPerRound;
     private Logging switchesRoutingsPerRound;
@@ -57,101 +59,26 @@ public abstract class LoggerLayer extends SynchronizerLayer {
 
     public abstract int getNumClusters ();
 
-    public abstract int getClusterSize ();
+    public abstract int getSwitchesPerCluster ();
 
-    public void setLogPath (String path) {
-        this.rotationPerRound = Logging.getLogger(path + "/rotations_per_round.txt");
-        this.routingPerRound = Logging.getLogger(path + "/routings_per_round.txt");
-        this.alterationPerRound = Logging.getLogger(path + "/alterations_per_round.txt");
+    protected abstract boolean isValidNode (InfraNode node);
 
-        this.lockedNodesPerRound = Logging.getLogger(path + "/locked_nodes_per_round.txt");
-
-        this.nodesRoutingsPerRound = Logging.getLogger(path + "/nodes_routings_per_round.txt");
-        this.nodesRotationsPerRound = Logging.getLogger(path + "/nodes_rotations_per_round.txt");
-        this.switchesRoutingsPerRound = Logging.getLogger(
-            path + "/switches_routings_per_round.txt"
-        );
-        this.clustersRoutingsPerRound = Logging.getLogger(
-            path + "/clusters_routings_per_round.txt"
-        );
-        this.switchesAlterationsPerRound = Logging.getLogger(
-            path + "/switches_alterations_per_round.txt"
-        );
-        this.clustersAlterationsPerRound = Logging.getLogger(
-            path + "/clusters_alterations_per_round.txt"
-        );
-
-        this.activeRequestsPerRound = Logging.getLogger(path + "/active_requests_per_round.txt");
-
-        this.routingPerMessage = Logging.getLogger(path + "/routing_per_message.txt");
-
-        this.throughputLog = Logging.getLogger(path + "/throughput.txt");
-        this.operationsLog = Logging.getLogger(path + "/operations.txt");
-        this.sequenceLog = Logging.getLogger(path + "/sequence.txt");
-    }
-
-    public void resetRoundInfo () {
-        this.routingsPerNodeRound = new ArrayList<>(Collections.nCopies(this.getNumNodes(), 0L));
-        this.rotationsPerNodeRound = new ArrayList<>(Collections.nCopies(this.getNumNodes(), 0L));
-        this.routingsPerSwitchRound = new ArrayList<>(
-            Collections.nCopies(this.getNumSwitches(), 0L)
-        );
-        this.alterationsPerSwitchRound = new ArrayList<>(
-            Collections.nCopies(this.getNumSwitches(), 0L)
-        );
-
-        this.lockedNodes = new ArrayList<>(Collections.nCopies(this.getNumNodes(), 0L));
-
-        this.activeRequests = 0;
-        this.currentRoundRotations = 0;
-
-    }
-
-    public long currentRoundRoutings () {
-        return this.routingsPerSwitchRound.stream().mapToLong(Long::longValue).sum();
-
-    }
-
-    public long currentRoundAlterations () {
-        return this.alterationsPerSwitchRound.stream().mapToLong(Long::longValue).sum();
-
-    }
-
-    private ArrayList<Long> compressToCluster (ArrayList<Long> switchInfo) {
-        ArrayList<Long> clusterInfo = new ArrayList<>();
-        int beginOfCluster = 0;
-
-        for (int i = 0; i < this.getNumClusters(); i++) {
-            long clusterValue = 0;
-            for (int j = 0; j < this.getClusterSize(); j++) {
-                clusterValue += switchInfo.get(beginOfCluster + j);
-
-            }
-
-            clusterInfo.add(clusterValue);
-            beginOfCluster += this.getClusterSize();
-        }
-
-        return clusterInfo;
-
-    }
-
-    private String stringfyLogArray (ArrayList<Long> logArray) {
-        return Stream.of(logArray).map(Object::toString).collect(Collectors.joining(" "));
-
-    }
+    /* Logger Functions */
 
     @Override
     public void logRoundResults () {
         this.rotationPerRound.logln(this.currentRoundRotations + "");
-        this.routingPerRound.logln(this.currentRoundRoutings() + "");
-        this.alterationPerRound.logln(this.currentRoundAlterations() + "");
+        this.routingPerRound.logln(this.getCurrentRoundRoutings() + "");
+        this.alterationPerRound.logln(this.getCurrentRoundAlterations() + "");
 
         this.lockedNodesPerRound.logln(this.stringfyLogArray(this.lockedNodes));
 
         this.nodesRoutingsPerRound.logln(this.stringfyLogArray(this.routingsPerNodeRound));
         this.nodesRotationsPerRound.logln(
             this.stringfyLogArray(this.rotationsPerNodeRound)
+        );
+        this.nodesAlterationsPerRound.logln(
+            this.stringfyLogArray(this.alterationsPerNodeRound)
         );
 
         this.switchesRoutingsPerRound.logln(this.stringfyLogArray(this.routingsPerSwitchRound));
@@ -170,36 +97,29 @@ public abstract class LoggerLayer extends SynchronizerLayer {
 
     }
 
-    public void lockNodes (InfraNode... nodesInvolved) {
-        for (InfraNode infNode: nodesInvolved) {
-            int nodeId = infNode.getId();
-            this.lockedNodes.set(nodeId, 1L);
-        }
+    public void logEndOfSimulation () {
+        this.printRoutingCounter();
+        this.printRotationCounter();
+        this.printAlterationCounter();
+        this.printMessageRoutingCounter();
 
     }
 
-    public void addRotation (long num, InfraNode... nodesInvolved) {
-        this.rotationCounter.addSample(num);
-        this.currentRoundRotations += num;
+    /* End of Logger Functions */
 
-        for (InfraNode infNode: nodesInvolved) {
-            int nodeId = infNode.getId();
-            long value = this.rotationsPerNodeRound.get(nodeId);
-            this.rotationsPerNodeRound.set(nodeId, value + num);
-        }
+    /* Setter Functions */
 
-    }
-
-    public void incrementActiveRequests () {
-        this.activeRequests++;
-
-    }
-
-    public void incrementAlterations (int swtId) {
+    public void incrementAlterations (int swtId, int fromNodeId, int toNodeId) {
         this.alterationCounter.addSample(1);
 
         long value = this.alterationsPerSwitchRound.get(swtId);
         this.alterationsPerSwitchRound.set(swtId, value + 1);
+
+        long fromNodeRouting = this.alterationsPerNodeRound.get(fromNodeId);
+        this.alterationsPerNodeRound.set(fromNodeId, fromNodeRouting + 1);
+
+        long toNodeRouting = this.alterationsPerNodeRound.get(toNodeId);
+        this.alterationsPerNodeRound.set(toNodeId, toNodeRouting + 1);
 
     }
 
@@ -217,9 +137,47 @@ public abstract class LoggerLayer extends SynchronizerLayer {
 
     }
 
-    public void addMessageRouting (long num) {
+    public void logMessageRouting (long num) {
         this.messageRoutingCounter.addSample(num);
         this.routingPerMessage.logln(num + "");
+
+    }
+
+    public void logRotation (long num, InfraNode... nodesInvolved) {
+        this.rotationCounter.addSample(num);
+        this.currentRoundRotations += num;
+
+        for (InfraNode infNode: nodesInvolved) {
+            if (this.isValidNode(infNode)) {
+                int nodeId = infNode.getId();
+                long value = this.rotationsPerNodeRound.get(nodeId);
+
+                this.rotationsPerNodeRound.set(nodeId, value + num);
+
+            }
+        }
+
+    }
+
+    public void logLockedNodes (InfraNode... nodesInvolved) {
+        for (InfraNode infNode: nodesInvolved) {
+            if (this.isValidNode(infNode)) {
+                int nodeId = infNode.getId();
+
+                this.lockedNodes.set(nodeId, 1L);
+
+            }
+        }
+
+    }
+
+    public void incrementActiveRequests () {
+        this.activeRequests++;
+
+    }
+
+    public void incrementCompletedRequests () {
+        this.completedRequests++;
 
     }
 
@@ -233,8 +191,17 @@ public abstract class LoggerLayer extends SynchronizerLayer {
 
     }
 
-    public void incrementCompletedRequests () {
-        this.completedRequests++;
+    /* End of Setters Functions */
+
+    /* Getters */
+
+    public long getCurrentRoundRoutings () {
+        return this.routingsPerSwitchRound.stream().mapToLong(Long::longValue).sum();
+
+    }
+
+    public long getCurrentRoundAlterations () {
+        return this.alterationsPerSwitchRound.stream().mapToLong(Long::longValue).sum();
 
     }
 
@@ -257,6 +224,10 @@ public abstract class LoggerLayer extends SynchronizerLayer {
         return this.routingCounter;
 
     }
+
+    /* End of Getters */
+
+    /* Printer Functions */
 
     public void printAlterationCounter () {
         System.out.println("Alterations:");
@@ -294,7 +265,7 @@ public abstract class LoggerLayer extends SynchronizerLayer {
         );
     }
 
-    public void printRoutingConter () {
+    public void printRoutingCounter () {
         System.out.println("Routing:");
         System.out.println("Number of request " + this.routingCounter.getNumberOfSamples());
         System.out.println("Mean: " + this.routingCounter.getMean());
@@ -312,7 +283,7 @@ public abstract class LoggerLayer extends SynchronizerLayer {
         );
     }
 
-    public void printMessageRoutingConter () {
+    public void printMessageRoutingCounter () {
         System.out.println("Message Routing:");
         System.out.println("Number of messages " + this.messageRoutingCounter.getNumberOfSamples());
         System.out.println("Mean: " + this.messageRoutingCounter.getMean());
@@ -332,9 +303,93 @@ public abstract class LoggerLayer extends SynchronizerLayer {
         );
     }
 
+    /* End of Printer Functions */
+
+    /* Auxiliary Functions */
+
+    public void setLogPath (String path) {
+        this.rotationPerRound = Logging.getLogger(path + "/rotations_per_round.txt");
+        this.routingPerRound = Logging.getLogger(path + "/routings_per_round.txt");
+        this.alterationPerRound = Logging.getLogger(path + "/alterations_per_round.txt");
+
+        this.lockedNodesPerRound = Logging.getLogger(path + "/locked_nodes_per_round.txt");
+
+        this.nodesRoutingsPerRound = Logging.getLogger(path + "/nodes_routings_per_round.txt");
+        this.nodesRotationsPerRound = Logging.getLogger(path + "/nodes_rotations_per_round.txt");
+        this.nodesAlterationsPerRound = Logging.getLogger(
+            path + "/nodes_alterations_per_round.txt"
+        );
+        this.switchesRoutingsPerRound = Logging.getLogger(
+            path + "/switches_routings_per_round.txt"
+        );
+        this.clustersRoutingsPerRound = Logging.getLogger(
+            path + "/clusters_routings_per_round.txt"
+        );
+        this.switchesAlterationsPerRound = Logging.getLogger(
+            path + "/switches_alterations_per_round.txt"
+        );
+        this.clustersAlterationsPerRound = Logging.getLogger(
+            path + "/clusters_alterations_per_round.txt"
+        );
+
+        this.activeRequestsPerRound = Logging.getLogger(path + "/active_requests_per_round.txt");
+
+        this.routingPerMessage = Logging.getLogger(path + "/routing_per_message.txt");
+
+        this.throughputLog = Logging.getLogger(path + "/throughput.txt");
+        this.operationsLog = Logging.getLogger(path + "/operations.txt");
+        this.sequenceLog = Logging.getLogger(path + "/sequence.txt");
+    }
+
+    private ArrayList<Long> compressToCluster (ArrayList<Long> switchInfo) {
+        ArrayList<Long> clusterInfo = new ArrayList<>();
+        int beginOfCluster = 0;
+
+        for (int i = 0; i < this.getNumClusters(); i++) {
+            long clusterValue = 0;
+            for (int j = 0; j < this.getSwitchesPerCluster(); j++) {
+                clusterValue += switchInfo.get(beginOfCluster + j);
+
+            }
+
+            clusterInfo.add(clusterValue);
+            beginOfCluster += this.getSwitchesPerCluster();
+        }
+
+        return clusterInfo;
+
+    }
+
+    private String stringfyLogArray (ArrayList<Long> logArray) {
+        return Stream.of(logArray).map(Object::toString).collect(Collectors.joining(" "));
+
+    }
+
+    /* End of Auxiliary Functions */
+
+    /* Reset counter Functions */
+    public void resetRoundInfo () {
+        this.routingsPerNodeRound = new ArrayList<>(Collections.nCopies(this.getNumNodes(), 0L));
+        this.rotationsPerNodeRound = new ArrayList<>(Collections.nCopies(this.getNumNodes(), 0L));
+        this.alterationsPerNodeRound = new ArrayList<>(Collections.nCopies(this.getNumNodes(), 0L));
+        this.routingsPerSwitchRound = new ArrayList<>(
+            Collections.nCopies(this.getNumSwitches(), 0L)
+        );
+        this.alterationsPerSwitchRound = new ArrayList<>(
+            Collections.nCopies(this.getNumSwitches(), 0L)
+        );
+
+        this.lockedNodes = new ArrayList<>(Collections.nCopies(this.getNumNodes(), 0L));
+
+        this.activeRequests = 0;
+        this.currentRoundRotations = 0;
+
+    }
+
     public void resetCollection () {
         this.alterationCounter.reset();
         this.rotationCounter.reset();
         this.routingCounter.reset();
     }
+    /* End of Reset counter Functions */
 }

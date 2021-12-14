@@ -40,6 +40,7 @@ public abstract class SynchronizerLayer extends Node {
             case 4: break;
             case 5:
             case 6:
+                logRoundResults();
                 posRound();
                 this.round++;
                 break;
@@ -54,6 +55,7 @@ public abstract class SynchronizerLayer extends Node {
     public void switchRotationStep () { }
     public void nodeRoutingStep () { }
 
+    public void logRoundResults () { }
     public void posRound () { }
 
     // unused methods ----------------------------------------------------

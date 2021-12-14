@@ -2,7 +2,6 @@ package projects.cbOptNet.nodes.nodeImplementations;
 
 import java.util.ArrayList;
 
-import projects.defaultProject.DataCollection;
 import projects.opticalNet.nodes.messages.HasMessage;
 import projects.opticalNet.nodes.messages.NewMessage;
 import projects.opticalNet.nodes.messages.OpticalNetMessage;
@@ -20,14 +19,14 @@ public class CBNetController extends NetworkController {
 
     private double epsilon = -1.5;
 
-    public CBNetController (int numNodes, int switchSize, ArrayList<NetworkNode> netNodes, DataCollection data) {
-        super(numNodes, switchSize, netNodes, data);
+    public CBNetController (int numNodes, int switchSize, ArrayList<NetworkNode> netNodes) {
+        super(numNodes, switchSize, netNodes);
     }
 
     public CBNetController (
-        int numNodes, int switchSize, ArrayList<NetworkNode> netNodes, DataCollection data, ArrayList<Integer> edgeList
+        int numNodes, int switchSize, ArrayList<NetworkNode> netNodes, ArrayList<Integer> edgeList
     ) {
-        super(numNodes, switchSize, netNodes, data, edgeList);
+        super(numNodes, switchSize, netNodes, edgeList);
     }
 
     @Override
@@ -399,19 +398,22 @@ public class CBNetController extends NetworkController {
 
             if (msg instanceof OpticalNetMessage) {
                 OpticalNetMessage optmsg = (OpticalNetMessage) msg;
-                this.data.incrementCompletedRequests();
-                this.data.addRouting(optmsg.getRouting());
+                this.incrementCompletedRequests();
+                this.logMessageRouting(optmsg.getRouting());
 
                 this.incrementPathWeight(optmsg.getSrc(), optmsg.getDst());
 
-                this.remainingMessage.set(optmsg.getSrc(), this.remainingMessage.get(optmsg.getSrc()) - 1);
-                this.sinceCompleted = 0;
+                this.remainingMessage.set(
+                    optmsg.getSrc(), this.remainingMessage.get(optmsg.getSrc()) - 1
+                );
 
             } else if (msg instanceof NewMessage) {
                 NewMessage newmsg = (NewMessage) msg;
 
                 this.rcvMsgs++;
-                this.remainingMessage.set(newmsg.getSrc(), this.remainingMessage.get(newmsg.getSrc()) + 1);
+                this.remainingMessage.set(
+                    newmsg.getSrc(), this.remainingMessage.get(newmsg.getSrc()) + 1
+                );
 
             } else if (msg instanceof HasMessage) {
                 HasMessage hasmsg = (HasMessage) msg;

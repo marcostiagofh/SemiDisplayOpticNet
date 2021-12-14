@@ -4,8 +4,7 @@ import java.awt.Graphics;
 import java.util.ArrayList;
 import java.util.PriorityQueue;
 
-import projects.defaultProject.DataCollection;
-import projects.opticalNet.nodes.infrastructureImplementations.SynchronizerLayer;
+import projects.opticalNet.nodes.infrastructureImplementations.LoggerLayer;
 import projects.opticalNet.nodes.messages.HasMessage;
 import projects.opticalNet.nodes.messages.RoutingInfoMessage;
 import projects.opticalNet.nodes.models.Direction;
@@ -15,7 +14,7 @@ import projects.opticalNet.nodes.messages.ConnectNodesMessage;
 import sinalgo.gui.transformation.PositionTransformation;
 import sinalgo.tools.Tools;
 
-public abstract class NetworkController extends SynchronizerLayer {
+public abstract class NetworkController extends LoggerLayer {
 
     /* Attributes */
     private ArrayList<Boolean> usedNodes;
@@ -34,32 +33,26 @@ public abstract class NetworkController extends SynchronizerLayer {
     protected int clusterSize;
 
     protected int rcvMsgs = 0;
-    protected int rotations = 0;
-    protected DataCollection data;
     protected ArrayList<Integer> remainingMessage;
-
-    public int sinceCompleted = 0;
 
     private static final int SIZE_CLUSTER_TYPE1 = 4;
     private static final int SIZE_CLUSTER_TYPE2 = 4;
 
     /* End of Attributes */
 
-    public NetworkController (int numNodes, int switchSize, ArrayList<NetworkNode> netNodes, DataCollection data) {
-        this(numNodes, switchSize, netNodes, data, new ArrayList<Integer>());
+    public NetworkController (int numNodes, int switchSize, ArrayList<NetworkNode> netNodes) {
+        this(numNodes, switchSize, netNodes, new ArrayList<Integer>());
     }
 
     public NetworkController (
-        int numNodes, int switchSize, ArrayList<NetworkNode> netNodes, DataCollection data, ArrayList<Integer> edgeList
+        int numNodes, int switchSize, ArrayList<NetworkNode> netNodes, ArrayList<Integer> edgeList
     ) {
-
         this.numNodes = numNodes;
         this.switchSize = switchSize;
         this.tree = new ArrayList<>();
         this.switches = new ArrayList<>();
         this.netNodes = netNodes;
 
-        this.data = data;
         this.remainingMessage = new ArrayList<>();
 
         this.clusterSize = this.switchSize / 2;
@@ -179,6 +172,8 @@ public abstract class NetworkController extends SynchronizerLayer {
         InfraNode c = (leftZigZig) ? y.getRightChild() : y.getLeftChild();
 
         if (direction == Direction.PARENT && this.areAvailableNodes(w, x, z, y, c)) {
+            this.logRotation(1, w, z, y, c);
+
             this.mapConn(z, c, y);
             this.mapConn(y, z);
             this.mapConn(w, y);
@@ -211,6 +206,8 @@ public abstract class NetworkController extends SynchronizerLayer {
         InfraNode c = (leftZigZag) ? x.getRightChild() : x.getLeftChild();
 
         if (direction == Direction.PARENT && this.areAvailableNodes(w, z, y, x, b, c)) {
+            this.logRotation(2, w, z, y, x, b, c);
+
             this.mapConn(y, b, x);
             this.mapConn(x, y);
             this.mapConn(z, c, x);
@@ -239,6 +236,8 @@ public abstract class NetworkController extends SynchronizerLayer {
         InfraNode c = y.getRightChild();
 
         if (direction == Direction.LEFT && this.areAvailableNodes(w, x, z, y, c)) {
+            this.logRotation(1, w, z, y, c);
+
             this.mapConn(z, c, y);
             this.mapConn(y, z);
             this.mapConn(w, y);
@@ -256,6 +255,8 @@ public abstract class NetworkController extends SynchronizerLayer {
         InfraNode c = y.getLeftChild();
 
         if (direction == Direction.RIGHT && this.areAvailableNodes(w, x, z, y, c)) {
+            this.logRotation(1, w, z, y, c);
+
             this.mapConn(z, c, y);
             this.mapConn(y, z);
             this.mapConn(w, y);
@@ -283,6 +284,8 @@ public abstract class NetworkController extends SynchronizerLayer {
         InfraNode c = x.getRightChild();
 
         if (direction == Direction.LEFT && this.areAvailableNodes(w, z, y, x, b, c)) {
+            this.logRotation(2, w, z, y, x, b, c);
+
             this.mapConn(y, b, x);
             this.mapConn(x, y);
             this.mapConn(z, c, x);
@@ -303,6 +306,8 @@ public abstract class NetworkController extends SynchronizerLayer {
         InfraNode c = x.getLeftChild();
 
         if (direction == Direction.RIGHT && this.areAvailableNodes(w, z, y, x, b, c)) {
+            this.logRotation(2, w, z, y, x, b, c);
+
             this.mapConn(y, b, x);
             this.mapConn(x, y);
             this.mapConn(z, c, x);
@@ -323,9 +328,11 @@ public abstract class NetworkController extends SynchronizerLayer {
             }
         }
 
+        this.logLockedNodes(nodes);
         for (InfraNode infNode: nodes) {
             if (infNode.getId() != -1) {
                 this.usedNodes.set(infNode.getId(), true);
+
             }
         }
 
@@ -334,16 +341,24 @@ public abstract class NetworkController extends SynchronizerLayer {
     /* End of Rotations */
 
     /* Getters */
+    @Override
     public int getNumNodes () {
         return this.numNodes;
     }
 
+    @Override
     public int getNumSwitches () {
         return this.numSwitches;
     }
 
+    @Override
     public int getNumClusters () {
         return this.numClusters;
+    }
+
+    @Override
+    public int getSwitchesPerCluster () {
+    	return NetworkController.SIZE_CLUSTER_TYPE1;
     }
 
     public int getNumUnionClusters () {
@@ -428,6 +443,7 @@ public abstract class NetworkController extends SynchronizerLayer {
         return this.getClusterId(node1) == this.getClusterId(node2);
     }
 
+    @Override
     protected boolean isValidNode (InfraNode node) {
         if (node.getId() == -1) {
             return false;
@@ -485,6 +501,8 @@ public abstract class NetworkController extends SynchronizerLayer {
             Tools.fatalError("Trying to make root node as a child");
 
         }
+
+        this.incrementAlterations(swtId, fromNode.getId(), toNode.getId());
 
         this.sendConnectNodesMessage(
             swtId, fromNode.getId() + 1, toNode.getId() + 1, subtreeId
@@ -556,6 +574,12 @@ public abstract class NetworkController extends SynchronizerLayer {
             }
 
             if (this.areAvailableNodes(lockNodes.toArray(new InfraNode[0]))) {
+                InfraNode x = node;
+                InfraNode y = node.getRoutingNode(routmsg.getDst() - 1);
+                int swtId = this.getSwitchId(x, y);
+                this.incrementActiveRequests();
+                this.incrementRouting(swtId, x.getId(), y.getId());
+
                 this.sendDirect(routmsg, this.getNetNode(nodeId));
 
             } else {
@@ -583,8 +607,7 @@ public abstract class NetworkController extends SynchronizerLayer {
                 case ZIGZIGRIGHT_BOTTOMUP:
                     if (this.zigZigBottomUp(node, direction)) {
                         System.out.println("zigZigBottomUp");
-                        this.data.addRotations(1);
-                        this.data.addAlterations(3);
+                        this.incrementActiveRequests();
 
                         this.sendDirect(new RoutingInfoMessage(1), this.getNetNode(nodeId));
 
@@ -599,8 +622,7 @@ public abstract class NetworkController extends SynchronizerLayer {
                 case ZIGZAGRIGHT_BOTTOMUP:
                     if (this.zigZagBottomUp(node, direction)) {
                         System.out.println("zigZagBottomUp");
-                        this.data.addRotations(1);
-                        this.data.addAlterations(5);
+                        this.incrementActiveRequests();
 
                     } else {
                         allowRouting = true;
@@ -612,8 +634,7 @@ public abstract class NetworkController extends SynchronizerLayer {
                 case ZIGZIGLEFT_TOPDOWN:
                     if (this.zigZigLeftTopDown(node, direction)) {
                         System.out.println("zigZigLeftTopDown");
-                        this.data.addRotations(1);
-                        this.data.addAlterations(3);
+                        this.incrementActiveRequests();
 
                         this.sendDirect(new RoutingInfoMessage(2), this.getNetNode(nodeId));
 
@@ -627,11 +648,11 @@ public abstract class NetworkController extends SynchronizerLayer {
                 case ZIGZAGLEFT_TOPDOWN:
                     if (this.zigZagLeftTopDown(node, direction)) {
                         System.out.println("zigZagLeftTopDown");
-                        this.data.addRotations(1);
-                        this.data.addAlterations(5);
+                        this.incrementActiveRequests();
 
                         InfraNode rfrshNode = this.tree.get(nodeId - 1);
                         InfraNode nxtNode = rfrshNode.getRoutingNode(hasmsg.getDst() - 1);
+
                         if (nxtNode == rfrshNode.getParent()) {
                             this.sendDirect(new RoutingInfoMessage(3), this.getNetNode(nodeId));
 
@@ -650,8 +671,7 @@ public abstract class NetworkController extends SynchronizerLayer {
                 case ZIGZIGRIGHT_TOPDOWN:
                     if (this.zigZigRightTopDown(node, direction)) {
                         System.out.println("zigZigRightTopDown");
-                        this.data.addRotations(1);
-                        this.data.addAlterations(3);
+                        this.incrementActiveRequests();
 
                         this.sendDirect(new RoutingInfoMessage(2), this.getNetNode(nodeId));
 
@@ -665,11 +685,11 @@ public abstract class NetworkController extends SynchronizerLayer {
                 case ZIGZAGRIGHT_TOPDOWN:
                     if (this.zigZagRightTopDown(node, direction)) {
                         System.out.println("zigZagRightTopDown");
-                        this.data.addRotations(1);
-                        this.data.addAlterations(5);
+                        this.incrementActiveRequests();
 
                         InfraNode rfrshNode = this.tree.get(nodeId - 1);
                         InfraNode nxtNode = rfrshNode.getRoutingNode(hasmsg.getDst() - 1);
+
                         if (nxtNode == rfrshNode.getParent()) {
                             this.sendDirect(new RoutingInfoMessage(3), this.getNetNode(nodeId));
 
@@ -692,7 +712,12 @@ public abstract class NetworkController extends SynchronizerLayer {
             if (allowRouting) {
                 InfraNode x = this.tree.get(nodeId - 1);
                 InfraNode y = x.getRoutingNode(direction);
+                int swtId = this.getSwitchId(x, y);
+
                 if (this.areAvailableNodes(x, y)) {
+                    this.incrementActiveRequests();
+                    this.incrementRouting(swtId, x.getId(), y.getId());
+
                     this.sendDirect(new RoutingInfoMessage(1), this.getNetNode(nodeId));
 
                 }
@@ -720,8 +745,7 @@ public abstract class NetworkController extends SynchronizerLayer {
 
     /* End of Auxiliary Functions */
 
-    @Override
-    public void controllerStep () {
+    public void checkRoundConfiguration () {
         if (!this.validTree()) {
             Tools.fatalError("Invalid infra tree");
         }
@@ -732,8 +756,13 @@ public abstract class NetworkController extends SynchronizerLayer {
 
             }
         }
+    }
 
-        this.sinceCompleted++;
+    @Override
+    public void controllerStep () {
+        this.checkRoundConfiguration();
+        this.resetRoundInfo();
+
         for (int i = 0; i <= this.numNodes; i++)
             this.usedNodes.set(i, false);
 
