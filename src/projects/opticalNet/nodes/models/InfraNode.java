@@ -1,6 +1,4 @@
-package projects.opticalNet.nodes.infrastructureImplementations;
-
-import projects.opticalNet.nodes.infrastructureImplementations.Direction;
+package projects.opticalNet.nodes.models;
 
 import sinalgo.tools.Tools;
 

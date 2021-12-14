@@ -1,4 +1,4 @@
-package projects.opticalNet.nodes.infrastructureImplementations;
+package projects.opticalNet.nodes.models;
 
 public enum Direction {
     NULL,

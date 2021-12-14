@@ -7,9 +7,9 @@ import projects.opticalNet.nodes.messages.HasMessage;
 import projects.opticalNet.nodes.messages.NewMessage;
 import projects.opticalNet.nodes.messages.OpticalNetMessage;
 import projects.opticalNet.nodes.messages.RoutingInfoMessage;
-import projects.opticalNet.nodes.infrastructureImplementations.InfraNode;
-import projects.opticalNet.nodes.infrastructureImplementations.Rotation;
-import projects.opticalNet.nodes.infrastructureImplementations.Direction;
+import projects.opticalNet.nodes.models.Direction;
+import projects.opticalNet.nodes.models.InfraNode;
+import projects.opticalNet.nodes.models.Rotation;
 import projects.opticalNet.nodes.nodeImplementations.NetworkController;
 import projects.opticalNet.nodes.nodeImplementations.NetworkNode;
 

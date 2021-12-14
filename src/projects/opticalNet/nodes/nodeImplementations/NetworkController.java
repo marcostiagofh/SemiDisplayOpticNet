@@ -5,12 +5,12 @@ import java.util.ArrayList;
 import java.util.PriorityQueue;
 
 import projects.defaultProject.DataCollection;
-import projects.opticalNet.nodes.infrastructureImplementations.Direction;
-import projects.opticalNet.nodes.infrastructureImplementations.InfraNode;
-import projects.opticalNet.nodes.infrastructureImplementations.Rotation;
 import projects.opticalNet.nodes.infrastructureImplementations.SynchronizerLayer;
 import projects.opticalNet.nodes.messages.HasMessage;
 import projects.opticalNet.nodes.messages.RoutingInfoMessage;
+import projects.opticalNet.nodes.models.Direction;
+import projects.opticalNet.nodes.models.InfraNode;
+import projects.opticalNet.nodes.models.Rotation;
 import projects.opticalNet.nodes.messages.ConnectNodesMessage;
 import sinalgo.gui.transformation.PositionTransformation;
 import sinalgo.tools.Tools;

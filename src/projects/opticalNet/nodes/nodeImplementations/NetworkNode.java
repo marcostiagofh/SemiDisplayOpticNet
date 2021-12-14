@@ -6,9 +6,9 @@ import java.util.PriorityQueue;
 
 import projects.opticalNet.nodes.messages.NewMessage;
 import projects.opticalNet.nodes.messages.RoutingInfoMessage;
+import projects.opticalNet.nodes.models.Direction;
 import projects.opticalNet.nodes.messages.HasMessage;
 import projects.opticalNet.nodes.messages.OpticalNetMessage;
-import projects.opticalNet.nodes.infrastructureImplementations.Direction;
 import projects.opticalNet.nodes.infrastructureImplementations.InputNode;
 import projects.opticalNet.nodes.infrastructureImplementations.SynchronizerLayer;
 
