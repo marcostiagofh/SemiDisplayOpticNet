@@ -410,6 +410,14 @@ public abstract class NetworkController extends LoggerLayer {
         return node.getId() / this.clusterSize;
     }
 
+    @Override
+    protected int getSwitchId (int fromNodeId, int toNodeId) {
+        InfraNode fromNode = tree.get(fromNodeId);
+        InfraNode toNode = tree.get(toNodeId);
+
+        return this.getSwitchId(fromNode, toNode);
+    }
+
     protected int getSwitchId (InfraNode fromNode, InfraNode toNode) {
         /*
                 To find the switchId between two nodes from the same cluster
@@ -502,7 +510,7 @@ public abstract class NetworkController extends LoggerLayer {
 
         }
 
-        this.incrementAlterations(swtId, fromNode.getId(), toNode.getId());
+        this.logIncrementAlterations(swtId, fromNode.getId(), toNode.getId());
 
         this.sendConnectNodesMessage(
             swtId, fromNode.getId() + 1, toNode.getId() + 1, subtreeId
@@ -574,12 +582,6 @@ public abstract class NetworkController extends LoggerLayer {
             }
 
             if (this.areAvailableNodes(lockNodes.toArray(new InfraNode[0]))) {
-                InfraNode x = node;
-                InfraNode y = node.getRoutingNode(routmsg.getDst() - 1);
-                int swtId = this.getSwitchId(x, y);
-                this.incrementActiveRequests();
-                this.incrementRouting(swtId, x.getId(), y.getId());
-
                 this.sendDirect(routmsg, this.getNetNode(nodeId));
 
             } else {
@@ -607,7 +609,7 @@ public abstract class NetworkController extends LoggerLayer {
                 case ZIGZIGRIGHT_BOTTOMUP:
                     if (this.zigZigBottomUp(node, direction)) {
                         System.out.println("zigZigBottomUp");
-                        this.incrementActiveRequests();
+                        this.logIncrementActiveRequests();
 
                         this.sendDirect(new RoutingInfoMessage(1), this.getNetNode(nodeId));
 
@@ -622,7 +624,7 @@ public abstract class NetworkController extends LoggerLayer {
                 case ZIGZAGRIGHT_BOTTOMUP:
                     if (this.zigZagBottomUp(node, direction)) {
                         System.out.println("zigZagBottomUp");
-                        this.incrementActiveRequests();
+                        this.logIncrementActiveRequests();
 
                     } else {
                         allowRouting = true;
@@ -634,7 +636,7 @@ public abstract class NetworkController extends LoggerLayer {
                 case ZIGZIGLEFT_TOPDOWN:
                     if (this.zigZigLeftTopDown(node, direction)) {
                         System.out.println("zigZigLeftTopDown");
-                        this.incrementActiveRequests();
+                        this.logIncrementActiveRequests();
 
                         this.sendDirect(new RoutingInfoMessage(2), this.getNetNode(nodeId));
 
@@ -648,7 +650,7 @@ public abstract class NetworkController extends LoggerLayer {
                 case ZIGZAGLEFT_TOPDOWN:
                     if (this.zigZagLeftTopDown(node, direction)) {
                         System.out.println("zigZagLeftTopDown");
-                        this.incrementActiveRequests();
+                        this.logIncrementActiveRequests();
 
                         InfraNode rfrshNode = this.tree.get(nodeId - 1);
                         InfraNode nxtNode = rfrshNode.getRoutingNode(hasmsg.getDst() - 1);
@@ -671,7 +673,7 @@ public abstract class NetworkController extends LoggerLayer {
                 case ZIGZIGRIGHT_TOPDOWN:
                     if (this.zigZigRightTopDown(node, direction)) {
                         System.out.println("zigZigRightTopDown");
-                        this.incrementActiveRequests();
+                        this.logIncrementActiveRequests();
 
                         this.sendDirect(new RoutingInfoMessage(2), this.getNetNode(nodeId));
 
@@ -685,7 +687,7 @@ public abstract class NetworkController extends LoggerLayer {
                 case ZIGZAGRIGHT_TOPDOWN:
                     if (this.zigZagRightTopDown(node, direction)) {
                         System.out.println("zigZagRightTopDown");
-                        this.incrementActiveRequests();
+                        this.logIncrementActiveRequests();
 
                         InfraNode rfrshNode = this.tree.get(nodeId - 1);
                         InfraNode nxtNode = rfrshNode.getRoutingNode(hasmsg.getDst() - 1);
@@ -715,9 +717,7 @@ public abstract class NetworkController extends LoggerLayer {
                 int swtId = this.getSwitchId(x, y);
 
                 if (this.areAvailableNodes(x, y)) {
-                    this.incrementActiveRequests();
-                    this.incrementRouting(swtId, x.getId(), y.getId());
-
+                    this.logIncrementActiveRequests();
                     this.sendDirect(new RoutingInfoMessage(1), this.getNetNode(nodeId));
 
                 }

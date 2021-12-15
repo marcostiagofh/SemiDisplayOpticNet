@@ -61,6 +61,8 @@ public abstract class LoggerLayer extends SynchronizerLayer {
 
     public abstract int getSwitchesPerCluster ();
 
+    protected abstract int getSwitchId (int fromNodeId, int toNodeId);
+
     protected abstract boolean isValidNode (InfraNode node);
 
     /* Logger Functions */
@@ -109,21 +111,25 @@ public abstract class LoggerLayer extends SynchronizerLayer {
 
     /* Setter Functions */
 
-    public void incrementAlterations (int swtId, int fromNodeId, int toNodeId) {
+    public void logIncrementAlterations (int swtId, int fromNodeId, int toNodeId) {
         this.alterationCounter.addSample(1);
 
         long value = this.alterationsPerSwitchRound.get(swtId);
         this.alterationsPerSwitchRound.set(swtId, value + 1);
 
-        long fromNodeRouting = this.alterationsPerNodeRound.get(fromNodeId);
-        this.alterationsPerNodeRound.set(fromNodeId, fromNodeRouting + 1);
+        long fromNodeAlterations = this.alterationsPerNodeRound.get(fromNodeId);
+        this.alterationsPerNodeRound.set(fromNodeId, fromNodeAlterations + 1);
 
-        long toNodeRouting = this.alterationsPerNodeRound.get(toNodeId);
-        this.alterationsPerNodeRound.set(toNodeId, toNodeRouting + 1);
+        long toNodeAlterations = this.alterationsPerNodeRound.get(toNodeId);
+        this.alterationsPerNodeRound.set(toNodeId, toNodeAlterations + 1);
 
     }
 
-    public void incrementRouting (int swtId, int fromNodeId, int toNodeId) {
+    public void logIncrementRouting (int netFromNodeId, int netToNodeId) {
+        int fromNodeId = netFromNodeId - 1;
+        int toNodeId = netToNodeId - 1;
+        int swtId = this.getSwitchId(fromNodeId, toNodeId);
+
         this.routingCounter.addSample(1);
 
         long switchRouting = this.routingsPerSwitchRound.get(swtId);
@@ -171,12 +177,12 @@ public abstract class LoggerLayer extends SynchronizerLayer {
 
     }
 
-    public void incrementActiveRequests () {
+    public void logIncrementActiveRequests () {
         this.activeRequests++;
 
     }
 
-    public void incrementCompletedRequests () {
+    public void logIncrementCompletedRequests () {
         this.completedRequests++;
 
     }

@@ -398,7 +398,7 @@ public class CBNetController extends NetworkController {
 
             if (msg instanceof OpticalNetMessage) {
                 OpticalNetMessage optmsg = (OpticalNetMessage) msg;
-                this.incrementCompletedRequests();
+                this.logIncrementCompletedRequests();
                 this.logMessageRouting(optmsg.getRouting());
 
                 this.incrementPathWeight(optmsg.getSrc(), optmsg.getDst());

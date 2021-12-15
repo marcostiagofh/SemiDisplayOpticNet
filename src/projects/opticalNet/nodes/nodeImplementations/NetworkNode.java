@@ -221,6 +221,10 @@ public class NetworkNode extends SynchronizerLayer {
 
     public void sendMsg (RoutingInfoMessage routmsg) {
         routmsg.getRoutedMsg().incrementRouting();
+        this.controller.logIncrementRouting(
+            this.ID, this.getRoutingNode(routmsg.getRoutedMsg()).getIndex()
+        );
+
         this.send(routmsg, this.getRoutingNode(routmsg.getRoutedMsg()));
     }
 
