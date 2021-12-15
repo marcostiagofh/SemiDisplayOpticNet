@@ -28,8 +28,8 @@ public abstract class NetworkController extends LoggerLayer {
     protected int numNodes = 0;
     protected int switchSize = 0;
     protected int numSwitches = 0;
-    protected int numClusters = 0;
-    protected int numUnionClusters = 0;
+    protected int numClustersType1 = 0;
+    protected int numClustersType2 = 0;
     protected int clusterSize;
 
     protected int rcvMsgs = 0;
@@ -56,18 +56,18 @@ public abstract class NetworkController extends LoggerLayer {
         this.remainingMessage = new ArrayList<>();
 
         this.clusterSize = this.switchSize / 2;
-        this.numClusters = (this.numNodes - this.clusterSize + 1) / this.clusterSize + 1;
-        this.numUnionClusters = (
-            this.numClusters > 1 ?
-            this.unionPos(this.numClusters - 2, this.numClusters - 1) + 1 :
+        this.numClustersType1 = (this.numNodes - this.clusterSize + 1) / this.clusterSize + 1;
+        this.numClustersType2 = (
+            this.numClustersType1 > 1 ?
+            this.unionPos(this.numClustersType1 - 2, this.numClustersType1 - 1) + 1 :
             0
         );
         this.numSwitches = (
-            this.numClusters * SIZE_CLUSTER_TYPE1 +
-            this.numUnionClusters * SIZE_CLUSTER_TYPE2
+            this.numClustersType1 * SIZE_CLUSTER_TYPE1 +
+            this.numClustersType2 * SIZE_CLUSTER_TYPE2
         );
 
-        for (int clsId = 0; clsId < this.numClusters; clsId++) {
+        for (int clsId = 0; clsId < this.numClustersType1; clsId++) {
             for (int i = 0; i < 4; i++) {
                 NetworkSwitch swt = new NetworkSwitch(
                     clsId * this.clusterSize + 1, (clsId + 1) * this.clusterSize, this.netNodes
@@ -79,8 +79,8 @@ public abstract class NetworkController extends LoggerLayer {
             }
         }
 
-        for (int clsId1 = 0; clsId1 < this.numClusters; clsId1++) {
-            for (int clsId2 = clsId1 + 1; clsId2 < this.numClusters; clsId2++) {
+        for (int clsId1 = 0; clsId1 < this.numClustersType1; clsId1++) {
+            for (int clsId2 = clsId1 + 1; clsId2 < this.numClustersType1; clsId2++) {
                 NetworkSwitch swt = new NetworkSwitch(
                     clsId1 * this.clusterSize + 1, (clsId1 + 1) * this.clusterSize,
                     clsId2 * this.clusterSize + 1, (clsId2 + 1) * this.clusterSize,
@@ -126,6 +126,7 @@ public abstract class NetworkController extends LoggerLayer {
         }
 
         this.setupTree(edgeList);
+        this.resetRoundInfo();
     }
 
     @Override
@@ -328,7 +329,6 @@ public abstract class NetworkController extends LoggerLayer {
             }
         }
 
-        this.logLockedNodes(nodes);
         for (InfraNode infNode: nodes) {
             if (infNode.getId() != -1) {
                 this.usedNodes.set(infNode.getId(), true);
@@ -351,18 +351,33 @@ public abstract class NetworkController extends LoggerLayer {
         return this.numSwitches;
     }
 
-    @Override
-    public int getNumClusters () {
-        return this.numClusters;
-    }
+
 
     @Override
-    public int getSwitchesPerCluster () {
+    public int getSwitchesPerClusterType1 () {
     	return NetworkController.SIZE_CLUSTER_TYPE1;
+
     }
 
-    public int getNumUnionClusters () {
-        return this.numUnionClusters;
+    public int getSwitchesPerClusterType2 () {
+    	return NetworkController.SIZE_CLUSTER_TYPE2;
+
+    }
+
+    @Override
+    public int getNumClustersType2 () {
+        return this.numClustersType2;
+    }
+
+    @Override
+    public int getNumClustersType1 () {
+        return this.numClustersType1;
+
+    }
+
+    public int getNumClusters () {
+        return this.numClustersType1 + this.numClustersType2;
+
     }
 
     public int getClusterSize () {
@@ -395,7 +410,7 @@ public abstract class NetworkController extends LoggerLayer {
             return this.getClusterId(fromNode);
 
         } else {
-            return this.numClusters + this.unionPos(
+            return this.numClustersType1 + this.unionPos(
                 this.getClusterId(fromNode), this.getClusterId(toNode)
             );
         }
@@ -411,11 +426,11 @@ public abstract class NetworkController extends LoggerLayer {
     }
 
     @Override
-    protected int getSwitchId (int fromNodeId, int toNodeId) {
+    protected int getRoutingSwitchId (int fromNodeId, int toNodeId) {
         InfraNode fromNode = tree.get(fromNodeId);
         InfraNode toNode = tree.get(toNodeId);
 
-        return this.getSwitchId(fromNode, toNode);
+        return this.getSwitchId(fromNode, toNode) + (toNode == fromNode.getParent() ? 1 : 0);
     }
 
     protected int getSwitchId (InfraNode fromNode, InfraNode toNode) {
@@ -431,7 +446,7 @@ public abstract class NetworkController extends LoggerLayer {
         int previousSwitches = (
                 this.areSameCluster(fromNode, toNode) ?
                 this.getClusterId(fromNode, toNode) * SIZE_CLUSTER_TYPE1 :
-                this.numClusters * SIZE_CLUSTER_TYPE1 + this.unionPos(
+                this.numClustersType1 * SIZE_CLUSTER_TYPE1 + this.unionPos(
                         this.getClusterId(fromNode), this.getClusterId(toNode)
                 ) * SIZE_CLUSTER_TYPE2
         );
@@ -553,7 +568,7 @@ public abstract class NetworkController extends LoggerLayer {
 
         int apSum = (
             clsId1 != 0 ?
-            ((2 * this.numClusters - 1 - clsId1) * (clsId1)) / 2 :
+            ((2 * this.numClustersType1 - 1 - clsId1) * (clsId1)) / 2 :
             0
         );
         return apSum + clsId2 - clsId1 - 1;
@@ -714,7 +729,6 @@ public abstract class NetworkController extends LoggerLayer {
             if (allowRouting) {
                 InfraNode x = this.tree.get(nodeId - 1);
                 InfraNode y = x.getRoutingNode(direction);
-                int swtId = this.getSwitchId(x, y);
 
                 if (this.areAvailableNodes(x, y)) {
                     this.logIncrementActiveRequests();
@@ -761,7 +775,6 @@ public abstract class NetworkController extends LoggerLayer {
     @Override
     public void controllerStep () {
         this.checkRoundConfiguration();
-        this.resetRoundInfo();
 
         for (int i = 0; i <= this.numNodes; i++)
             this.usedNodes.set(i, false);

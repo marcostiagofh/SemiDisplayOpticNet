@@ -38,7 +38,7 @@ public abstract class SynchronizerLayer extends Node {
                 nodeRoutingStep();
                 break;
             case 4: break;
-            case 5:
+            case 5: break;
             case 6:
                 logRoundResults();
                 posRound();

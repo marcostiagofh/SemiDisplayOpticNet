@@ -153,6 +153,21 @@ public class NetworkNode extends SynchronizerLayer {
         return this.ID;
     }
 
+    public int getRoutingNodeId (OpticalNetMessage optmsg) {
+        Direction direction = this.getRoutingDirection(optmsg);
+        if (direction == Direction.LEFT || direction == Direction.LEFTROUT) {
+            return this.getLeftChildId();
+
+        } else if (direction == Direction.RIGHT || direction == Direction.RIGHTROUT) {
+            return this.getRightChildId();
+
+        } else {
+            return this.getParentId();
+
+        }
+
+    }
+
     public InputNode getRoutingNode (OpticalNetMessage optmsg) {
         Direction direction = this.getRoutingDirection(optmsg);
         if (direction == Direction.LEFT || direction == Direction.LEFTROUT) {
@@ -222,7 +237,7 @@ public class NetworkNode extends SynchronizerLayer {
     public void sendMsg (RoutingInfoMessage routmsg) {
         routmsg.getRoutedMsg().incrementRouting();
         this.controller.logIncrementRouting(
-            this.ID, this.getRoutingNode(routmsg.getRoutedMsg()).getIndex()
+            this.ID, this.getRoutingNodeId(routmsg.getRoutedMsg())
         );
 
         this.send(routmsg, this.getRoutingNode(routmsg.getRoutedMsg()));
