@@ -12,9 +12,8 @@ log_file = "projectorLog.txt"
 if not os.path.exists(log_path):
     os.makedirs(log_path)
 
-# read log file    
+# read log file
 open(os.path.join(log_path, log_file), 'a').close()
-    
 log = set(line.rstrip() for line in open(os.path.join(log_path, log_file), 'r'))
 
 # open log file for append and create a lock variable
@@ -22,40 +21,33 @@ file = open("scripts/logs/projectorLog.txt", "a+")
 file_lock = threading.Lock()
 
 projects = [ "cbOptNet" ]
-#projects = ["optnet", "flattening", "flatnet", "splaynet", "displaynet", "semisplaynet", "seqsemisplaynet", "simplenet"]
-#projects = ["optnet", "flattening", "flatnet", "splaynet", "displaynet", "semisplaynet", "seqsemisplaynet", "simplenet"]
-#projects = ["simplenet", "semisplaynet", "seqsemisplaynet"]
-#projects = ["optnet", "flattening", "flatnet", "cbnet", "seqcbnet", "splaynet", "displaynet", "simplenet"]
-#projects = ["optnet", "flattening", "flatnet", "splaynet", "displaynet", "simplenet"]
-#projects = ["optnet", "splaynet", "displaynet", "simplenet"]
-# project = sys.argv[1]
 
 # parameters of simulation
-datasets = [ "tor" ]
-#datasets = ["newTor"]
-numNodes = [ 128 ]
-numSimulations = 1
+num_nodes = [ 128, 256, 512, 1024 ]
+datasets = [ "tor", "newTor", "random" ]
+switch_sizes = [ 8, 16, 32, 64, -1 ]
+num_simulations = 30
 
 #number of threads to simulation
-numThreads = 4
+num_threads = 4
 
-java = 'java'
-classpath = 'binaries/bin:binaries/jdom.jar'
-program = 'sinalgo.Run'
-args = ['-batch', "-project"]
-command = '{} -cp {} {} {}'.format(java, classpath, program, ' '.join(args))
+java = "java"
+classpath = "binaries/bin:binaries/jdom.jar"
+program = "sinalgo.Run"
+args = " ".join(["-batch", "-project"])
+base_cmd = f"{java} -cp {classpath} {program} {args}"
 
 #extends thread class
 class myThread (threading.Thread):
-    def __init__(self, threadID, commands):
+    def __init__ (self, threadID: int, commands: list[str]) -> None:
         threading.Thread.__init__(self)
         self.threadID = threadID
         self.commands = commands
-    def run(self):
+
+    def run (self) -> None:
         execute(self.commands)
 
-
-def execute(commands):
+def execute (commands) -> None:
     for command in commands:
         print(command)
         os.system(command)
@@ -65,54 +57,57 @@ def execute(commands):
         file_lock.release()
 
 
-#for each project executed
 for project in projects:
-
-    #list of commands to be executed
-    commands = [ ]
+    commands = []
 
     # generate all possibles inputs for simulation
-    for dataset in datasets: 
-        for n in numNodes:
-            for sim in range(1, numSimulations + 1):
-                input = 'input/{}_tor_{}.txt'.format(sim, n)
-                output = 'output/{}_{}_{}_{}.txt'.format(project, sim, dataset, n)
-                cmd = '{} {} -overwrite input={} output={} AutoStart=true > /dev/null'.format(command, project, input, output)
+    for dataset in datasets:
+        for num_node in num_nodes:
+            for sim_id in range(1, num_simulations + 1):
+                for switch_size in switch_sizes:
+                    if switch_size == -1:
+                        switch_size = 2 * num_node
 
-                print(cmd)
+                    input = f"input/projectorDS/{dataset}/{sim_id}_tor_{num_node}.txt"
+                    output = f"output/projectorDS/{project}/{sim_id}_{dataset}_{num_node}.txt"
 
-                # not executed yet
-                if cmd not in log:
-                    commands.append(cmd)
+                    cmd = (
+                        f"{base_cmd} {project} -overwrite input={input}" \
+                        + f"switch_size={switch_size} output={output}" \
+                        + "AutoStart=true > /dev/null"
+                    )
 
-    numCommands = len(commands)
+                    print(cmd)
+                    if cmd not in log:
+                        commands.append(cmd)
+
+    num_commands = len(commands)
 
     # if number of threads is greater than pairsLenght
     # just makes number of threads equals to pairsLenght
-    if numCommands == 0:
-        print("No experiment to be executed for project {}".format(project))
+    if num_commands == 0:
+        print(f"No experiment to be executed for project {project}")
         exit
-    elif numThreads > numCommands:
-        numThreads = numCommands
+
+    elif num_threads > num_commands:
+        num_threads = num_commands
 
     # split task for threads
-    size = numCommands // numThreads
-    chunks =  numpy.array_split(commands, numThreads)
+    size = num_commands // num_threads
+    chunks =  numpy.array_split(commands, num_threads)
 
     threads = []
     threadID = 1
 
     # Create new threads
-    for idx in range(0, numThreads):
+    for idx in range(0, num_threads):
         thread = myThread(threadID, chunks[idx])
         thread.start()
         threads.append(thread)
         threadID += 1
 
-
     # Wait for all threads to complete
     for t in threads:
         t.join()
-
 
 print("Simulation Completed")
