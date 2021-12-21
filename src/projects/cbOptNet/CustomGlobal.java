@@ -19,7 +19,6 @@ public class CustomGlobal extends AbstractCustomGlobal {
     public long MAX_REQ;
 
     /* Simulation */
-    public int numberOfNodes = 128;
     public CBNetController controller = null;
     public ArrayList<NetworkNode> netNodes = new ArrayList<>();
 
@@ -37,15 +36,16 @@ public class CustomGlobal extends AbstractCustomGlobal {
         String input = "";
         String output = "";
         Integer switchSize = -1;
+        Integer numberOfNodes = -1;
 
         try {
 
             if (Configuration.hasParameter("input")) {
                 input = Configuration.getStringParameter("input");
             }
-            
+
             this.requestQueue = new RequestQueue(input);
-            this.numberOfNodes = this.requestQueue.getNumberOfNodes();
+            numberOfNodes = this.requestQueue.getNumberOfNodes();
             MAX_REQ = this.requestQueue.getNumberOfRequests();
 
             if (Configuration.hasParameter("output")) {
@@ -56,36 +56,36 @@ public class CustomGlobal extends AbstractCustomGlobal {
                 double mu = (double) Configuration.getIntegerParameter("mu");
                 lambda = (double) (1 / mu);
             }
-            
+
             if (Configuration.hasParameter("switchSize")) {
             	switchSize = Configuration.getIntegerParameter("switchSize");
 
             } else {
-            	switchSize = 2 * this.numberOfNodes;
-            	
+            	switchSize = 2 * numberOfNodes;
+
             }
 
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("Missing configuration parameters");
         }
-        
 
-        for (int i = 0; i < this.numberOfNodes; i++) {
+
+        for (int i = 0; i < numberOfNodes; i++) {
             NetworkNode newNetNode = new NetworkNode();
             newNetNode.finishInitializationWithDefaultModels(true);
             netNodes.add(newNetNode);
         }
 
         this.controller = new CBNetController(
-            this.numberOfNodes, switchSize, netNodes
+            numberOfNodes, switchSize, netNodes
         );
         this.controller.finishInitializationWithDefaultModels(true);
 
         /* Set Log Path */
         this.controller.setLogPath(output);
 
-        for (int i = 0; i < this.numberOfNodes; i++) {
+        for (int i = 0; i < numberOfNodes; i++) {
             netNodes.get(i).setController(this.controller);
         }
 

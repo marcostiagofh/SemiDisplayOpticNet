@@ -806,7 +806,10 @@ public abstract class NetworkController extends LoggerLayer {
                 netNode.getRightChildId() == -1
         );
         flag &= (
-                infraNode.getParent().getId() != -1 && infraNode.getParent().getId() != 128 ?
+                (
+                    infraNode.getParent().getId() != -1 &&
+                    infraNode.getParent().getId() != this.numNodes
+                ) ?
                 infraNode.getParent().getId() == netNode.getParentId() - 1 :
                 netNode.getParentId() == -1
         );
