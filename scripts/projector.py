@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#!/usr/bin/env python
 
 import sys
 import os
@@ -29,7 +29,7 @@ switch_sizes = [ 8, 16, 32, 64, -1 ]
 num_simulations = 30
 
 #number of threads to simulation
-num_threads = 4
+num_threads = 10
 
 java = "java"
 classpath = "binaries/bin:binaries/jdom.jar"
@@ -68,12 +68,12 @@ for project in projects:
                     if switch_size == -1:
                         switch_size = 2 * num_node
 
-                    input = f"input/projectorDS/{dataset}/{sim_id}_tor_{num_node}.txt"
+                    input = f"input/projectorDS/{dataset}/{num_node}/{sim_id}_tor_{num_node}.txt"
                     output = f"output/projectorDS/{project}/{sim_id}_{dataset}_{num_node}.txt"
 
                     cmd = (
-                        f"{base_cmd} {project} -overwrite input={input}" \
-                        + f"switch_size={switch_size} output={output}" \
+                        f"{base_cmd} {project} -overwrite input={input} " \
+                        + f"switch_size={switch_size} output={output} " \
                         + "AutoStart=true > /dev/null"
                     )
 
