@@ -69,12 +69,12 @@ for project in projects:
                         switch_size = 2 * num_node
 
                     input = f"input/projectorDS/{dataset}/{num_node}/{sim_id}_tor_{num_node}.txt"
-                    output = f"output/projectorDS/{project}/{sim_id}_{dataset}_{num_node}.txt"
+                    output = f"output/projectorDS/{project}/{sim_id}_{dataset}_{num_node}_{switch_size}.txt"
 
                     cmd = (
                         f"{base_cmd} {project} -overwrite input={input} " \
-                        + f"switch_size={switch_size} output={output} " \
-                        + "AutoStart=true > /dev/null"
+                        + f"switchSize={switch_size} output={output} " \
+                        + f"AutoStart=true > output/sim_output/{sim_id}_{dataset}_{num_node}_{switch_size}.txt"
                     )
 
                     print(cmd)
