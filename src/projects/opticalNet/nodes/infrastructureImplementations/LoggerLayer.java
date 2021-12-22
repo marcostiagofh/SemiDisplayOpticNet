@@ -36,9 +36,7 @@ public abstract class LoggerLayer extends SynchronizerLayer {
     private Logging nodesRotationsPerRound;
     private Logging nodesAlterationsPerRound;
 
-    private Logging clustersRoutingsPerRound;
     private Logging switchesRoutingsPerRound;
-    private Logging clustersAlterationsPerRound;
     private Logging switchesAlterationsPerRound;
 
     private Logging routingPerMessage;
@@ -46,6 +44,7 @@ public abstract class LoggerLayer extends SynchronizerLayer {
     private Logging activeRequestsPerRound;
     private Logging throughputLog;
 
+    private Logging simulationLog;
     private Logging operationsLog;
     private Logging sequenceLog;
 
@@ -86,13 +85,6 @@ public abstract class LoggerLayer extends SynchronizerLayer {
             this.stringfyLogArray(this.alterationsPerSwitchRound)
         );
 
-        this.clustersRoutingsPerRound.logln(
-            this.stringfyLogArray(this.compressToCluster(this.routingsPerSwitchRound))
-        );
-        this.clustersAlterationsPerRound.logln(
-            this.stringfyLogArray(this.compressToCluster(this.alterationsPerSwitchRound))
-        );
-
         this.throughputLog.logln(this.roundCompletedRequests + "");
         this.activeRequestsPerRound.logln(this.activeRequests + "");
 
@@ -101,6 +93,7 @@ public abstract class LoggerLayer extends SynchronizerLayer {
     }
 
     public void logEndOfSimulation () {
+        this.printSimulationInfo();
         this.printRotationCounter();
         this.printAlterationCounter();
         this.printMessageRoutingCounter();
@@ -268,6 +261,17 @@ public abstract class LoggerLayer extends SynchronizerLayer {
         );
     }
 
+    public void printSimulationInfo () {
+        this.simulationLog.logln(
+            "num-cluster-1 " + this.getNumClustersType1() +
+            " size-cluster-1 " + this.getSwitchesPerClusterType1()
+        );
+        this.simulationLog.logln(
+            "num-cluster-2 " + this.getNumClustersType2() +
+            " size-cluster-2 " + this.getSwitchesPerClusterType2()
+        );
+    }
+
     /* End of Printer Functions */
 
     /* Auxiliary Functions */
@@ -285,53 +289,18 @@ public abstract class LoggerLayer extends SynchronizerLayer {
         this.switchesRoutingsPerRound = Logging.getLogger(
             path + "/switches_routings_per_round.txt"
         );
-        this.clustersRoutingsPerRound = Logging.getLogger(
-            path + "/clusters_routings_per_round.txt"
-        );
         this.switchesAlterationsPerRound = Logging.getLogger(
             path + "/switches_alterations_per_round.txt"
-        );
-        this.clustersAlterationsPerRound = Logging.getLogger(
-            path + "/clusters_alterations_per_round.txt"
         );
 
         this.activeRequestsPerRound = Logging.getLogger(path + "/active_requests_per_round.txt");
 
         this.routingPerMessage = Logging.getLogger(path + "/routing_per_message.txt");
 
+        this.simulationLog = Logging.getLogger(path + "/simulation_info.txt");
         this.throughputLog = Logging.getLogger(path + "/throughput.txt");
         this.operationsLog = Logging.getLogger(path + "/operations.txt");
         this.sequenceLog = Logging.getLogger(path + "/sequence.txt");
-    }
-
-    private ArrayList<Long> compressToCluster (ArrayList<Long> switchInfo) {
-        ArrayList<Long> clusterInfo = new ArrayList<>();
-        int beginOfCluster = 0;
-
-        for (int i = 0; i < this.getNumClustersType1(); i++) {
-            long clusterValue = 0;
-            for (int j = 0; j < this.getSwitchesPerClusterType1(); j++) {
-                clusterValue += switchInfo.get(beginOfCluster + j);
-
-            }
-
-            clusterInfo.add(clusterValue);
-            beginOfCluster += this.getSwitchesPerClusterType1();
-        }
-
-        for (int i = 0; i < this.getNumClustersType2(); i++) {
-            long clusterValue = 0;
-            for (int j = 0; j < this.getSwitchesPerClusterType2(); j++) {
-                clusterValue += switchInfo.get(beginOfCluster + j);
-
-            }
-
-            clusterInfo.add(clusterValue);
-            beginOfCluster += this.getSwitchesPerClusterType2();
-        }
-
-        return clusterInfo;
-
     }
 
     private String stringfyLogArray (ArrayList<Long> logArray) {

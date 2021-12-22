@@ -37,7 +37,7 @@ public class NetworkSwitch extends SynchronizerLayer {
     private int internalNodeSize = 0;
 
     private Queue<ConnectNodesMessage> operations = new LinkedList<ConnectNodesMessage>();
-    
+
     public void setIndex (int index) {
         this.index = index;
     }
@@ -62,28 +62,32 @@ public class NetworkSwitch extends SynchronizerLayer {
         this.outputNodes = new ArrayList<>();
 
         for (int i = 0; i < this.size; ++i) {
+            Integer networkNodeId = (minId1 + i < netNodes.size() ? minId1 + i : netNodes.size());
+
             InputNode inNode = new InputNode();
             inNode.finishInitializationWithDefaultModels(true);
-            inNode.setIndex(minId1 + i);
+            inNode.setIndex(networkNodeId);
 
-            NetworkNode node = netNodes.get(minId1 + i - 1);
+            NetworkNode node = netNodes.get(networkNodeId - 1);
             node.connectToInputNode(inNode);
             inNode.connectToNode(node);
 
             this.inputNodes.add(inNode);
-            this.inputId2Node.put(minId1 + i, inNode);
+            this.inputId2Node.put(networkNodeId, inNode);
         }
 
         for (int i = 0; i < this.size; ++i) {
+            Integer networkNodeId = (minId2 + i < netNodes.size() ? minId2 + i : netNodes.size());
+
             OutputNode outNode = new OutputNode();
             outNode.finishInitializationWithDefaultModels(true);
-            outNode.setIndex(minId2 + i);
+            outNode.setIndex(networkNodeId);
 
-            NetworkNode node = netNodes.get(minId2 + i - 1);
+            NetworkNode node = netNodes.get(networkNodeId - 1);
             outNode.connectToNode(node);
 
             this.outputNodes.add(outNode);
-            this.outputId2Node.put(minId2 + i, outNode);
+            this.outputId2Node.put(networkNodeId, outNode);
         }
 
         for (int i = 0; i < this.size; ++i) {
@@ -112,6 +116,7 @@ public class NetworkSwitch extends SynchronizerLayer {
 
     public void connectNodes (InputNode inNode, OutputNode outNode) {
         int oldInNodeIndex = outNode.getInputNode().getIndex();
+        System.out.println("" + oldInNodeIndex);
         InputNode oldInNode = this.inputId2Node.get(oldInNodeIndex);
 
         oldInNode.updateLinkToOutputNode(inNode.getOutputNode());

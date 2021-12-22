@@ -56,7 +56,7 @@ public abstract class NetworkController extends LoggerLayer {
         this.remainingMessage = new ArrayList<>();
 
         this.clusterSize = this.switchSize / 2;
-        this.numClustersType1 = (this.numNodes - this.clusterSize + 1) / this.clusterSize + 1;
+        this.numClustersType1 = (this.numNodes + this.clusterSize - 1) / this.clusterSize;
         this.numClustersType2 = (
             this.numClustersType1 > 1 ?
             this.unionPos(this.numClustersType1 - 2, this.numClustersType1 - 1) + 1 :
@@ -450,7 +450,6 @@ public abstract class NetworkController extends LoggerLayer {
                         this.getClusterId(fromNode), this.getClusterId(toNode)
                 ) * SIZE_CLUSTER_TYPE2
         );
-
         return previousSwitches + 2 * (fromNode.getId() > toNode.getId() ? 1 : 0);
     }
 
@@ -494,8 +493,11 @@ public abstract class NetworkController extends LoggerLayer {
 
         }
 
-        this.getSwitch(swtId).updateSwitch(fromNode.getId() + 1, toNode.getId() + 1, subtreeId);
+        fromNode.debugNode();
+        toNode.debugNode();
+
         this.getSwitch(swtId + 1).updateSwitch(toNode.getId() + 1, fromNode.getId() + 1);
+        this.getSwitch(swtId).updateSwitch(fromNode.getId() + 1, toNode.getId() + 1, subtreeId);
 
         return;
     }

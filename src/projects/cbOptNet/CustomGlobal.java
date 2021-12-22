@@ -70,8 +70,7 @@ public class CustomGlobal extends AbstractCustomGlobal {
             System.out.println("Missing configuration parameters");
         }
 
-
-        for (int i = 0; i < numberOfNodes; i++) {
+        for (int i = 0; i <= numberOfNodes; i++) {
             NetworkNode newNetNode = new NetworkNode();
             newNetNode.finishInitializationWithDefaultModels(true);
             netNodes.add(newNetNode);
