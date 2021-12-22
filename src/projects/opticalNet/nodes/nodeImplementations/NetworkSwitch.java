@@ -116,7 +116,6 @@ public class NetworkSwitch extends SynchronizerLayer {
 
     public void connectNodes (InputNode inNode, OutputNode outNode) {
         int oldInNodeIndex = outNode.getInputNode().getIndex();
-        System.out.println("" + oldInNodeIndex);
         InputNode oldInNode = this.inputId2Node.get(oldInNodeIndex);
 
         oldInNode.updateLinkToOutputNode(inNode.getOutputNode());
