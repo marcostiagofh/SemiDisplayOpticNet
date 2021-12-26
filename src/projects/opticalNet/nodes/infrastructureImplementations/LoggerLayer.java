@@ -16,6 +16,7 @@ public abstract class LoggerLayer extends SynchronizerLayer {
     private DataSeries messageRoutingCounter = new DataSeries();
 
     private ArrayList<Long> routingsPerSwitchRound;
+    private ArrayList<Long> activePortsPerSwitchRound;
     private ArrayList<Long> alterationsPerSwitchRound;
     private ArrayList<Long> routingsPerNodeRound;
     private ArrayList<Long> rotationsPerNodeRound;
@@ -37,6 +38,7 @@ public abstract class LoggerLayer extends SynchronizerLayer {
     private Logging nodesAlterationsPerRound;
 
     private Logging switchesRoutingsPerRound;
+    private Logging switchesActivePortsPerRound;
     private Logging switchesAlterationsPerRound;
 
     private Logging routingPerMessage;
@@ -81,6 +83,9 @@ public abstract class LoggerLayer extends SynchronizerLayer {
         );
 
         this.switchesRoutingsPerRound.logln(this.stringfyLogArray(this.routingsPerSwitchRound));
+        this.switchesActivePortsPerRound.logln(
+            this.stringfyLogArray(this.activePortsPerSwitchRound)
+        );
         this.switchesAlterationsPerRound.logln(
             this.stringfyLogArray(this.alterationsPerSwitchRound)
         );
@@ -103,6 +108,12 @@ public abstract class LoggerLayer extends SynchronizerLayer {
     /* End of Logger Functions */
 
     /* Setter Functions */
+
+    public void logIncrementActivePorts (int swtId) {
+        long value = this.activePortsPerSwitchRound.get(swtId);
+        this.activePortsPerSwitchRound.set(swtId, value + 1);
+
+    }
 
     public void logIncrementAlterations (int swtId, int fromNodeId, int toNodeId) {
         this.alterationCounter.addSample(1);
@@ -289,6 +300,9 @@ public abstract class LoggerLayer extends SynchronizerLayer {
         this.switchesRoutingsPerRound = Logging.getLogger(
             path + "/switches_routings_per_round.txt"
         );
+        this.switchesActivePortsPerRound = Logging.getLogger(
+            path + "/switches_active_ports_per_round.txt"
+        );
         this.switchesAlterationsPerRound = Logging.getLogger(
             path + "/switches_alterations_per_round.txt"
         );
@@ -316,6 +330,9 @@ public abstract class LoggerLayer extends SynchronizerLayer {
         this.rotationsPerNodeRound = new ArrayList<>(Collections.nCopies(this.getNumNodes(), 0L));
         this.alterationsPerNodeRound = new ArrayList<>(Collections.nCopies(this.getNumNodes(), 0L));
         this.routingsPerSwitchRound = new ArrayList<>(
+            Collections.nCopies(this.getNumSwitches(), 0L)
+        );
+        this.activePortsPerSwitchRound = new ArrayList<>(
             Collections.nCopies(this.getNumSwitches(), 0L)
         );
         this.alterationsPerSwitchRound = new ArrayList<>(

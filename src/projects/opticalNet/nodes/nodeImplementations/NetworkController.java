@@ -842,6 +842,12 @@ public abstract class NetworkController extends LoggerLayer {
 
         }
 
+        if (this.isValidNode(x) && this.isValidNode(x.getParent())) {
+            int swtId = this.getRoutingSwitchId(x.getParent().getId(), x.getId());
+            this.logIncrementActivePorts(swtId);
+
+        }
+
         return (
             this.validSubtree(x.getLeftChild(), min, x.getId() - 1) &&
             this.validSubtree(x.getRightChild(), x.getId() + 1, max)
