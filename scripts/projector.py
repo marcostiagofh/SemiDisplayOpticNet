@@ -68,13 +68,9 @@ for project in projects:
                     if switch_size == -1:
                         switch_size = 2 * num_node
 
-                    input = f"input/projectorDS/{dataset}/{num_node}/{sim_id}_tor_{num_node}.txt"
-                    output = f"output/projectorDS/{project}/{sim_id}_{dataset}_{num_node}_{switch_size}.txt"
-
                     cmd = (
-                        f"{base_cmd} {project} -overwrite input={input} " \
-                        + f"switchSize={switch_size} output={output} " \
-                        + f"AutoStart=true > output/sim_output/{sim_id}_{dataset}_{num_node}_{switch_size}.txt"
+                        f"./scripts/compress-results.sh \"{base_cmd}\" {project} {dataset} {num_node} " \
+                        f"{sim_id} {switch_size}"
                     )
 
                     print(cmd)
