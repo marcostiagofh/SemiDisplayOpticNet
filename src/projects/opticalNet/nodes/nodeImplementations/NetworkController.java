@@ -493,9 +493,6 @@ public abstract class NetworkController extends LoggerLayer {
 
         }
 
-        fromNode.debugNode();
-        toNode.debugNode();
-
         this.getSwitch(swtId + 1).updateSwitch(toNode.getId() + 1, fromNode.getId() + 1);
         this.getSwitch(swtId).updateSwitch(fromNode.getId() + 1, toNode.getId() + 1, subtreeId);
 
