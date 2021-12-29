@@ -68,6 +68,12 @@ for project in projects:
                     if switch_size == -1:
                         switch_size = 2 * num_node
 
+                    elif switch_size <= 16 and num_node >= 512:
+                        continue
+
+                    elif switch_size <= 8 and num_node >= 256:
+                        continue
+
                     cmd = (
                         f"./scripts/compress-results.sh \"{base_cmd}\" {project} {dataset} {num_node} " \
                         f"{sim_id} {switch_size}"
