@@ -40,10 +40,6 @@ public class NetworkNode extends SynchronizerLayer {
         this.maxIdInSubtree = this.ID;
     }
 
-    public void connectToInputNode (InputNode node) {
-        this.addConnectionTo(node);
-    }
-
     public void setParent (InputNode node) {
         this.parent = node;
     }
@@ -240,7 +236,11 @@ public class NetworkNode extends SynchronizerLayer {
             this.ID, this.getRoutingNodeId(routmsg.getRoutedMsg())
         );
 
-        this.send(routmsg, this.getRoutingNode(routmsg.getRoutedMsg()));
+        this.sendToInputNode(routmsg);
+    }
+
+    protected void sendToInputNode (RoutingInfoMessage routmsg) {
+        this.getRoutingNode(routmsg.getRoutedMsg()).sendToOutputNode(routmsg, this.controller);
     }
 
     @Override

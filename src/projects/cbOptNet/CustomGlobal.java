@@ -87,8 +87,6 @@ public class CustomGlobal extends AbstractCustomGlobal {
         for (int i = 0; i < numberOfNodes; i++) {
             netNodes.get(i).setController(this.controller);
         }
-
-        this.controller.renderTopology(Configuration.dimX, Configuration.dimY);
     }
 
     @Override

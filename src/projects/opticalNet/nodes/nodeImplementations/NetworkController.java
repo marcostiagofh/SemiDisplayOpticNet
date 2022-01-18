@@ -10,7 +10,6 @@ import projects.opticalNet.nodes.messages.RoutingInfoMessage;
 import projects.opticalNet.nodes.models.Direction;
 import projects.opticalNet.nodes.models.InfraNode;
 import projects.opticalNet.nodes.models.Rotation;
-import projects.opticalNet.nodes.messages.ConnectNodesMessage;
 import sinalgo.gui.transformation.PositionTransformation;
 import sinalgo.tools.Tools;
 
@@ -72,7 +71,6 @@ public abstract class NetworkController extends LoggerLayer {
                 NetworkSwitch swt = new NetworkSwitch(
                     clsId * this.clusterSize + 1, (clsId + 1) * this.clusterSize, this.netNodes
                 );
-                swt.finishInitializationWithDefaultModels(true);
                 swt.setIndex(this.switches.size() + 1);
 
                 this.switches.add(swt);
@@ -86,7 +84,6 @@ public abstract class NetworkController extends LoggerLayer {
                     clsId2 * this.clusterSize + 1, (clsId2 + 1) * this.clusterSize,
                     this.netNodes
                 );
-                swt.finishInitializationWithDefaultModels(true);
                 swt.setIndex(this.switches.size() + 1);
 
                 this.switches.add(swt);
@@ -96,8 +93,6 @@ public abstract class NetworkController extends LoggerLayer {
                     clsId1 * this.clusterSize + 1, (clsId1 + 1) * this.clusterSize,
                     this.netNodes
                 );
-
-                swt2.finishInitializationWithDefaultModels(true);
                 swt2.setIndex(this.switches.size() + 1);
 
                 this.switches.add(swt2);
@@ -107,8 +102,6 @@ public abstract class NetworkController extends LoggerLayer {
                     clsId1 * this.clusterSize + 1, (clsId1 + 1) * this.clusterSize,
                     this.netNodes
                 );
-
-                swt2.finishInitializationWithDefaultModels(true);
                 swt2.setIndex(this.switches.size() + 1);
 
                 this.switches.add(swt2);
@@ -118,7 +111,6 @@ public abstract class NetworkController extends LoggerLayer {
                     clsId2 * this.clusterSize + 1, (clsId2 + 1) * this.clusterSize,
                     this.netNodes
                 );
-                swt.finishInitializationWithDefaultModels(true);
                 swt.setIndex(this.switches.size() + 1);
 
                 this.switches.add(swt);
@@ -526,23 +518,10 @@ public abstract class NetworkController extends LoggerLayer {
 
         this.logIncrementAlterations(swtId, fromNode.getId(), toNode.getId());
 
-        this.sendConnectNodesMessage(
-            swtId, fromNode.getId() + 1, toNode.getId() + 1, subtreeId
-        );
-        this.sendConnectNodesMessage(
-            swtId + 1, toNode.getId() + 1, fromNode.getId() + 1
-        );
+        this.getSwitch(swtId + 1).updateSwitch(toNode.getId() + 1, fromNode.getId() + 1);
+        this.getSwitch(swtId).updateSwitch(fromNode.getId() + 1, toNode.getId() + 1, subtreeId);
     }
 
-    private void sendConnectNodesMessage (int switchId, int from, int to) {
-        ConnectNodesMessage msg = new ConnectNodesMessage(from, to);
-        this.sendDirect(msg, this.getSwitch(switchId));
-    }
-
-    private void sendConnectNodesMessage (int switchId, int from, int to, int subtreeId) {
-        ConnectNodesMessage msg = new ConnectNodesMessage(from, to, subtreeId);
-        this.sendDirect(msg, this.getSwitch(switchId));
-    }
     /* End of Setters
 
     /* Auxiliary Functions */
@@ -853,28 +832,5 @@ public abstract class NetworkController extends LoggerLayer {
 
     @Override
     public void draw (Graphics g, PositionTransformation pt, boolean highlight) { }
-
-    public void renderTopology (int width, int height) {
-        // set network nodes position
-        double x_space = width / 4.0;
-        double y_space = height / (double) (this.numNodes + 1);
-        for (int i = 0; i < this.numNodes; ++i) {
-            NetworkNode n = this.netNodes.get(i);
-            n.setPosition(x_space, y_space * (i+1), 0);
-        }
-
-        //set network switches position
-        double unit = height / (double)((7 * this.numSwitches) + 1);
-        double switch_height = 5 * unit;
-
-        for (int i = 0; i < this.numSwitches; ++i) {
-            NetworkSwitch n = this.switches.get(i);
-            n.setPosition(3 * x_space, 2 * unit + switch_height/2 + (i * 7 * unit), 0);
-            n.setSwitchDimension((int)switch_height/3, (int)switch_height);
-        }
-
-        // set controller node position
-        this.setPosition(4 * x_space, height / 2, 0);
-    }
 
 }
