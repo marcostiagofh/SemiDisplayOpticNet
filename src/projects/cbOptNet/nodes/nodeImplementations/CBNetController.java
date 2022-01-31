@@ -348,7 +348,7 @@ public class CBNetController extends NetworkController {
 
                 if (this.isValidNode(y.getRightChild())) {
                         InfraNode z = y.getRightChild();
-                        double aux = zigDiffRank(y, z);
+                        double aux = zigZagDiffRank(x, y, z);
                         if (aux < maxDelta) {
                                 maxDelta = aux;
                                 operation = Rotation.ZIGZAGLEFT_TOPDOWN;
@@ -370,7 +370,7 @@ public class CBNetController extends NetworkController {
 
                 if (this.isValidNode(y.getLeftChild())) {
                         InfraNode z = y.getLeftChild();
-                        double aux = zigDiffRank(y, z);
+                        double aux = zigZagDiffRank(x, y, z);
                         if (aux < maxDelta) {
                                 maxDelta = aux;
                                 operation = Rotation.ZIGZAGRIGHT_TOPDOWN;
