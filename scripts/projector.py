@@ -23,9 +23,9 @@ file_lock = threading.Lock()
 projects = [ "cbOptNet" ]
 
 # parameters of simulation
-num_nodes = [ 128, 256, 512, 1024 ]
-datasets = [ "tor", "newTor", "random" ]
-switch_sizes = [ 8, 16, 32, 64, -1 ]
+num_nodes = [ 1024 ]
+datasets = [ "newTor" ]
+switch_sizes = [ -1 ]
 num_simulations = 30
 
 #number of threads to simulation
