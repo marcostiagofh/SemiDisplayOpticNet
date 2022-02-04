@@ -135,14 +135,42 @@ public abstract class NetworkController extends LoggerLayer {
 
             this.remainingMessage.add(0);
 
-            if (edgeList.size() < this.numNodes) {
-                edgeList.add(i + 1);
-            }
         }
 
-        for (int i = 0; i < this.numNodes; i++) {
-            this.setInitialCon(this.tree.get(edgeList.get(i)), this.tree.get(i));
+        if (edgeList.size() != this.numNodes) {
+            this.buildBalancedTree(1, this.numNodes);
+            this.setInitialCon(this.tree.get(this.numNodes), this.tree.get(this.numNodes / 2 - 1));
+
+        } else {
+            for (int i = 0; i < this.numNodes; i++) {
+                this.setInitialCon(this.tree.get(edgeList.get(i)), this.tree.get(i));
+
+            }
+
         }
+    }
+
+    private void buildBalancedTree (int min, int max) {
+        if (min >= max)
+            return;
+
+        int middle = (min + max) / 2;
+        int minMiddle = (min + middle - 1) / 2;
+        int maxMiddle = (max + middle + 1) / 2;
+
+        if (minMiddle >= min) {
+            this.buildBalancedTree(min, middle - 1);
+            this.setInitialCon(this.tree.get(middle - 1), this.tree.get(minMiddle - 1));
+        }
+
+        if (maxMiddle <= max) {
+            this.buildBalancedTree(middle + 1, max);
+            this.setInitialCon(this.tree.get(middle - 1), this.tree.get(maxMiddle - 1));
+
+        }
+
+        this.tree.get(middle - 1).debugNode();
+
     }
 
     /* Rotations */
@@ -262,10 +290,10 @@ public abstract class NetworkController extends LoggerLayer {
 
     protected boolean zigZagLeftTopDown (InfraNode z, Direction direction) {
         /*
-                 *z                     x
-                 / \        -->       /   \
-                y   d                y     z
-               / \                  / \   / \
+                 *z                      x
+                 / \        -->       /    \
+                y   d                y      z
+               / \                  / \    / \
               a   x                a  *b *c  d
                  / \
                 b   c
