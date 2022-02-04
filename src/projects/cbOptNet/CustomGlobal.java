@@ -92,7 +92,7 @@ public class CustomGlobal extends AbstractCustomGlobal {
     @Override
     public void preRound () {
 
-        if (mustGenerateSplay && this.requestQueue.hasNextRequest()) {
+        if (this.controller.getSeq() && mustGenerateSplay && this.requestQueue.hasNextRequest()) {
             mustGenerateSplay = false;
 
             double u = random.nextDouble();
@@ -106,9 +106,9 @@ public class CustomGlobal extends AbstractCustomGlobal {
             TriggerNodeOperation ted = new TriggerNodeOperation(r.first + 1, r.second + 1);
             ted.startGlobalTimer(x);
 
+            this.controller.setSeq();
         }
 
-        // System.out.println(this.data.getCompletedRequests() + " " + MAX_REQ);
     }
 
     @Override

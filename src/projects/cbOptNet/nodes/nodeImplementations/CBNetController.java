@@ -16,7 +16,7 @@ import sinalgo.nodes.messages.Inbox;
 import sinalgo.nodes.messages.Message;
 
 public class CBNetController extends NetworkController {
-
+    private boolean seq = true;
     private double epsilon = -1.5;
 
     public CBNetController (int numNodes, int switchSize, ArrayList<NetworkNode> netNodes) {
@@ -407,6 +407,8 @@ public class CBNetController extends NetworkController {
                     optmsg.getSrc(), this.remainingMessage.get(optmsg.getSrc()) - 1
                 );
 
+                this.seq = true;
+
             } else if (msg instanceof NewMessage) {
                 NewMessage newmsg = (NewMessage) msg;
 
@@ -427,4 +429,13 @@ public class CBNetController extends NetworkController {
 
         }
     }
+
+    public boolean getSeq () {
+        return this.seq;
+    }
+
+    public void setSeq () {
+        this.seq = false;
+    }
+
 }
