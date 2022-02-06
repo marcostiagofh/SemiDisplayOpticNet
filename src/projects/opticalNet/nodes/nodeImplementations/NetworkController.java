@@ -7,7 +7,6 @@ import java.util.PriorityQueue;
 import projects.opticalNet.nodes.infrastructureImplementations.LoggerLayer;
 import projects.opticalNet.nodes.messages.HasMessage;
 import projects.opticalNet.nodes.messages.RoutingInfoMessage;
-import projects.opticalNet.nodes.models.Direction;
 import projects.opticalNet.nodes.models.InfraNode;
 import projects.opticalNet.nodes.models.Rotation;
 import sinalgo.gui.transformation.PositionTransformation;
@@ -174,7 +173,7 @@ public abstract class NetworkController extends LoggerLayer {
     }
 
     /* Rotations */
-    protected boolean zigZigBottomUp (InfraNode x, Direction direction) {
+    protected boolean zigZigBottomUp (InfraNode x) {
         /*
                  z                 *y
                 / \               /   \
@@ -192,7 +191,7 @@ public abstract class NetworkController extends LoggerLayer {
         boolean leftZigZig = (y.getId() == z.getLeftChild().getId());
         InfraNode c = (leftZigZig) ? y.getRightChild() : y.getLeftChild();
 
-        if (direction == Direction.PARENT && this.areAvailableNodes(w, x, z, y, c)) {
+        if (this.areAvailableNodes(w, x, z, y, c)) {
             this.logRotation(1, w, z, y, c);
 
             this.mapConn(z, c, y);
@@ -205,7 +204,7 @@ public abstract class NetworkController extends LoggerLayer {
         return false;
     }
 
-    protected boolean zigZagBottomUp (InfraNode x, Direction direction) {
+    protected boolean zigZagBottomUp (InfraNode x) {
         /*
                   w              w
                  /              /
@@ -226,7 +225,7 @@ public abstract class NetworkController extends LoggerLayer {
         InfraNode b = (leftZigZag) ? x.getLeftChild() : x.getRightChild();
         InfraNode c = (leftZigZag) ? x.getRightChild() : x.getLeftChild();
 
-        if (direction == Direction.PARENT && this.areAvailableNodes(w, z, y, x, b, c)) {
+        if (this.areAvailableNodes(w, z, y, x, b, c)) {
             this.logRotation(2, w, z, y, x, b, c);
 
             this.mapConn(y, b, x);
@@ -241,7 +240,7 @@ public abstract class NetworkController extends LoggerLayer {
         return false;
     }
 
-    protected boolean zigZigLeftTopDown (InfraNode z, Direction direction) {
+    protected boolean zigZigLeftTopDown (InfraNode z) {
         /*
                  *z                    y
                  / \                 /   \
@@ -256,7 +255,7 @@ public abstract class NetworkController extends LoggerLayer {
         InfraNode x = y.getLeftChild();
         InfraNode c = y.getRightChild();
 
-        if (direction == Direction.LEFT && this.areAvailableNodes(w, x, z, y, c)) {
+        if (this.areAvailableNodes(w, x, z, y, c)) {
             this.logRotation(1, w, z, y, c);
 
             this.mapConn(z, c, y);
@@ -269,13 +268,13 @@ public abstract class NetworkController extends LoggerLayer {
         return false;
     }
 
-    protected boolean zigZigRightTopDown (InfraNode z, Direction direction) {
+    protected boolean zigZigRightTopDown (InfraNode z) {
         InfraNode w = z.getParent();
         InfraNode y = z.getRightChild();
         InfraNode x = y.getRightChild();
         InfraNode c = y.getLeftChild();
 
-        if (direction == Direction.RIGHT && this.areAvailableNodes(w, x, z, y, c)) {
+        if (this.areAvailableNodes(w, x, z, y, c)) {
             this.logRotation(1, w, z, y, c);
 
             this.mapConn(z, c, y);
@@ -288,7 +287,7 @@ public abstract class NetworkController extends LoggerLayer {
         return false;
     }
 
-    protected boolean zigZagLeftTopDown (InfraNode z, Direction direction) {
+    protected boolean zigZagLeftTopDown (InfraNode z) {
         /*
                  *z                      x
                  / \        -->       /    \
@@ -304,7 +303,7 @@ public abstract class NetworkController extends LoggerLayer {
         InfraNode b = x.getLeftChild();
         InfraNode c = x.getRightChild();
 
-        if (direction == Direction.LEFT && this.areAvailableNodes(w, z, y, x, b, c)) {
+        if (this.areAvailableNodes(w, z, y, x, b, c)) {
             this.logRotation(2, w, z, y, x, b, c);
 
             this.mapConn(y, b, x);
@@ -319,14 +318,14 @@ public abstract class NetworkController extends LoggerLayer {
         return false;
     }
 
-    protected boolean zigZagRightTopDown (InfraNode z, Direction direction) {
+    protected boolean zigZagRightTopDown (InfraNode z) {
         InfraNode w = z.getParent();
         InfraNode y = z.getRightChild();
         InfraNode x = y.getLeftChild();
         InfraNode b = x.getRightChild();
         InfraNode c = x.getLeftChild();
 
-        if (direction == Direction.RIGHT && this.areAvailableNodes(w, z, y, x, b, c)) {
+        if (this.areAvailableNodes(w, z, y, x, b, c)) {
             this.logRotation(2, w, z, y, x, b, c);
 
             this.mapConn(y, b, x);
@@ -580,7 +579,7 @@ public abstract class NetworkController extends LoggerLayer {
         return apSum + clsId2 - clsId1 - 1;
     }
 
-    public abstract Rotation getRotationToPerform (InfraNode x, Direction direction);
+    public abstract Rotation getRotationToPerform (InfraNode x, InfraNode dstNode);
 
     private void lockRoutingNodes () {
         while (!this.routingNodes.isEmpty()) {
@@ -619,23 +618,27 @@ public abstract class NetworkController extends LoggerLayer {
         while (!this.nodesWithMsg.isEmpty()) {
             HasMessage hasmsg = this.nodesWithMsg.poll();
             int nodeId = hasmsg.getCurrId();
-            InfraNode node = this.tree.get(nodeId - 1);
-            Direction direction = node.getRoutingDirection(hasmsg.getDst() - 1);
 
-            Rotation op = this.getRotationToPerform(node, direction);
-            boolean allowRouting = (op == Rotation.NULL);
+            InfraNode node = this.tree.get(nodeId - 1);
+            InfraNode dstNode = this.tree.get(hasmsg.getDst() - 1);
+
+            Rotation op = this.getRotationToPerform(node, dstNode);
 
             switch (op) {
+                case NULL:
+                    this.allowRouting(node, dstNode, 1);
+                    break;
+
                 case ZIGZIGLEFT_BOTTOMUP:
                 case ZIGZIGRIGHT_BOTTOMUP:
-                    if (this.zigZigBottomUp(node, direction)) {
+                    if (this.zigZigBottomUp(node)) {
                         System.out.println("zigZigBottomUp");
                         this.logIncrementActiveRequests();
 
                         this.sendDirect(new RoutingInfoMessage(1), this.getNetNode(nodeId));
 
                     } else {
-                        allowRouting = true;
+                        this.allowRouting(node, dstNode, 2);
 
                     }
 
@@ -643,33 +646,33 @@ public abstract class NetworkController extends LoggerLayer {
 
                 case ZIGZAGLEFT_BOTTOMUP:
                 case ZIGZAGRIGHT_BOTTOMUP:
-                    if (this.zigZagBottomUp(node, direction)) {
+                    if (this.zigZagBottomUp(node)) {
                         System.out.println("zigZagBottomUp");
                         this.logIncrementActiveRequests();
 
                     } else {
-                        allowRouting = true;
+                        this.allowRouting(node, dstNode, 2);
 
                     }
 
                     break;
 
                 case ZIGZIGLEFT_TOPDOWN:
-                    if (this.zigZigLeftTopDown(node, direction)) {
+                    if (this.zigZigLeftTopDown(node)) {
                         System.out.println("zigZigLeftTopDown");
                         this.logIncrementActiveRequests();
 
                         this.sendDirect(new RoutingInfoMessage(2), this.getNetNode(nodeId));
 
                     } else {
-                        allowRouting = true;
+                        this.allowRouting(node, dstNode, 2);
 
                     }
 
                     break;
 
                 case ZIGZAGLEFT_TOPDOWN:
-                    if (this.zigZagLeftTopDown(node, direction)) {
+                    if (this.zigZagLeftTopDown(node)) {
                         System.out.println("zigZagLeftTopDown");
                         this.logIncrementActiveRequests();
 
@@ -685,28 +688,28 @@ public abstract class NetworkController extends LoggerLayer {
                         }
 
                     } else {
-                        allowRouting = true;
+                        this.allowRouting(node, dstNode, 2);
 
                     }
 
                     break;
 
                 case ZIGZIGRIGHT_TOPDOWN:
-                    if (this.zigZigRightTopDown(node, direction)) {
+                    if (this.zigZigRightTopDown(node)) {
                         System.out.println("zigZigRightTopDown");
                         this.logIncrementActiveRequests();
 
                         this.sendDirect(new RoutingInfoMessage(2), this.getNetNode(nodeId));
 
                     } else {
-                        allowRouting = true;
+                        this.allowRouting(node, dstNode, 2);
 
                     }
 
                     break;
 
                 case ZIGZAGRIGHT_TOPDOWN:
-                    if (this.zigZagRightTopDown(node, direction)) {
+                    if (this.zigZagRightTopDown(node)) {
                         System.out.println("zigZagRightTopDown");
                         this.logIncrementActiveRequests();
 
@@ -722,7 +725,7 @@ public abstract class NetworkController extends LoggerLayer {
                         }
 
                     } else {
-                        allowRouting = true;
+                        this.allowRouting(node, dstNode, 2);
 
                     }
 
@@ -731,17 +734,30 @@ public abstract class NetworkController extends LoggerLayer {
                 default:
                     break;
             }
+        }
+    }
 
-            if (allowRouting) {
-                InfraNode x = this.tree.get(nodeId - 1);
-                InfraNode y = x.getRoutingNode(direction);
+    public void allowRouting (InfraNode node, InfraNode dstNode, int routingTimes) {
+        ArrayList<InfraNode> routNodes = new ArrayList<>();
+        InfraNode currNode = node;
 
-                if (this.areAvailableNodes(x, y)) {
-                    this.logIncrementActiveRequests();
-                    this.sendDirect(new RoutingInfoMessage(1), this.getNetNode(nodeId));
+        routNodes.add(currNode);
+        for (int i = 1; i <= routingTimes; i++) {
+            InfraNode nxtNode = currNode.getRoutingNode(dstNode.getId());
+            if (nxtNode.getId() == -1 || nxtNode.getId() == currNode.getId()) {
+                Tools.fatalError("It's impossible to rout the message this many times");
 
-                }
             }
+
+            routNodes.add(nxtNode);
+            currNode = nxtNode;
+        }
+
+        if (this.areAvailableNodes(routNodes.toArray(new InfraNode[0]))) {
+            this.logIncrementActiveRequests();
+            this.sendDirect(
+                new RoutingInfoMessage(routingTimes), this.getNetNode(node.getId() + 1)
+            );
 
         }
     }

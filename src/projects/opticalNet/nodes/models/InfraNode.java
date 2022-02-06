@@ -200,10 +200,10 @@ public class InfraNode {
         } else if (this.getId() == toId) {
             return;
 
-        } else if (direction == Direction.RIGHT) {
+        } else if (direction == Direction.RIGHT || direction == Direction.RIGHTROUT) {
             this.rightChild.incrementPathWeight(toId, true);
 
-        } else if (direction == Direction.LEFT) {
+        } else if (direction == Direction.LEFT || direction == Direction.LEFTROUT) {
             this.leftChild.incrementPathWeight(toId, true);
 
         } else {
@@ -237,7 +237,16 @@ public class InfraNode {
     	if (this.getId() == toId) {
     		return Direction.NULL;
 
-    	} else if (this.getId() < toId && toId <= this.maxId) {
+    	} else if (this.getLeftChild().getId() == toId) {
+            return Direction.LEFTROUT;
+
+        } else if (this.getRightChild().getId() == toId) {
+            return Direction.RIGHTROUT;
+
+        } else if (this.getParent().getId() == toId) {
+            return Direction.PARENTROUT;
+
+        } else if (this.getId() < toId && toId <= this.maxId) {
             return Direction.RIGHT;
 
         } else if (this.minId <= toId && toId < this.getId()) {

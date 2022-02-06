@@ -14,6 +14,7 @@ import projects.opticalNet.nodes.nodeImplementations.NetworkNode;
 
 import sinalgo.nodes.messages.Inbox;
 import sinalgo.nodes.messages.Message;
+import sinalgo.tools.Tools;
 
 public class CBNetController extends NetworkController {
     private boolean seq = true;
@@ -37,14 +38,16 @@ public class CBNetController extends NetworkController {
     /* Rotations */
 
     @Override
-    protected boolean zigZigBottomUp (InfraNode x, Direction direction) {
+    protected boolean zigZigBottomUp (InfraNode x) {
         InfraNode y = x.getParent();
         InfraNode z = y.getParent();
 
         boolean leftZigZig = (y.getId() == z.getLeftChild().getId());
         InfraNode b = (leftZigZig ? y.getRightChild() : y.getLeftChild());
 
-        if (super.zigZigBottomUp(x, direction)) {
+        double deltaRank = this.zigDiffRank(y, z);
+
+        if (deltaRank < this.epsilon && super.zigZigBottomUp(x)) {
             long yOldWeight = y.getWeight();
             long zOldWeight = z.getWeight();
 
@@ -63,7 +66,7 @@ public class CBNetController extends NetworkController {
     }
 
     @Override
-    protected boolean zigZagBottomUp (InfraNode x, Direction direction) {
+    protected boolean zigZagBottomUp (InfraNode x) {
         InfraNode y = x.getParent();
         InfraNode z = y.getParent();
 
@@ -71,7 +74,9 @@ public class CBNetController extends NetworkController {
         InfraNode b = (leftZigZag) ? x.getLeftChild() : x.getRightChild();
         InfraNode c = (leftZigZag) ? x.getRightChild() : x.getLeftChild();
 
-        if (super.zigZagBottomUp(x, direction)) {
+        double deltaRank = this.zigZagDiffRank(x, y, z);
+
+        if (deltaRank < this.epsilon && super.zigZagBottomUp(x)) {
             long xOldWeight = x.getWeight();
             long yOldWeight = y.getWeight();
             long zOldWeight = z.getWeight();
@@ -94,12 +99,13 @@ public class CBNetController extends NetworkController {
     }
 
     @Override
-    protected boolean zigZigLeftTopDown (InfraNode z, Direction direction) {
+    protected boolean zigZigLeftTopDown (InfraNode z) {
         InfraNode y = z.getLeftChild();
         InfraNode b = y.getRightChild();
 
-        if (super.zigZigLeftTopDown(z, direction)) {
+        double deltaRank = this.zigDiffRank(y, z);
 
+        if (deltaRank < this.epsilon && super.zigZigLeftTopDown(z)) {
             long yOldWeight = y.getWeight();
             long zOldWeight = z.getWeight();
 
@@ -118,11 +124,13 @@ public class CBNetController extends NetworkController {
     }
 
     @Override
-    protected boolean zigZigRightTopDown (InfraNode z, Direction direction) {
+    protected boolean zigZigRightTopDown (InfraNode z) {
         InfraNode y = z.getRightChild();
         InfraNode b = y.getLeftChild();
 
-        if (super.zigZigRightTopDown(z, direction)) {
+        double deltaRank = this.zigDiffRank(y, z);
+
+        if (deltaRank < this.epsilon && super.zigZigRightTopDown(z)) {
 
             long yOldWeight = y.getWeight();
             long zOldWeight = z.getWeight();
@@ -142,13 +150,15 @@ public class CBNetController extends NetworkController {
     }
 
     @Override
-    protected boolean zigZagLeftTopDown (InfraNode z, Direction direction) {
+    protected boolean zigZagLeftTopDown (InfraNode z) {
         InfraNode y = z.getLeftChild();
         InfraNode x = y.getRightChild();
         InfraNode b = x.getLeftChild();
         InfraNode c = x.getRightChild();
 
-        if (super.zigZagLeftTopDown(z, direction)) {
+        double deltaRank = this.zigZagDiffRank(x, y, z);
+
+        if (deltaRank < this.epsilon && super.zigZagLeftTopDown(z)) {
             long xOldWeight = x.getWeight();
             long yOldWeight = y.getWeight();
             long zOldWeight = z.getWeight();
@@ -171,13 +181,15 @@ public class CBNetController extends NetworkController {
     }
 
     @Override
-    protected boolean zigZagRightTopDown (InfraNode z, Direction direction) {
+    protected boolean zigZagRightTopDown (InfraNode z) {
         InfraNode y = z.getRightChild();
         InfraNode x = y.getLeftChild();
         InfraNode b = x.getRightChild();
         InfraNode c = x.getLeftChild();
 
-        if (super.zigZagRightTopDown(z, direction)) {
+        double deltaRank = this.zigZagDiffRank(x, y, z);
+
+        if (deltaRank < this.epsilon && super.zigZagRightTopDown(z)) {
             long xOldWeight = x.getWeight();
             long yOldWeight = y.getWeight();
             long zOldWeight = z.getWeight();
@@ -274,9 +286,8 @@ public class CBNetController extends NetworkController {
     }
 
     @Override
-    public Rotation getRotationToPerform (InfraNode x, Direction direction) {
-        double maxDelta = 0;
-        Rotation operation = Rotation.NULL;
+    public Rotation getRotationToPerform (InfraNode x, InfraNode dstNode) {
+        Direction direction = x.getRoutingDirection(dstNode.getId());
 
         if (direction == Direction.PARENTROUT) {
             return Rotation.NULL;
@@ -284,107 +295,92 @@ public class CBNetController extends NetworkController {
         } else if (direction == Direction.LEFTROUT) {
             return Rotation.NULL;
 
-        } else if (direction == Direction.LEFTROUT) {
+        } else if (direction == Direction.RIGHTROUT) {
+            return Rotation.NULL;
+
+        } else if (
+            direction == Direction.PARENT &&
+            !(this.isValidNode(x.getParent()) && this.isValidNode(x.getParent().getParent()))
+        ) {
             return Rotation.NULL;
 
         }
 
         /*bottom-up - BEGIN*/
-        if (this.isValidNode(x.getParent()) && this.isValidNode(x.getParent().getParent())) {
+        if (direction == Direction.PARENT) {
             InfraNode y = x.getParent();
             InfraNode z = y.getParent();
             if (
                 this.isValidNode(y.getLeftChild()) && x.getId() == y.getLeftChild().getId() &&
                 this.isValidNode(z.getLeftChild()) && y.getId() == z.getLeftChild().getId()
             ) {
-                    double aux = zigDiffRank(y, z);
+                return Rotation.ZIGZIGLEFT_BOTTOMUP;
 
-                    if (aux < maxDelta) {
-                            maxDelta = aux;
-                            operation = Rotation.ZIGZIGLEFT_BOTTOMUP;
-                    }
             } else if (
                 this.isValidNode(y.getRightChild()) && x.getId() == y.getRightChild().getId() &&
                 this.isValidNode(z.getRightChild()) && y.getId() == z.getRightChild().getId()
             ) {
-                    double aux = zigDiffRank(y, z);
-                    if (aux < maxDelta) {
-                            maxDelta = aux;
-                            operation = Rotation.ZIGZIGRIGHT_BOTTOMUP;
-                    }
+                return Rotation.ZIGZIGRIGHT_BOTTOMUP;
+
             } else if (
                 this.isValidNode(y.getRightChild()) && x.getId() == y.getRightChild().getId() &&
                 this.isValidNode(z.getLeftChild()) && y.getId() == z.getLeftChild().getId()
             ) {
-                    double aux = zigZagDiffRank(x, y, z);
-                    if (aux < maxDelta) {
-                            maxDelta = aux;
-                            operation = Rotation.ZIGZAGLEFT_BOTTOMUP;
-                    }
+                return Rotation.ZIGZAGLEFT_BOTTOMUP;
+
             } else if (
                 this.isValidNode(y.getLeftChild()) && x.getId() == y.getLeftChild().getId() &&
                 this.isValidNode(z.getRightChild()) && y.getId() == z.getRightChild().getId()
             ) {
-                    double aux = zigZagDiffRank(x, y, z);
-                    if (aux < maxDelta) {
-                            maxDelta = aux;
-                            operation = Rotation.ZIGZAGRIGHT_BOTTOMUP;
-                    }
+                return Rotation.ZIGZAGRIGHT_BOTTOMUP;
+
+            } else {
+                Tools.fatalError("Network topology for BottomUp not expected");
+
+            }
+
+        /* Top-Down - LEFT - BEGIN */
+        } else if (direction == Direction.LEFT) {
+            InfraNode y = x.getRoutingNode(dstNode.getId());
+            InfraNode z = y.getRoutingNode(dstNode.getId());
+
+            if (x.getLeftChild().getId() == y.getId() && y.getLeftChild().getId() == z.getId()) {
+                return Rotation.ZIGZIGLEFT_TOPDOWN;
+
+            } else if (
+                x.getLeftChild().getId() == y.getId() &&
+                y.getRightChild().getId() == z.getId()
+            ) {
+                return Rotation.ZIGZAGLEFT_TOPDOWN;
+
+            } else {
+                Tools.fatalError("Network topology for Left TopDown not expected");
+
+            }
+
+        /* Top-Down - RIGHT - BEGIN */
+        } else if (direction == Direction.RIGHT) {
+            InfraNode y = x.getRoutingNode(dstNode.getId());
+            InfraNode z = y.getRoutingNode(dstNode.getId());
+
+            if (x.getRightChild().getId() == y.getId() && y.getRightChild().getId() == z.getId()) {
+                return Rotation.ZIGZIGRIGHT_TOPDOWN;
+
+            } else if (
+                x.getRightChild().getId() == y.getId() &&
+                y.getLeftChild().getId() == z.getId()
+            ) {
+                return Rotation.ZIGZAGRIGHT_TOPDOWN;
+
+            } else {
+                Tools.fatalError("Network topology for Right TopDown not expected");
+
             }
         }
 
-        /*top-down - BEGIN*/
-        if (this.isValidNode(x.getLeftChild())) {
-                InfraNode y = x.getLeftChild();
+        Tools.fatalError("Unexpected rotation");
 
-                if (this.isValidNode(y.getLeftChild())) {
-                        InfraNode z = y.getLeftChild();
-                        double aux = zigDiffRank(y, z);
-                        if (aux < maxDelta) {
-                                maxDelta = aux;
-                                operation = Rotation.ZIGZIGLEFT_TOPDOWN;
-                        }
-                }
-
-                if (this.isValidNode(y.getRightChild())) {
-                        InfraNode z = y.getRightChild();
-                        double aux = zigZagDiffRank(x, y, z);
-                        if (aux < maxDelta) {
-                                maxDelta = aux;
-                                operation = Rotation.ZIGZAGLEFT_TOPDOWN;
-                        }
-                }
-        }
-
-        if (this.isValidNode(x.getRightChild())) {
-                InfraNode y = x.getRightChild();
-
-                if (this.isValidNode(y.getRightChild())) {
-                        InfraNode z = y.getRightChild();
-                        double aux = zigDiffRank(y, z);
-                        if (aux < maxDelta) {
-                                maxDelta = aux;
-                                operation = Rotation.ZIGZIGRIGHT_TOPDOWN;
-                        }
-                }
-
-                if (this.isValidNode(y.getLeftChild())) {
-                        InfraNode z = y.getLeftChild();
-                        double aux = zigZagDiffRank(x, y, z);
-                        if (aux < maxDelta) {
-                                maxDelta = aux;
-                                operation = Rotation.ZIGZAGRIGHT_TOPDOWN;
-                        }
-                }
-        }
-
-        if (maxDelta < this.epsilon) {
-            return operation;
-
-        } else {
-            return Rotation.NULL;
-
-        }
+        return null;
     }
 
     private void incrementPathWeight (int from, int to) {
