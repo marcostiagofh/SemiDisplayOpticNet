@@ -25,7 +25,7 @@ public class CustomGlobal extends AbstractCustomGlobal {
     public RequestQueue requestQueue;
 
     /* Control Execution */
-    public static boolean isSequencial = true;
+    public boolean isSequential = true;
     public static boolean mustGenerateSplay = true;
 
     public Random random = Tools.getRandomNumberGenerator();
@@ -65,6 +65,10 @@ public class CustomGlobal extends AbstractCustomGlobal {
 
             }
 
+            if (Configuration.hasParameter("isSequential")) {
+            	this.isSequential = Configuration.getBooleanParameter("isSequential");
+            }
+
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("Missing configuration parameters");
@@ -92,21 +96,23 @@ public class CustomGlobal extends AbstractCustomGlobal {
     @Override
     public void preRound () {
 
-        if (this.controller.getSeq() && mustGenerateSplay && this.requestQueue.hasNextRequest()) {
-            mustGenerateSplay = false;
+        if (mustGenerateSplay && this.requestQueue.hasNextRequest()) {
+        	if (!this.isSequential || this.controller.getSeq()) {
+                mustGenerateSplay = false;
 
-            double u = random.nextDouble();
-            double x = Math.log(1 - u) / (-lambda);
-            x = (int) x;
-            if (x <= 0) {
-                x = 1;
+                double u = random.nextDouble();
+                double x = Math.log(1 - u) / (-lambda);
+                x = (int) x;
+                if (x <= 0) {
+                    x = 1;
+                }
+
+                Tuple<Integer, Integer> r = this.requestQueue.getNextRequest();
+                TriggerNodeOperation ted = new TriggerNodeOperation(r.first + 1, r.second + 1);
+                ted.startGlobalTimer(x);
+
+                this.controller.setSeq();
             }
-
-            Tuple<Integer, Integer> r = this.requestQueue.getNextRequest();
-            TriggerNodeOperation ted = new TriggerNodeOperation(r.first + 1, r.second + 1);
-            ted.startGlobalTimer(x);
-
-            this.controller.setSeq();
         }
 
     }

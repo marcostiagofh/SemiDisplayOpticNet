@@ -26,10 +26,11 @@ projects = [ "cbOptNet" ]
 num_nodes = [ 1024 ]
 datasets = [ "newTor" ]
 switch_sizes = [ -1 ]
+sequential = [ "false" ]
 num_simulations = 30
 
 #number of threads to simulation
-num_threads = 10
+num_threads = 2
 
 java = "java"
 classpath = "binaries/bin:binaries/jdom.jar"
@@ -63,25 +64,26 @@ for project in projects:
     # generate all possibles inputs for simulation
     for dataset in datasets:
         for num_node in num_nodes:
-            for sim_id in range(1, num_simulations + 1):
-                for switch_size in switch_sizes:
-                    if switch_size == -1:
-                        switch_size = 2 * num_node
+            for sequentiality in sequential:
+                for sim_id in range(1, num_simulations + 1):
+                    for switch_size in switch_sizes:
+                        if switch_size == -1:
+                            switch_size = 2 * num_node
 
-                    elif switch_size <= 16 and num_node >= 512:
-                        continue
+                        elif switch_size <= 16 and num_node >= 512:
+                            continue
 
-                    elif switch_size <= 8 and num_node >= 256:
-                        continue
+                        elif switch_size <= 8 and num_node >= 256:
+                            continue
 
-                    cmd = (
-                        f"./scripts/compress-results.sh \"{base_cmd}\" {project} {dataset} {num_node} " \
-                        f"{sim_id} {switch_size}"
-                    )
+                        cmd = (
+                            f"./scripts/compress-results.sh \"{base_cmd}\" {project} {dataset} {num_node} " \
+                            f"{sim_id} {switch_size} {sequentiality}"
+                        )
 
-                    print(cmd)
-                    if cmd not in log:
-                        commands.append(cmd)
+                        print(cmd)
+                        if cmd not in log:
+                            commands.append(cmd)
 
     num_commands = len(commands)
 
