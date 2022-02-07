@@ -43,7 +43,7 @@ public class CBNetController extends NetworkController {
         InfraNode z = y.getParent();
 
         boolean leftZigZig = (y.getId() == z.getLeftChild().getId());
-        InfraNode b = (leftZigZig ? y.getRightChild() : y.getLeftChild());
+        InfraNode c = (leftZigZig ? y.getRightChild() : y.getLeftChild());
 
         double deltaRank = this.zigDiffRank(y, z);
 
@@ -51,10 +51,10 @@ public class CBNetController extends NetworkController {
             long yOldWeight = y.getWeight();
             long zOldWeight = z.getWeight();
 
-            long bWeight = (b.getId() != -1) ? b.getWeight() : 0;
+            long cWeight = (c.getId() != -1) ? c.getWeight() : 0;
 
-            long zNewWeight = zOldWeight - yOldWeight + bWeight;
-            long yNewWeight = yOldWeight - bWeight + zNewWeight;
+            long zNewWeight = zOldWeight - yOldWeight + cWeight;
+            long yNewWeight = yOldWeight - cWeight + zNewWeight;
 
             z.setWeight(zNewWeight);
             y.setWeight(yNewWeight);
@@ -101,7 +101,7 @@ public class CBNetController extends NetworkController {
     @Override
     protected boolean zigZigLeftTopDown (InfraNode z) {
         InfraNode y = z.getLeftChild();
-        InfraNode b = y.getRightChild();
+        InfraNode c = y.getRightChild();
 
         double deltaRank = this.zigDiffRank(y, z);
 
@@ -109,10 +109,10 @@ public class CBNetController extends NetworkController {
             long yOldWeight = y.getWeight();
             long zOldWeight = z.getWeight();
 
-            long bWeight = (b.getId() != -1) ? b.getWeight() : 0;
+            long cWeight = (c.getId() != -1) ? c.getWeight() : 0;
 
-            long zNewWeight = zOldWeight - yOldWeight + bWeight;
-            long yNewWeight = yOldWeight - bWeight + zNewWeight;
+            long zNewWeight = zOldWeight - yOldWeight + cWeight;
+            long yNewWeight = yOldWeight - cWeight + zNewWeight;
 
             z.setWeight(zNewWeight);
             y.setWeight(yNewWeight);
@@ -126,7 +126,7 @@ public class CBNetController extends NetworkController {
     @Override
     protected boolean zigZigRightTopDown (InfraNode z) {
         InfraNode y = z.getRightChild();
-        InfraNode b = y.getLeftChild();
+        InfraNode c = y.getLeftChild();
 
         double deltaRank = this.zigDiffRank(y, z);
 
@@ -135,10 +135,10 @@ public class CBNetController extends NetworkController {
             long yOldWeight = y.getWeight();
             long zOldWeight = z.getWeight();
 
-            long bWeight = (b.getId() != -1) ? b.getWeight() : 0;
+            long cWeight = (c.getId() != -1) ? c.getWeight() : 0;
 
-            long zNewWeight = zOldWeight - yOldWeight + bWeight;
-            long yNewWeight = yOldWeight - bWeight + zNewWeight;
+            long zNewWeight = zOldWeight - yOldWeight + cWeight;
+            long yNewWeight = yOldWeight - cWeight + zNewWeight;
 
             z.setWeight(zNewWeight);
             y.setWeight(yNewWeight);
