@@ -14,6 +14,7 @@ public abstract class LoggerLayer extends SynchronizerLayer {
     private DataSeries rotationCounter = new DataSeries();
     private DataSeries alterationCounter = new DataSeries();
     private DataSeries messageRoutingCounter = new DataSeries();
+    private DataSeries activeRequestsCounter = new DataSeries();
 
     private ArrayList<Long> routingsPerSwitchRound;
     private ArrayList<Long> activePortsPerSwitchRound;
@@ -32,6 +33,7 @@ public abstract class LoggerLayer extends SynchronizerLayer {
     private Logging rotationPerRound;
     private Logging routingPerRound;
     private Logging alterationPerRound;
+    private Logging activeRequestsPerRound;
 
     private Logging nodesRoutingsPerRound;
     private Logging nodesRotationsPerRound;
@@ -43,7 +45,6 @@ public abstract class LoggerLayer extends SynchronizerLayer {
 
     private Logging routingPerMessage;
 
-    private Logging activeRequestsPerRound;
     private Logging throughputLog;
 
     private Logging simulationLog;
@@ -73,6 +74,8 @@ public abstract class LoggerLayer extends SynchronizerLayer {
         this.rotationPerRound.logln(this.currentRoundRotations + "");
         this.routingPerRound.logln(this.getCurrentRoundRoutings() + "");
         this.alterationPerRound.logln(this.getCurrentRoundAlterations() + "");
+        this.activeRequestsPerRound.logln(this.activeRequests + "");
+        this.activeRequestsCounter.addSample(this.activeRequests);
 
         this.nodesRoutingsPerRound.logln(this.stringfyLogArray(this.routingsPerNodeRound));
         this.nodesRotationsPerRound.logln(
@@ -91,18 +94,19 @@ public abstract class LoggerLayer extends SynchronizerLayer {
         );
 
         this.throughputLog.logln(this.roundCompletedRequests + "");
-        this.activeRequestsPerRound.logln(this.activeRequests + "");
 
         this.resetRoundInfo();
 
     }
 
     public void logEndOfSimulation () {
-        this.printSimulationInfo();
+        this.operationsLog.logln("name,sum,mean,std_dvt,min,max");
         this.printRotationCounter();
         this.printAlterationCounter();
         this.printMessageRoutingCounter();
+        this.printActiveRequestsCounter();
 
+        this.printSimulationInfo();
     }
 
     /* End of Logger Functions */
@@ -215,61 +219,44 @@ public abstract class LoggerLayer extends SynchronizerLayer {
     /* End of Getters */
 
     /* Printer Functions */
+    public void printActiveRequestsCounter () {
+        this.printCounter(this.activeRequestsCounter, "active-requests");
+
+    }
 
     public void printAlterationCounter () {
-        System.out.println("Alterations:");
-        System.out.println("Number of request: " + this.alterationCounter.getNumberOfSamples());
-        System.out.println("Mean: " + this.alterationCounter.getMean());
-        System.out.println("Standard Deviation: " + this.alterationCounter.getStandardDeviation());
-        System.out.println("Min: " + this.alterationCounter.getMinimum());
-        System.out.println("Max: " + this.alterationCounter.getMaximum());
-
-        this.operationsLog.logln(
-            "alteration," +
-            this.alterationCounter.getSum() + "," +
-            this.alterationCounter.getMean() + "," +
-            this.alterationCounter.getStandardDeviation() + "," +
-            this.alterationCounter.getMinimum() + "," +
-            this.alterationCounter.getMaximum()
-        );
+        this.printCounter(this.alterationCounter, "alteration");
     }
 
     public void printRotationCounter () {
-        System.out.println("Rotations:");
-        System.out.println("Number of request: " + this.rotationCounter.getNumberOfSamples());
-        System.out.println("Mean: " + this.rotationCounter.getMean());
-        System.out.println("Standard Deviation: " + this.rotationCounter.getStandardDeviation());
-        System.out.println("Min: " + this.rotationCounter.getMinimum());
-        System.out.println("Max: " + this.rotationCounter.getMaximum());
+        this.printCounter(this.rotationCounter, "rotation");
 
-        this.operationsLog.logln(
-            "rotation," +
-            this.rotationCounter.getSum() + "," +
-            this.rotationCounter.getMean() + "," +
-            this.rotationCounter.getStandardDeviation() + "," +
-            this.rotationCounter.getMinimum() + "," +
-            this.rotationCounter.getMaximum()
-        );
     }
 
     public void printMessageRoutingCounter () {
-        System.out.println("Message Routing:");
-        System.out.println("Number of messages " + this.messageRoutingCounter.getNumberOfSamples());
-        System.out.println("Mean: " + this.messageRoutingCounter.getMean());
+        this.printCounter(this.messageRoutingCounter, "message-routing");
+
+    }
+
+    public void printCounter (DataSeries counter, String operation) {
+        System.out.println(operation);
+        System.out.println("Number of request " + counter.getNumberOfSamples());
+        System.out.println("Mean: " + counter.getMean());
         System.out.println(
-            "Standard Deviation: " + this.messageRoutingCounter.getStandardDeviation()
+            "Standard Deviation: " + counter.getStandardDeviation()
         );
-        System.out.println("Min: " + this.messageRoutingCounter.getMinimum());
-        System.out.println("Max: " + this.messageRoutingCounter.getMaximum());
+        System.out.println("Min: " + counter.getMinimum());
+        System.out.println("Max: " + counter.getMaximum());
 
         this.operationsLog.logln(
-            "message-routing," +
-            this.messageRoutingCounter.getSum() + "," +
-            this.messageRoutingCounter.getMean() + "," +
-            this.messageRoutingCounter.getStandardDeviation() + "," +
-            this.messageRoutingCounter.getMinimum() + "," +
-            this.messageRoutingCounter.getMaximum()
+            operation + "," +
+            counter.getSum() + "," +
+            counter.getMean() + "," +
+            counter.getStandardDeviation() + "," +
+            counter.getMinimum() + "," +
+            counter.getMaximum()
         );
+
     }
 
     public void printSimulationInfo () {
@@ -291,6 +278,7 @@ public abstract class LoggerLayer extends SynchronizerLayer {
         this.rotationPerRound = Logging.getLogger(path + "/rotations_per_round.txt");
         this.routingPerRound = Logging.getLogger(path + "/routings_per_round.txt");
         this.alterationPerRound = Logging.getLogger(path + "/alterations_per_round.txt");
+        this.activeRequestsPerRound = Logging.getLogger(path + "/active_requests_per_round.txt");
 
         this.nodesRoutingsPerRound = Logging.getLogger(path + "/nodes_routings_per_round.txt");
         this.nodesRotationsPerRound = Logging.getLogger(path + "/nodes_rotations_per_round.txt");
@@ -307,7 +295,6 @@ public abstract class LoggerLayer extends SynchronizerLayer {
             path + "/switches_alterations_per_round.txt"
         );
 
-        this.activeRequestsPerRound = Logging.getLogger(path + "/active_requests_per_round.txt");
 
         this.routingPerMessage = Logging.getLogger(path + "/routing_per_message.txt");
 
