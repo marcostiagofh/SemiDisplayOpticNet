@@ -241,6 +241,7 @@ public abstract class LoggerLayer extends SynchronizerLayer {
     public void printCounter (DataSeries counter, String operation) {
         System.out.println(operation);
         System.out.println("Number of request " + counter.getNumberOfSamples());
+        System.out.println("Number of operations " + counter.getSum());
         System.out.println("Mean: " + counter.getMean());
         System.out.println(
             "Standard Deviation: " + counter.getStandardDeviation()
