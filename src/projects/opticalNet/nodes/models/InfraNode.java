@@ -2,7 +2,7 @@ package projects.opticalNet.nodes.models;
 
 import sinalgo.tools.Tools;
 
-public class InfraNode {
+public class InfraNode implements Comparable<InfraNode> {
 
     /* Attributes */
     private InfraNode parent = null;
@@ -70,7 +70,7 @@ public class InfraNode {
     }
 
     public long getWeight () {
-        return this.weight;
+        return (this.getId() == -1 ? 0 : this.weight);
     }
 
     /* End of Getters */
@@ -178,33 +178,25 @@ public class InfraNode {
         return this.maxId = child.getMaxId();
     }
 
-    public void setMinId (int minId) {
-        this.minId = minId;
-    }
-
-    public void setMaxId (int maxId) {
-        this.maxId = maxId;
-    }
-
     public void setWeight (long weight) {
         this.weight = weight;
     }
 
-    public void incrementPathWeight (int toId, boolean rooted) {
+    public void incrementPathWeight (InfraNode toNode, boolean rooted) {
         this.incrementWeight();
-        Direction direction = this.getRoutingDirection(toId);
+        Direction direction = this.getRoutingDirection(toNode);
 
         if (!rooted && this.parent.getId() != -1) {
-            this.parent.incrementPathWeight(toId, false);
+            this.parent.incrementPathWeight(toNode, false);
 
-        } else if (this.getId() == toId) {
+        } else if (this.getId() == toNode.getId()) {
             return;
 
         } else if (direction == Direction.RIGHT || direction == Direction.RIGHTROUT) {
-            this.rightChild.incrementPathWeight(toId, true);
+            this.rightChild.incrementPathWeight(toNode, true);
 
         } else if (direction == Direction.LEFT || direction == Direction.LEFTROUT) {
-            this.leftChild.incrementPathWeight(toId, true);
+            this.leftChild.incrementPathWeight(toNode, true);
 
         } else {
             Tools.fatalError("Incrementing parent weigth after going to root");
@@ -212,8 +204,8 @@ public class InfraNode {
         }
     }
 
-    public InfraNode getRoutingNode (int toId) {
-        return this.getRoutingNode(this.getRoutingDirection(toId));
+    public InfraNode getRoutingNode (InfraNode toNode) {
+        return this.getRoutingNode(this.getRoutingDirection(toNode));
 
     }
 
@@ -233,23 +225,23 @@ public class InfraNode {
         }
     }
 
-    public Direction getRoutingDirection (int toId) {
-    	if (this.getId() == toId) {
+    public Direction getRoutingDirection (InfraNode toNode) {
+        if (this.getId() == toNode.getId()) {
     		return Direction.NULL;
 
-    	} else if (this.getLeftChild().getId() == toId) {
+    	} else if (this.getLeftChild().getId() == toNode.getId()) {
             return Direction.LEFTROUT;
 
-        } else if (this.getRightChild().getId() == toId) {
+        } else if (this.getRightChild().getId() == toNode.getId()) {
             return Direction.RIGHTROUT;
 
-        } else if (this.getParent().getId() == toId) {
+        } else if (this.getParent().getId() == toNode.getId()) {
             return Direction.PARENTROUT;
 
-        } else if (this.getId() < toId && toId <= this.maxId) {
+        } else if (this.getId() < toNode.getId() && toNode.getId() <= this.maxId) {
             return Direction.RIGHT;
 
-        } else if (this.minId <= toId && toId < this.getId()) {
+        } else if (this.minId <= toNode.getId() && toNode.getId() < this.getId()) {
             return Direction.LEFT;
 
         } else {
@@ -278,6 +270,19 @@ public class InfraNode {
             );
 
         }
+    }
+
+    @Override
+    public int compareTo (InfraNode othNode) {
+        if (this.getId() == -1) {
+            return -1;
+
+        } else if (othNode.getId() == -1) {
+            return 1;
+
+        }
+
+        return Integer.compare(this.getId(), othNode.getId());
     }
     /* End of Auxiliary Functions */
 }

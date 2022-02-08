@@ -31,7 +31,7 @@ public abstract class NetworkController extends LoggerLayer {
     protected int clusterSize;
 
     protected int rcvMsgs = 0;
-    protected ArrayList<Integer> remainingMessage;
+    protected int cmpMsgs = 0;
 
     private static final int SIZE_CLUSTER_TYPE1 = 4;
     private static final int SIZE_CLUSTER_TYPE2 = 4;
@@ -50,8 +50,6 @@ public abstract class NetworkController extends LoggerLayer {
         this.tree = new ArrayList<>();
         this.switches = new ArrayList<>();
         this.netNodes = netNodes;
-
-        this.remainingMessage = new ArrayList<>();
 
         this.clusterSize = this.switchSize / 2;
         this.numClustersType1 = (this.numNodes + this.clusterSize - 1) / this.clusterSize;
@@ -132,8 +130,6 @@ public abstract class NetworkController extends LoggerLayer {
             this.usedNodes.add(false);
             this.tree.add(new InfraNode());
 
-            this.remainingMessage.add(0);
-
         }
 
         if (edgeList.size() != this.numNodes) {
@@ -141,9 +137,11 @@ public abstract class NetworkController extends LoggerLayer {
             this.setInitialCon(this.tree.get(this.numNodes), this.tree.get(this.numNodes / 2 - 1));
 
         } else {
-            for (int i = 0; i < this.numNodes; i++) {
-                this.setInitialCon(this.tree.get(edgeList.get(i)), this.tree.get(i));
-
+            for (int i = 1; i <= this.numNodes; i++) {
+                this.setInitialCon(
+                    this.getInfraNode(edgeList.get(i - 1)),
+                    this.getInfraNode(i)
+                );
             }
 
         }
@@ -159,16 +157,14 @@ public abstract class NetworkController extends LoggerLayer {
 
         if (minMiddle >= min) {
             this.buildBalancedTree(min, middle - 1);
-            this.setInitialCon(this.tree.get(middle - 1), this.tree.get(minMiddle - 1));
+            this.setInitialCon(this.getInfraNode(middle), this.getInfraNode(minMiddle));
         }
 
         if (maxMiddle <= max) {
             this.buildBalancedTree(middle + 1, max);
-            this.setInitialCon(this.tree.get(middle - 1), this.tree.get(maxMiddle - 1));
+            this.setInitialCon(this.getInfraNode(middle), this.getInfraNode(maxMiddle));
 
         }
-
-        this.tree.get(middle - 1).debugNode();
 
     }
 
@@ -407,12 +403,12 @@ public abstract class NetworkController extends LoggerLayer {
         return this.switchSize;
     }
 
-    public InfraNode getInfraNode (int nodeId) {
-        return this.tree.get(nodeId);
+    public InfraNode getInfraNode (int netNodeId) {
+        return this.tree.get(netNodeId - 1);
     }
 
-    public NetworkNode getNetNode (int nodeId) {
-        return this.netNodes.get(nodeId - 1);
+    public NetworkNode getNetNode (int netNodeId) {
+        return this.netNodes.get(netNodeId - 1);
     }
 
     protected int getClusterId (InfraNode fromNode, InfraNode toNode) {
@@ -585,13 +581,14 @@ public abstract class NetworkController extends LoggerLayer {
         while (!this.routingNodes.isEmpty()) {
             RoutingInfoMessage routmsg = this.routingNodes.poll();
             int nodeId = routmsg.getNodeId();
+            InfraNode node = this.getInfraNode(nodeId);
+            InfraNode dstNode = this.getInfraNode(routmsg.getDst());
 
             ArrayList<InfraNode> lockNodes = new ArrayList<>();
-            InfraNode node = this.tree.get(nodeId - 1);
             lockNodes.add(node);
 
             for (int i = 1; i <= routmsg.getRoutingTimes(); i++) {
-                InfraNode nxtNode = node.getRoutingNode(routmsg.getDst() - 1);
+                InfraNode nxtNode = node.getRoutingNode(dstNode);
                 if (nxtNode.getId() == -1 || nxtNode.getId() == node.getId()) {
                     break;
 
@@ -619,8 +616,8 @@ public abstract class NetworkController extends LoggerLayer {
             HasMessage hasmsg = this.nodesWithMsg.poll();
             int nodeId = hasmsg.getCurrId();
 
-            InfraNode node = this.tree.get(nodeId - 1);
-            InfraNode dstNode = this.tree.get(hasmsg.getDst() - 1);
+            InfraNode node = this.getInfraNode(nodeId);
+            InfraNode dstNode = this.getInfraNode(hasmsg.getDst());
 
             Rotation op = this.getRotationToPerform(node, dstNode);
 
@@ -676,8 +673,8 @@ public abstract class NetworkController extends LoggerLayer {
                         System.out.println("zigZagLeftTopDown");
                         this.logIncrementActiveRequests();
 
-                        InfraNode rfrshNode = this.tree.get(nodeId - 1);
-                        InfraNode nxtNode = rfrshNode.getRoutingNode(hasmsg.getDst() - 1);
+                        InfraNode rfrshNode = this.getInfraNode(nodeId);
+                        InfraNode nxtNode = rfrshNode.getRoutingNode(dstNode);
 
                         if (nxtNode == rfrshNode.getParent()) {
                             this.sendDirect(new RoutingInfoMessage(3), this.getNetNode(nodeId));
@@ -713,8 +710,8 @@ public abstract class NetworkController extends LoggerLayer {
                         System.out.println("zigZagRightTopDown");
                         this.logIncrementActiveRequests();
 
-                        InfraNode rfrshNode = this.tree.get(nodeId - 1);
-                        InfraNode nxtNode = rfrshNode.getRoutingNode(hasmsg.getDst() - 1);
+                        InfraNode rfrshNode = this.getInfraNode(nodeId);
+                        InfraNode nxtNode = rfrshNode.getRoutingNode(dstNode);
 
                         if (nxtNode == rfrshNode.getParent()) {
                             this.sendDirect(new RoutingInfoMessage(3), this.getNetNode(nodeId));
@@ -743,7 +740,7 @@ public abstract class NetworkController extends LoggerLayer {
 
         routNodes.add(currNode);
         for (int i = 1; i <= routingTimes; i++) {
-            InfraNode nxtNode = currNode.getRoutingNode(dstNode.getId());
+            InfraNode nxtNode = currNode.getRoutingNode(dstNode);
             if (nxtNode.getId() == -1 || nxtNode.getId() == currNode.getId()) {
                 Tools.fatalError("It's impossible to rout the message this many times");
 
@@ -772,10 +769,7 @@ public abstract class NetworkController extends LoggerLayer {
 
         node.debugNode();
 
-        System.out.println("Left");
         this.debugInfraTree(node.getLeftChild());
-
-        System.out.println("Right");
         this.debugInfraTree(node.getRightChild());
     }
 
@@ -803,13 +797,8 @@ public abstract class NetworkController extends LoggerLayer {
 
         this.updateConn();
 
-        int missingMessages = 0;
-        for (int i = 0; i <= this.numNodes; i++) {
-            missingMessages += this.remainingMessage.get(i);
-
-        }
-
-        System.out.println("Received Messages: " + this.rcvMsgs + " Missing Messages: " + missingMessages);
+        int missingMessages = this.rcvMsgs - this.cmpMsgs;
+        System.out.println("Round " + this.getCurrentRound() + " Messages: " + this.rcvMsgs + " Missing Messages: " + missingMessages);
     }
 
     private boolean equivalentNodes (int nodeId) {
