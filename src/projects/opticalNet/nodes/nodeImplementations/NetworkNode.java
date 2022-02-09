@@ -1,12 +1,12 @@
 package projects.opticalNet.nodes.nodeImplementations;
 
 import java.util.Random;
+
 import java.awt.Graphics;
 import java.util.PriorityQueue;
 
 import projects.opticalNet.nodes.messages.NewMessage;
 import projects.opticalNet.nodes.messages.RoutingInfoMessage;
-import projects.opticalNet.nodes.models.Direction;
 import projects.opticalNet.nodes.messages.HasMessage;
 import projects.opticalNet.nodes.messages.OpticalNetMessage;
 import projects.opticalNet.nodes.infrastructureImplementations.InputNode;
@@ -29,16 +29,9 @@ public class NetworkNode extends SynchronizerLayer {
     private InputNode rightChild = null;
 
     private NetworkController controller = null;
-
-    private int minIdInSubtree = 0;
-    private int maxIdInSubtree = 0;
-
     private Random rand = Tools.getRandomNumberGenerator();
 
-    public NetworkNode () {
-        this.minIdInSubtree = this.ID;
-        this.maxIdInSubtree = this.ID;
-    }
+    public NetworkNode () { }
 
     public void setParent (InputNode node) {
         this.parent = node;
@@ -56,26 +49,28 @@ public class NetworkNode extends SynchronizerLayer {
         this.parent = null;
     }
 
-    public void setChild (InputNode node, int subtreeId) {
+    public void setChild (InputNode node) {
         if (this.ID < node.getOutputNode().getIndex()) {
-            this.setRightChild(node, subtreeId);
+            this.setRightChild(node);
 
         } else if (this.ID > node.getOutputNode().getIndex()) {
-            this.setLeftChild(node, subtreeId);
+            this.setLeftChild(node);
 
         } else {
             Tools.fatalError("Not clear which child to remove from node " + this.ID);
         }
     }
 
-    public void setLeftChild (InputNode node, int minId) {
+    public void setLeftChild (InputNode node) {
         this.leftChild = node;
-        this.setMinIdInSubtree(minId);
+    }
+
+    public void setRightChild (InputNode node) {
+        this.rightChild = node;
     }
 
     public void removeLeftChild () {
         this.leftChild = null;
-        this.setMinIdInSubtree(this.ID);
     }
 
     public int getLeftChildId() {
@@ -107,97 +102,12 @@ public class NetworkNode extends SynchronizerLayer {
         return this.rightChild;
     }
 
-    public void setRightChild (InputNode node, int maxId) {
-        this.rightChild = node;
-        this.setMaxIdInSubtree(maxId);
-    }
-
     public void removeRightChild () {
         this.rightChild = null;
-        this.setMaxIdInSubtree(this.ID);
-    }
-
-    public void setMinIdInSubtree (int value) {
-        if (value == -1) {
-            this.minIdInSubtree = this.ID;
-
-        } else {
-            this.minIdInSubtree = value;
-
-        }
-    }
-
-    public int getMinIdInSubtree () {
-        return this.minIdInSubtree;
-    }
-
-    public void setMaxIdInSubtree (int value) {
-        if (value == -1) {
-            this.maxIdInSubtree = this.ID;
-
-        } else {
-            this.maxIdInSubtree = value;
-
-        }
-    }
-
-    public int getMaxIdInSubtree () {
-        return this.maxIdInSubtree;
     }
 
     public int getId () {
         return this.ID;
-    }
-
-    public int getRoutingNodeId (OpticalNetMessage optmsg) {
-        Direction direction = this.getRoutingDirection(optmsg);
-        if (direction == Direction.LEFT || direction == Direction.LEFTROUT) {
-            return this.getLeftChildId();
-
-        } else if (direction == Direction.RIGHT || direction == Direction.RIGHTROUT) {
-            return this.getRightChildId();
-
-        } else {
-            return this.getParentId();
-
-        }
-
-    }
-
-    public InputNode getRoutingNode (OpticalNetMessage optmsg) {
-        Direction direction = this.getRoutingDirection(optmsg);
-        if (direction == Direction.LEFT || direction == Direction.LEFTROUT) {
-            return this.leftChild;
-
-        } else if (direction == Direction.RIGHT || direction == Direction.RIGHTROUT) {
-            return this.rightChild;
-
-        } else {
-            return this.parent;
-
-        }
-    }
-
-    public Direction getRoutingDirection (OpticalNetMessage optmsg) {
-        if (this.getLeftChildId() == optmsg.getDst()) {
-            return Direction.LEFTROUT;
-
-        } else if (this.getRightChildId() == optmsg.getDst()) {
-            return Direction.RIGHTROUT;
-
-        } else if (this.getParentId() == optmsg.getDst()) {
-            return Direction.PARENTROUT;
-
-        } else if (this.minIdInSubtree <= optmsg.getDst() && optmsg.getDst() < this.ID) {
-            return Direction.LEFT;
-
-        } else if (this.ID < optmsg.getDst() && optmsg.getDst() <= this.maxIdInSubtree) {
-            return Direction.RIGHT;
-
-        } else {
-            return Direction.PARENT;
-
-        }
     }
 
     @Override
@@ -215,7 +125,9 @@ public class NetworkNode extends SynchronizerLayer {
 
     public void informController (OpticalNetMessage optmsg) {
         if (optmsg.getDst() == this.ID) {
-            System.out.println("OPT-Message received from node " + optmsg.getSrc() + " to node " + this.ID);
+            System.out.println(
+                "OPT-Message received from node " + optmsg.getSrc() + " to node " + this.ID
+            );
             this.sendDirect(optmsg, this.controller);
             this.currMsg = null;
 
@@ -230,17 +142,36 @@ public class NetworkNode extends SynchronizerLayer {
         );
     }
 
-    public void sendMsg (RoutingInfoMessage routmsg) {
-        routmsg.getRoutedMsg().incrementRouting();
+    public void sendMsg (RoutingInfoMessage routMsg) {
+        routMsg.getRoutedMsg().incrementRouting();
         this.controller.logIncrementRouting(
-            this.ID, this.getRoutingNodeId(routmsg.getRoutedMsg())
+            this.ID, routMsg.getRoutNodeId()
         );
 
-        this.sendToInputNode(routmsg);
+        this.sendToInputNode(routMsg);
     }
 
-    protected void sendToInputNode (RoutingInfoMessage routmsg) {
-        this.getRoutingNode(routmsg.getRoutedMsg()).sendToOutputNode(routmsg, this.controller);
+    protected void sendToInputNode (RoutingInfoMessage routMsg) {
+        this.getRoutingNode(routMsg.getRoutNodeId()).sendToOutputNode(routMsg, this.controller);
+    }
+
+    private InputNode getRoutingNode (int routNodeId) {
+        if (this.getLeftChildId() == routNodeId) {
+            return this.getLeftChild();
+
+        } else if (this.getRightChildId() == routNodeId) {
+            return this.getRightChild();
+
+        } else if (this.getParentId() == routNodeId) {
+            return this.getParent();
+
+        } else {
+            System.out.println("Unclear rout node");
+            Tools.fatalError("Unclear rout node");
+
+        }
+
+        return null;
     }
 
     @Override
@@ -332,7 +263,6 @@ public class NetworkNode extends SynchronizerLayer {
             + " lftID: " + this.getLeftChildId()
             + " rgtID: " + this.getRightChildId()
             + " parentId: " + this.getParentId()
-            + " leftSUB: " + this.minIdInSubtree + " rightSUB: " + this.maxIdInSubtree
         );
     }
 

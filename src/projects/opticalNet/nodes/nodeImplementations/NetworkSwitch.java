@@ -80,7 +80,7 @@ public class NetworkSwitch {
         OutputNode outNode = this.outputId2Node.get(out);
 
         this.connectNodes(inNode, outNode);
-        inNode.getConnectedNode().setChild(inNode, subtreeId);
+        inNode.getConnectedNode().setChild(inNode);
     }
 
     public void updateSwitch (int in, int out) {

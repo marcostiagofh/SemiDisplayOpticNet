@@ -406,6 +406,11 @@ public abstract class NetworkController extends LoggerLayer {
         return this.netNodes.get(netNodeId - 1);
     }
 
+    public NetworkNode getNetNode (InfraNode node) {
+        return this.netNodes.get(node.getId());
+
+    }
+
     protected int getClusterId (InfraNode fromNode, InfraNode toNode) {
         /*
                 The clusterId of two nodes in the same cluster is calculated
@@ -523,15 +528,15 @@ public abstract class NetworkController extends LoggerLayer {
         int subtreeId = fromNode.setChild(toNode, oldParent) + 1;
 
         if (fromNode.getId() == this.numNodes) {
-            this.getNetNode(toNode.getId() + 1).removeParent();
+            this.getNetNode(toNode).removeParent();
             return;
 
         } else if (toNode.getId() == -1 && fromNode.getId() > oldParent.getId()) {
-            this.getNetNode(fromNode.getId() + 1).removeLeftChild();
+            this.getNetNode(fromNode).removeLeftChild();
             return;
 
         } else if (toNode.getId() == -1 && fromNode.getId() < oldParent.getId()) {
-            this.getNetNode(fromNode.getId() + 1).removeRightChild();
+            this.getNetNode(fromNode).removeRightChild();
             return;
 
         } else if (toNode.getId() == this.numNodes) {
@@ -579,29 +584,12 @@ public abstract class NetworkController extends LoggerLayer {
 
     private void lockRoutingNodes () {
         while (!this.routingNodes.isEmpty()) {
-            RoutingInfoMessage routmsg = this.routingNodes.poll();
-            int nodeId = routmsg.getNodeId();
+            RoutingInfoMessage routMsg = this.routingNodes.poll();
+            int nodeId = routMsg.getNodeId();
             InfraNode node = this.getInfraNode(nodeId);
-            InfraNode dstNode = this.getInfraNode(routmsg.getDst());
+            InfraNode dstNode = this.getInfraNode(routMsg.getDst());
 
-            ArrayList<InfraNode> lockNodes = new ArrayList<>();
-            lockNodes.add(node);
-
-            for (int i = 1; i <= routmsg.getRoutingTimes(); i++) {
-                InfraNode nxtNode = node.getRoutingNode(dstNode);
-                if (nxtNode.getId() == -1 || nxtNode.getId() == node.getId()) {
-                    break;
-
-                }
-
-                lockNodes.add(nxtNode);
-                node = nxtNode;
-            }
-
-            if (this.areAvailableNodes(lockNodes.toArray(new InfraNode[0]))) {
-                this.sendDirect(routmsg, this.getNetNode(nodeId));
-
-            } else {
+            if (!this.allowRouting(node, dstNode, routMsg)) {
                 Tools.fatalError("Nodes that were supposed to rout are already occupied");
 
             }
@@ -632,7 +620,10 @@ public abstract class NetworkController extends LoggerLayer {
                         System.out.println("zigZigBottomUp");
                         this.logIncrementActiveRequests();
 
-                        this.sendDirect(new RoutingInfoMessage(1), this.getNetNode(nodeId));
+                        InfraNode rfrshNode = this.getInfraNode(nodeId);
+                        InfraNode nxtNode = rfrshNode.getRoutingNode(dstNode);
+
+                        this.configureRoutingMessage(rfrshNode, nxtNode, new RoutingInfoMessage(1));
 
                     } else {
                         this.allowRouting(node, dstNode, 2);
@@ -659,7 +650,10 @@ public abstract class NetworkController extends LoggerLayer {
                         System.out.println("zigZigLeftTopDown");
                         this.logIncrementActiveRequests();
 
-                        this.sendDirect(new RoutingInfoMessage(2), this.getNetNode(nodeId));
+                        InfraNode rfrshNode = this.getInfraNode(nodeId);
+                        InfraNode nxtNode = rfrshNode.getRoutingNode(dstNode);
+
+                        this.configureRoutingMessage(rfrshNode, nxtNode, new RoutingInfoMessage(2));
 
                     } else {
                         this.allowRouting(node, dstNode, 2);
@@ -677,10 +671,14 @@ public abstract class NetworkController extends LoggerLayer {
                         InfraNode nxtNode = rfrshNode.getRoutingNode(dstNode);
 
                         if (nxtNode == rfrshNode.getParent()) {
-                            this.sendDirect(new RoutingInfoMessage(3), this.getNetNode(nodeId));
+                            this.configureRoutingMessage(
+                                rfrshNode, nxtNode, new RoutingInfoMessage(3)
+                            );
 
                         } else {
-                            this.sendDirect(new RoutingInfoMessage(1), this.getNetNode(nodeId));
+                            this.configureRoutingMessage(
+                                rfrshNode, nxtNode, new RoutingInfoMessage(1)
+                            );
 
                         }
 
@@ -696,7 +694,10 @@ public abstract class NetworkController extends LoggerLayer {
                         System.out.println("zigZigRightTopDown");
                         this.logIncrementActiveRequests();
 
-                        this.sendDirect(new RoutingInfoMessage(2), this.getNetNode(nodeId));
+                        InfraNode rfrshNode = this.getInfraNode(nodeId);
+                        InfraNode nxtNode = rfrshNode.getRoutingNode(dstNode);
+
+                        this.configureRoutingMessage(rfrshNode, nxtNode, new RoutingInfoMessage(2));
 
                     } else {
                         this.allowRouting(node, dstNode, 2);
@@ -714,10 +715,14 @@ public abstract class NetworkController extends LoggerLayer {
                         InfraNode nxtNode = rfrshNode.getRoutingNode(dstNode);
 
                         if (nxtNode == rfrshNode.getParent()) {
-                            this.sendDirect(new RoutingInfoMessage(3), this.getNetNode(nodeId));
+                            this.configureRoutingMessage(
+                                rfrshNode, nxtNode, new RoutingInfoMessage(3)
+                            );
 
                         } else {
-                            this.sendDirect(new RoutingInfoMessage(1), this.getNetNode(nodeId));
+                            this.configureRoutingMessage(
+                                rfrshNode, nxtNode, new RoutingInfoMessage(1)
+                            );
 
                         }
 
@@ -734,15 +739,19 @@ public abstract class NetworkController extends LoggerLayer {
         }
     }
 
-    public void allowRouting (InfraNode node, InfraNode dstNode, int routingTimes) {
+    private boolean allowRouting (InfraNode node, InfraNode dstNode, int routingTimes) {
+        return this.allowRouting(node, dstNode, new RoutingInfoMessage(routingTimes));
+    }
+
+    private boolean allowRouting (InfraNode node, InfraNode dstNode, RoutingInfoMessage routMsg) {
         ArrayList<InfraNode> routNodes = new ArrayList<>();
         InfraNode currNode = node;
 
         routNodes.add(currNode);
-        for (int i = 1; i <= routingTimes; i++) {
+        for (int i = 1; i <= routMsg.getRoutingTimes(); i++) {
             InfraNode nxtNode = currNode.getRoutingNode(dstNode);
             if (nxtNode.getId() == -1 || nxtNode.getId() == currNode.getId()) {
-                Tools.fatalError("It's impossible to rout the message this many times");
+                break;
 
             }
 
@@ -752,11 +761,21 @@ public abstract class NetworkController extends LoggerLayer {
 
         if (this.areAvailableNodes(routNodes.toArray(new InfraNode[0]))) {
             this.logIncrementActiveRequests();
-            this.sendDirect(
-                new RoutingInfoMessage(routingTimes), this.getNetNode(node.getId() + 1)
-            );
+            this.configureRoutingMessage(node, node.getRoutingNode(dstNode), routMsg);
 
+            return true;
         }
+
+        return false;
+    }
+
+    private void configureRoutingMessage (
+        InfraNode node, InfraNode nxtNode, RoutingInfoMessage routMsg
+    ) {
+        NetworkNode netNode = this.getNetNode(node);
+        routMsg.setRoutNodeId(nxtNode.getNetId());
+
+        this.sendDirect(routMsg, netNode);
     }
 
     public void debugInfraTree () {
@@ -830,8 +849,6 @@ public abstract class NetworkController extends LoggerLayer {
                 infraNode.getParent().getId() == netNode.getParentId() - 1 :
                 netNode.getParentId() == -1
         );
-        flag &= infraNode.getMinId() == netNode.getMinIdInSubtree() - 1;
-        flag &= infraNode.getMaxId() == netNode.getMaxIdInSubtree() - 1;
 
         if (!flag) {
             infraNode.debugNode();

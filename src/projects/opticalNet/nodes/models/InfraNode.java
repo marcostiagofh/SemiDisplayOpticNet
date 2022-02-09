@@ -47,6 +47,12 @@ public class InfraNode implements Comparable<InfraNode> {
     /* Getters */
     public int getId () {
         return this.id;
+
+    }
+
+    public int getNetId () {
+        return this.id + 1;
+
     }
 
     public InfraNode getParent () {

@@ -5,6 +5,7 @@ import sinalgo.nodes.messages.Message;
 public class RoutingInfoMessage extends Message implements Comparable<RoutingInfoMessage> {
 
     private int nodeId = -1;
+    private int routNodeId = -1;
     private int routingTimes = 0;
     private OpticalNetMessage routedMsg = null;
 
@@ -22,6 +23,16 @@ public class RoutingInfoMessage extends Message implements Comparable<RoutingInf
 
     }
 
+    public void setRoutNodeId (int routNodeId) {
+        this.routNodeId = routNodeId;
+
+    }
+
+    public int getRoutNodeId () {
+        return routNodeId;
+
+    }
+
     public void decreaseRoutingTimes () {
         this.routingTimes--;
 
@@ -36,7 +47,7 @@ public class RoutingInfoMessage extends Message implements Comparable<RoutingInf
         return this.routingTimes;
 
     }
-    
+
     public int getSrc () {
         return this.routedMsg.getSrc();
 
