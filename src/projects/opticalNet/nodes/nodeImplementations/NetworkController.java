@@ -782,7 +782,9 @@ public abstract class NetworkController extends LoggerLayer {
 
         for (int i = 0; i < this.numNodes; i++)  {
             if (!this.equivalentNodes(i)) {
-                Tools.fatalError("InfraNode: " + i + " not equivalent to its network correspondent");
+                Tools.fatalError(
+                    "InfraNode: " + i + " not equivalent to its network correspondent"
+                );
 
             }
         }
@@ -798,7 +800,11 @@ public abstract class NetworkController extends LoggerLayer {
         this.updateConn();
 
         int missingMessages = this.rcvMsgs - this.cmpMsgs;
-        System.out.println("Round " + this.getCurrentRound() + " Messages: " + this.rcvMsgs + " Missing Messages: " + missingMessages);
+        System.out.println(
+            "Round " + this.getCurrentRound() +
+            " Messages: " + this.rcvMsgs +
+            " Missing Messages: " + missingMessages
+        );
     }
 
     private boolean equivalentNodes (int nodeId) {
