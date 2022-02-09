@@ -358,7 +358,7 @@ public class CBNetController extends NetworkController {
                 this.nodesWithMsg.add(hasmsg);
 
             } else if (msg instanceof RoutingInfoMessage) {
-            	RoutingInfoMessage routmsg = (RoutingInfoMessage) msg;
+                RoutingInfoMessage routmsg = (RoutingInfoMessage) msg;
                 this.routingNodes.add(routmsg);
 
             }

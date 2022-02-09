@@ -230,10 +230,10 @@ public class InfraNode implements Comparable<InfraNode> {
     }
 
     public InfraNode getRoutingNode (Direction direction) {
-    	if (direction == Direction.NULL) {
-    		return this;
+        if (direction == Direction.NULL) {
+            return this;
 
-    	} else if (direction == Direction.RIGHT || direction == Direction.RIGHTROUT) {
+        } else if (direction == Direction.RIGHT || direction == Direction.RIGHTROUT) {
             return this.rightChild;
 
         } else if (direction == Direction.LEFT || direction == Direction.LEFTROUT) {
@@ -253,9 +253,9 @@ public class InfraNode implements Comparable<InfraNode> {
         }
 
         if (this == toNode) {
-    		return Direction.NULL;
+            return Direction.NULL;
 
-    	} else if (this.getLeftChild() == toNode) {
+        } else if (this.getLeftChild() == toNode) {
             return Direction.LEFTROUT;
 
         } else if (this.getRightChild() == toNode) {

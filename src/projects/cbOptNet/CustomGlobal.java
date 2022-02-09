@@ -58,15 +58,15 @@ public class CustomGlobal extends AbstractCustomGlobal {
             }
 
             if (Configuration.hasParameter("switchSize")) {
-            	switchSize = Configuration.getIntegerParameter("switchSize");
+                switchSize = Configuration.getIntegerParameter("switchSize");
 
             } else {
-            	switchSize = 2 * numberOfNodes;
+                switchSize = 2 * numberOfNodes;
 
             }
 
             if (Configuration.hasParameter("isSequential")) {
-            	this.isSequential = Configuration.getBooleanParameter("isSequential");
+                this.isSequential = Configuration.getBooleanParameter("isSequential");
             }
 
         } catch (Exception e) {
@@ -97,7 +97,7 @@ public class CustomGlobal extends AbstractCustomGlobal {
     public void preRound () {
 
         if (mustGenerateSplay && this.requestQueue.hasNextRequest()) {
-        	if (!this.isSequential || this.controller.getSeq()) {
+            if (!this.isSequential || this.controller.getSeq()) {
                 mustGenerateSplay = false;
 
                 double u = random.nextDouble();

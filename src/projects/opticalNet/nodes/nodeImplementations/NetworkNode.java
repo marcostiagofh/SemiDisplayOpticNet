@@ -137,7 +137,7 @@ public class NetworkNode extends SynchronizerLayer {
 
         this.sendDirect(
             new HasMessage(
-            		this.ID, optmsg.getPriority(), optmsg.getDst()
+                    this.ID, optmsg.getPriority(), optmsg.getDst()
             ), this.controller
         );
     }
@@ -245,6 +245,7 @@ public class NetworkNode extends SynchronizerLayer {
                 if (allowmsg.getRoutingTimes() > 0) {
                     this.routMsg = allowmsg;
                     this.routMsg.setNodeId(this.ID);
+
                 } else if (allowmsg.getRoutedMsg() == null) {
                     Tools.fatalError("Empty routed message");
 

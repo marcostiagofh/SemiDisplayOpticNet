@@ -19,7 +19,7 @@ public class HasMessage extends Message implements Comparable<HasMessage>  {
     }
 
     public double priority () {
-    	return this.priority;
+        return this.priority;
     }
 
     public int getDst () {

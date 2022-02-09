@@ -365,12 +365,12 @@ public abstract class NetworkController extends LoggerLayer {
 
     @Override
     public int getSwitchesPerClusterType1 () {
-    	return NetworkController.SIZE_CLUSTER_TYPE1;
+        return NetworkController.SIZE_CLUSTER_TYPE1;
 
     }
 
     public int getSwitchesPerClusterType2 () {
-    	return NetworkController.SIZE_CLUSTER_TYPE2;
+        return NetworkController.SIZE_CLUSTER_TYPE2;
 
     }
 
