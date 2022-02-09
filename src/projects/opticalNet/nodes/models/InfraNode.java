@@ -226,16 +226,22 @@ public class InfraNode implements Comparable<InfraNode> {
     }
 
     public Direction getRoutingDirection (InfraNode toNode) {
-        if (this.getId() == toNode.getId()) {
+        if (toNode.getId() == -1) {
+            System.out.println("Invalid toNode");
+            Tools.fatalError("Invalid toNode");
+
+        }
+
+        if (this == toNode) {
     		return Direction.NULL;
 
-    	} else if (this.getLeftChild().getId() == toNode.getId()) {
+    	} else if (this.getLeftChild() == toNode) {
             return Direction.LEFTROUT;
 
-        } else if (this.getRightChild().getId() == toNode.getId()) {
+        } else if (this.getRightChild() == toNode) {
             return Direction.RIGHTROUT;
 
-        } else if (this.getParent().getId() == toNode.getId()) {
+        } else if (this.getParent() == toNode) {
             return Direction.PARENTROUT;
 
         } else if (this.getId() < toNode.getId() && toNode.getId() <= this.maxId) {

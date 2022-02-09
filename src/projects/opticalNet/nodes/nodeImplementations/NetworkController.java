@@ -134,7 +134,10 @@ public abstract class NetworkController extends LoggerLayer {
 
         if (edgeList.size() != this.numNodes) {
             this.buildBalancedTree(1, this.numNodes);
-            this.setInitialCon(this.tree.get(this.numNodes), this.tree.get(this.numNodes / 2 - 1));
+            this.setInitialCon(
+                this.getInfraNode(this.numNodes + 1),
+                this.getInfraNode(this.numNodes / 2)
+            );
 
         } else {
             for (int i = 1; i <= this.numNodes; i++) {
@@ -184,7 +187,7 @@ public abstract class NetworkController extends LoggerLayer {
         InfraNode z = y.getParent();
         InfraNode w = z.getParent();
 
-        boolean leftZigZig = (y.getId() == z.getLeftChild().getId());
+        boolean leftZigZig = (y == z.getLeftChild());
         InfraNode c = (leftZigZig) ? y.getRightChild() : y.getLeftChild();
 
         if (this.areAvailableNodes(w, x, z, y, c)) {
@@ -213,7 +216,7 @@ public abstract class NetworkController extends LoggerLayer {
         InfraNode z = y.getParent();
         InfraNode w = z.getParent();
 
-        boolean leftZigZag = (y.getId() == z.getLeftChild().getId());
+        boolean leftZigZag = (y == z.getLeftChild());
         InfraNode b = (leftZigZag) ? x.getLeftChild() : x.getRightChild();
         InfraNode c = (leftZigZag) ? x.getRightChild() : x.getLeftChild();
 
@@ -432,12 +435,17 @@ public abstract class NetworkController extends LoggerLayer {
         return node.getId() / this.clusterSize;
     }
 
+    private int getRoutingSwitchId (InfraNode fromNode, InfraNode toNode) {
+        return this.getSwitchId(fromNode, toNode) + (toNode == fromNode.getParent() ? 1 : 0);
+
+    }
+
     @Override
     protected int getRoutingSwitchId (int fromNodeId, int toNodeId) {
-        InfraNode fromNode = tree.get(fromNodeId);
-        InfraNode toNode = tree.get(toNodeId);
+        InfraNode fromNode = this.getInfraNode(fromNodeId);
+        InfraNode toNode = this.getInfraNode(toNodeId);
 
-        return this.getSwitchId(fromNode, toNode) + (toNode == fromNode.getParent() ? 1 : 0);
+        return this.getRoutingSwitchId(fromNode, toNode);
     }
 
     protected int getSwitchId (InfraNode fromNode, InfraNode toNode) {
@@ -844,7 +852,7 @@ public abstract class NetworkController extends LoggerLayer {
         }
 
         if (this.isValidNode(x) && this.isValidNode(x.getParent())) {
-            int swtId = this.getRoutingSwitchId(x.getParent().getId(), x.getId());
+            int swtId = this.getRoutingSwitchId(x.getParent(), x);
             this.logIncrementActivePorts(swtId);
 
         }
