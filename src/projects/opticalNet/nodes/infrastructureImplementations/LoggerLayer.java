@@ -134,18 +134,16 @@ public abstract class LoggerLayer extends SynchronizerLayer {
     }
 
     public void logIncrementRouting (int netFromNodeId, int netToNodeId) {
-        int fromNodeId = netFromNodeId - 1;
-        int toNodeId = netToNodeId - 1;
-        int swtId = this.getRoutingSwitchId(fromNodeId, toNodeId);
+        int swtId = this.getRoutingSwitchId(netFromNodeId, netToNodeId);
 
         long switchRouting = this.routingsPerSwitchRound.get(swtId);
         this.routingsPerSwitchRound.set(swtId, switchRouting + 1);
 
-        long fromNodeRouting = this.routingsPerNodeRound.get(fromNodeId);
-        this.routingsPerNodeRound.set(fromNodeId, fromNodeRouting + 1);
+        long fromNodeRouting = this.routingsPerNodeRound.get(netFromNodeId - 1);
+        this.routingsPerNodeRound.set(netFromNodeId - 1, fromNodeRouting + 1);
 
-        long toNodeRouting = this.routingsPerNodeRound.get(toNodeId);
-        this.routingsPerNodeRound.set(toNodeId, toNodeRouting + 1);
+        long toNodeRouting = this.routingsPerNodeRound.get(netToNodeId - 1);
+        this.routingsPerNodeRound.set(netToNodeId - 1, toNodeRouting + 1);
 
     }
 
