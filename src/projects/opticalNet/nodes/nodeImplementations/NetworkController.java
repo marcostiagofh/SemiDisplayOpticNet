@@ -188,11 +188,7 @@ public abstract class NetworkController extends LoggerLayer {
         InfraNode c = (leftZigZig) ? y.getRightChild() : y.getLeftChild();
 
         if (this.areAvailableNodes(w, x, z, y, c)) {
-            this.logRotation(1, w, z, y, c);
-
-            this.mapConn(z, c, y);
-            this.mapConn(y, z);
-            this.mapConn(w, y);
+            this.zigZigAlterations(w, z, y, c);
 
             return true;
         }
@@ -222,13 +218,7 @@ public abstract class NetworkController extends LoggerLayer {
         InfraNode c = (leftZigZag) ? x.getRightChild() : x.getLeftChild();
 
         if (this.areAvailableNodes(w, z, y, x, b, c)) {
-            this.logRotation(2, w, z, y, x, b, c);
-
-            this.mapConn(y, b, x);
-            this.mapConn(x, y);
-            this.mapConn(z, c, x);
-            this.mapConn(x, z);
-            this.mapConn(w, x);
+            this.zigZagAlterations(w, z, y, x, b, c);
 
             return true;
         }
@@ -252,11 +242,7 @@ public abstract class NetworkController extends LoggerLayer {
         InfraNode c = y.getRightChild();
 
         if (this.areAvailableNodes(w, x, z, y, c)) {
-            this.logRotation(1, w, z, y, c);
-
-            this.mapConn(z, c, y);
-            this.mapConn(y, z);
-            this.mapConn(w, y);
+            this.zigZigAlterations(w, z, y, c);
 
             return true;
         }
@@ -271,11 +257,7 @@ public abstract class NetworkController extends LoggerLayer {
         InfraNode c = y.getLeftChild();
 
         if (this.areAvailableNodes(w, x, z, y, c)) {
-            this.logRotation(1, w, z, y, c);
-
-            this.mapConn(z, c, y);
-            this.mapConn(y, z);
-            this.mapConn(w, y);
+            this.zigZigAlterations(w, z, y, c);
 
             return true;
         }
@@ -300,13 +282,7 @@ public abstract class NetworkController extends LoggerLayer {
         InfraNode c = x.getRightChild();
 
         if (this.areAvailableNodes(w, z, y, x, b, c)) {
-            this.logRotation(2, w, z, y, x, b, c);
-
-            this.mapConn(y, b, x);
-            this.mapConn(x, y);
-            this.mapConn(z, c, x);
-            this.mapConn(x, z);
-            this.mapConn(w, x);
+            this.zigZagAlterations(w, z, y, x, b, c);
 
             return true;
         }
@@ -322,18 +298,34 @@ public abstract class NetworkController extends LoggerLayer {
         InfraNode c = x.getLeftChild();
 
         if (this.areAvailableNodes(w, z, y, x, b, c)) {
-            this.logRotation(2, w, z, y, x, b, c);
-
-            this.mapConn(y, b, x);
-            this.mapConn(x, y);
-            this.mapConn(z, c, x);
-            this.mapConn(x, z);
-            this.mapConn(w, x);
+            this.zigZagAlterations(w, z, y, x, b, c);
 
             return true;
         }
 
         return false;
+    }
+
+    private void zigZigAlterations (InfraNode w, InfraNode z, InfraNode y, InfraNode c) {
+        this.logRotation(1, w, z, y, c);
+
+        this.mapConn(z, c, y);
+        this.mapConn(y, z);
+        this.mapConn(w, y);
+
+    }
+
+    private void zigZagAlterations (
+        InfraNode w, InfraNode z, InfraNode y, InfraNode x, InfraNode b, InfraNode c
+    ) {
+        this.logRotation(2, w, z, y, x, b, c);
+
+        this.mapConn(y, b, x);
+        this.mapConn(x, y);
+        this.mapConn(z, c, x);
+        this.mapConn(x, z);
+        this.mapConn(w, x);
+
     }
 
     protected boolean areAvailableNodes (InfraNode... nodes) {

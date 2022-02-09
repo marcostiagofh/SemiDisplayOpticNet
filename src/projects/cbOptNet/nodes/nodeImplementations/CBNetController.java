@@ -48,16 +48,7 @@ public class CBNetController extends NetworkController {
         double deltaRank = this.zigDiffRank(y, z);
 
         if (deltaRank < this.epsilon && super.zigZigBottomUp(x)) {
-            long yOldWeight = y.getWeight();
-            long zOldWeight = z.getWeight();
-
-            long cWeight = (c.getId() != -1) ? c.getWeight() : 0;
-
-            long zNewWeight = zOldWeight - yOldWeight + cWeight;
-            long yNewWeight = yOldWeight - cWeight + zNewWeight;
-
-            z.setWeight(zNewWeight);
-            y.setWeight(yNewWeight);
+            this.zigZigWeightUpdate(y, z, c);
 
             return true;
         }
@@ -77,20 +68,7 @@ public class CBNetController extends NetworkController {
         double deltaRank = this.zigZagDiffRank(x, y, z);
 
         if (deltaRank < this.epsilon && super.zigZagBottomUp(x)) {
-            long xOldWeight = x.getWeight();
-            long yOldWeight = y.getWeight();
-            long zOldWeight = z.getWeight();
-
-            long bWeight = (b.getId() != -1) ? b.getWeight() : 0;
-            long cWeight = (c.getId() != -1) ? c.getWeight() : 0;
-
-            long yNewWeight = yOldWeight - xOldWeight + bWeight;
-            long zNewWeight = zOldWeight - yOldWeight + cWeight;
-            long xNewWeight = xOldWeight - bWeight - cWeight + yNewWeight + zNewWeight;
-
-            y.setWeight(yNewWeight);
-            z.setWeight(zNewWeight);
-            x.setWeight(xNewWeight);
+            this.zigZagWeightUpdate(x, y, z, b, c);
 
             return true;
         }
@@ -106,16 +84,7 @@ public class CBNetController extends NetworkController {
         double deltaRank = this.zigDiffRank(y, z);
 
         if (deltaRank < this.epsilon && super.zigZigLeftTopDown(z)) {
-            long yOldWeight = y.getWeight();
-            long zOldWeight = z.getWeight();
-
-            long cWeight = (c.getId() != -1) ? c.getWeight() : 0;
-
-            long zNewWeight = zOldWeight - yOldWeight + cWeight;
-            long yNewWeight = yOldWeight - cWeight + zNewWeight;
-
-            z.setWeight(zNewWeight);
-            y.setWeight(yNewWeight);
+            this.zigZigWeightUpdate(y, z, c);
 
             return true;
         }
@@ -131,17 +100,7 @@ public class CBNetController extends NetworkController {
         double deltaRank = this.zigDiffRank(y, z);
 
         if (deltaRank < this.epsilon && super.zigZigRightTopDown(z)) {
-
-            long yOldWeight = y.getWeight();
-            long zOldWeight = z.getWeight();
-
-            long cWeight = (c.getId() != -1) ? c.getWeight() : 0;
-
-            long zNewWeight = zOldWeight - yOldWeight + cWeight;
-            long yNewWeight = yOldWeight - cWeight + zNewWeight;
-
-            z.setWeight(zNewWeight);
-            y.setWeight(yNewWeight);
+            this.zigZigWeightUpdate(y, z, c);
 
             return true;
         }
@@ -159,20 +118,7 @@ public class CBNetController extends NetworkController {
         double deltaRank = this.zigZagDiffRank(x, y, z);
 
         if (deltaRank < this.epsilon && super.zigZagLeftTopDown(z)) {
-            long xOldWeight = x.getWeight();
-            long yOldWeight = y.getWeight();
-            long zOldWeight = z.getWeight();
-
-            long bWeight = (b.getId() != -1) ? b.getWeight() : 0;
-            long cWeight = (c.getId() != -1) ? c.getWeight() : 0;
-
-            long yNewWeight = yOldWeight - xOldWeight + bWeight;
-            long zNewWeight = zOldWeight - yOldWeight + cWeight;
-            long xNewWeight = xOldWeight - bWeight - cWeight + yNewWeight + zNewWeight;
-
-            y.setWeight(yNewWeight);
-            z.setWeight(zNewWeight);
-            x.setWeight(xNewWeight);
+            this.zigZagWeightUpdate(x, y, z, b, c);
 
             return true;
         }
@@ -190,25 +136,46 @@ public class CBNetController extends NetworkController {
         double deltaRank = this.zigZagDiffRank(x, y, z);
 
         if (deltaRank < this.epsilon && super.zigZagRightTopDown(z)) {
-            long xOldWeight = x.getWeight();
-            long yOldWeight = y.getWeight();
-            long zOldWeight = z.getWeight();
-
-            long bWeight = (b.getId() != -1) ? b.getWeight() : 0;
-            long cWeight = (c.getId() != -1) ? c.getWeight() : 0;
-
-            long yNewWeight = yOldWeight - xOldWeight + bWeight;
-            long zNewWeight = zOldWeight - yOldWeight + cWeight;
-            long xNewWeight = xOldWeight - bWeight - cWeight + yNewWeight + zNewWeight;
-
-            y.setWeight(yNewWeight);
-            z.setWeight(zNewWeight);
-            x.setWeight(xNewWeight);
+            this.zigZagWeightUpdate(x, y, z, b, c);
 
             return true;
         }
 
         return false;
+    }
+
+    private void zigZigWeightUpdate (InfraNode y, InfraNode z, InfraNode c) {
+        long yOldWeight = y.getWeight();
+        long zOldWeight = z.getWeight();
+
+        long cWeight = (c.getId() != -1) ? c.getWeight() : 0;
+
+        long zNewWeight = zOldWeight - yOldWeight + cWeight;
+        long yNewWeight = yOldWeight - cWeight + zNewWeight;
+
+        z.setWeight(zNewWeight);
+        y.setWeight(yNewWeight);
+
+    }
+
+    private void zigZagWeightUpdate (
+        InfraNode x, InfraNode y, InfraNode z, InfraNode b, InfraNode c
+    ) {
+        long xOldWeight = x.getWeight();
+        long yOldWeight = y.getWeight();
+        long zOldWeight = z.getWeight();
+
+        long bWeight = (b.getId() != -1) ? b.getWeight() : 0;
+        long cWeight = (c.getId() != -1) ? c.getWeight() : 0;
+
+        long yNewWeight = yOldWeight - xOldWeight + bWeight;
+        long zNewWeight = zOldWeight - yOldWeight + cWeight;
+        long xNewWeight = xOldWeight - bWeight - cWeight + yNewWeight + zNewWeight;
+
+        y.setWeight(yNewWeight);
+        z.setWeight(zNewWeight);
+        x.setWeight(xNewWeight);
+
     }
     /* End of Rotations */
 
