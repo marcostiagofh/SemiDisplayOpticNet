@@ -411,6 +411,14 @@ public abstract class NetworkController extends LoggerLayer {
 
     }
 
+    public NetworkSwitch getSwitch (InfraNode fromNode, InfraNode toNode) {
+        return this.switches.get(this.getSwitchId(fromNode, toNode));
+    }
+
+    public NetworkSwitch getSwitch (int switchId) {
+        return this.switches.get(switchId);
+    }
+
     protected int getClusterId (InfraNode fromNode, InfraNode toNode) {
         /*
                 The clusterId of two nodes in the same cluster is calculated
@@ -473,14 +481,6 @@ public abstract class NetworkController extends LoggerLayer {
         return previousSwitches + 2 * (fromNode.getId() > toNode.getId() ? 1 : 0);
     }
 
-    public NetworkSwitch getSwitch (InfraNode fromNode, InfraNode toNode) {
-        return this.switches.get(this.getSwitchId(fromNode, toNode));
-    }
-
-    public NetworkSwitch getSwitch (int switchId) {
-        return this.switches.get(switchId);
-    }
-
     protected boolean areSameCluster (InfraNode node1, InfraNode node2) {
         return this.getClusterId(node1) == this.getClusterId(node2);
     }
@@ -503,7 +503,7 @@ public abstract class NetworkController extends LoggerLayer {
     /* Setters */
     private void setInitialCon (InfraNode fromNode, InfraNode toNode) {
         int swtId = this.getSwitchId(fromNode, toNode);
-        int subtreeId = fromNode.setChild(toNode) + 1;
+        fromNode.setChild(toNode);
 
         if (fromNode.getId() == this.numNodes) {
             return;
@@ -513,8 +513,8 @@ public abstract class NetworkController extends LoggerLayer {
 
         }
 
-        this.getSwitch(swtId + 1).updateSwitch(toNode.getId() + 1, fromNode.getId() + 1);
-        this.getSwitch(swtId).updateSwitch(fromNode.getId() + 1, toNode.getId() + 1, subtreeId);
+        this.getSwitch(swtId).updateParent(fromNode.getId() + 1, toNode.getId() + 1);
+        this.getSwitch(swtId + 1).updateChild(toNode.getId() + 1, fromNode.getId() + 1);
 
         return;
     }
@@ -525,7 +525,7 @@ public abstract class NetworkController extends LoggerLayer {
 
     private void mapConn (InfraNode fromNode, InfraNode toNode, InfraNode oldParent) {
         int swtId = this.getSwitchId(fromNode, toNode);
-        int subtreeId = fromNode.setChild(toNode, oldParent) + 1;
+        fromNode.setChild(toNode, oldParent);
 
         if (fromNode.getId() == this.numNodes) {
             this.getNetNode(toNode).removeParent();
@@ -546,8 +546,8 @@ public abstract class NetworkController extends LoggerLayer {
 
         this.logIncrementAlterations(swtId, fromNode.getId(), toNode.getId());
 
-        this.getSwitch(swtId + 1).updateSwitch(toNode.getId() + 1, fromNode.getId() + 1);
-        this.getSwitch(swtId).updateSwitch(fromNode.getId() + 1, toNode.getId() + 1, subtreeId);
+        this.getSwitch(swtId).updateParent(fromNode.getId() + 1, toNode.getId() + 1);
+        this.getSwitch(swtId + 1).updateChild(toNode.getId() + 1, fromNode.getId() + 1);
     }
 
     /* End of Setters
@@ -580,7 +580,7 @@ public abstract class NetworkController extends LoggerLayer {
         return apSum + clsId2 - clsId1 - 1;
     }
 
-    public abstract Rotation getRotationToPerform (InfraNode x, InfraNode dstNode);
+    protected abstract Rotation getRotationToPerform (InfraNode x, InfraNode dstNode);
 
     private void lockRoutingNodes () {
         while (!this.routingNodes.isEmpty()) {
@@ -597,7 +597,7 @@ public abstract class NetworkController extends LoggerLayer {
 
     }
 
-    public void updateConn () {
+    private void updateConn () {
         this.lockRoutingNodes();
 
         while (!this.nodesWithMsg.isEmpty()) {
@@ -794,7 +794,7 @@ public abstract class NetworkController extends LoggerLayer {
 
     /* End of Auxiliary Functions */
 
-    public void checkRoundConfiguration () {
+    private void checkRoundConfiguration () {
         if (!this.validTree()) {
             Tools.fatalError("Invalid infra tree");
         }

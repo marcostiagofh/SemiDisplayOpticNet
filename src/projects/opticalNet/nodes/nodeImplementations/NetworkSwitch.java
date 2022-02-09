@@ -75,7 +75,7 @@ public class NetworkSwitch {
         }
     }
 
-    public void updateSwitch (int in, int out, int subtreeId) {
+    public void updateParent (int in, int out) {
         InputNode inNode = this.inputId2Node.get(in);
         OutputNode outNode = this.outputId2Node.get(out);
 
@@ -83,7 +83,7 @@ public class NetworkSwitch {
         inNode.getConnectedNode().setChild(inNode);
     }
 
-    public void updateSwitch (int in, int out) {
+    public void updateChild (int in, int out) {
         InputNode inNode = this.inputId2Node.get(in);
         OutputNode outNode = this.outputId2Node.get(out);
 
@@ -91,7 +91,7 @@ public class NetworkSwitch {
         inNode.getConnectedNode().setParent(inNode);
     }
 
-    public void connectNodes (InputNode inNode, OutputNode outNode) {
+    private void connectNodes (InputNode inNode, OutputNode outNode) {
         int oldInNodeIndex = outNode.getInputNode().getIndex();
         InputNode oldInNode = this.inputId2Node.get(oldInNodeIndex);
 

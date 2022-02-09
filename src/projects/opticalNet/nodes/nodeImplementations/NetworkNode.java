@@ -123,7 +123,7 @@ public class NetworkNode extends SynchronizerLayer {
         this.sendDirect(new NewMessage(), this.controller);
     }
 
-    public void informController (OpticalNetMessage optmsg) {
+    private void informController (OpticalNetMessage optmsg) {
         if (optmsg.getDst() == this.ID) {
             System.out.println(
                 "OPT-Message received from node " + optmsg.getSrc() + " to node " + this.ID
@@ -186,7 +186,7 @@ public class NetworkNode extends SynchronizerLayer {
         }
     }
 
-    public boolean configureRoutingMessage () {
+    private boolean configureRoutingMessage () {
         if (this.routMsg == null) {
             if (this.currMsg != null) {
                 this.buffer.add(this.currMsg);

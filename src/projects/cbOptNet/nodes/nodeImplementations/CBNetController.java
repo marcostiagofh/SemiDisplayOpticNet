@@ -185,13 +185,6 @@ public class CBNetController extends NetworkController {
     }
 
     private double zigDiffRank (InfraNode x, InfraNode y) {
-        /*
-                     y                   x
-                   /   \               /   \
-                  x     c     -->     a     y
-                 / \                       / \
-                a   b                     b    c
-        */
         boolean leftZig = (x == y.getLeftChild());
 
         InfraNode b = (leftZig) ? x.getRightChild() : x.getLeftChild();
@@ -215,15 +208,6 @@ public class CBNetController extends NetworkController {
     }
 
     private double zigZagDiffRank (InfraNode x, InfraNode y, InfraNode z) {
-        /*
-             z					   *x
-            / \                   /   \
-           y   d                 y     z
-              / \		 -->    / \   / \
-             a  *x             a   b c   d
-                / \
-               b   c
-        */
         boolean lefZigZag = (y == z.getLeftChild());
 
         InfraNode b = lefZigZag ? x.getLeftChild() : x.getRightChild();
@@ -253,7 +237,7 @@ public class CBNetController extends NetworkController {
     }
 
     @Override
-    public Rotation getRotationToPerform (InfraNode x, InfraNode dstNode) {
+    protected Rotation getRotationToPerform (InfraNode x, InfraNode dstNode) {
         Direction direction = x.getRoutingDirection(dstNode);
 
         if (direction == Direction.PARENTROUT) {

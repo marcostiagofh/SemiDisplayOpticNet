@@ -90,79 +90,85 @@ public class InfraNode implements Comparable<InfraNode> {
         this.parent = parent;
     }
 
-    public int setChild (InfraNode child) {
+    public void setChild (InfraNode child) {
         if (child.getId() == -1) {
             Tools.fatalError(
                 "Trying to add a Dummy node to " + ID + " without specifying its parent"
             );
-            return -1;
+
         } else if (this.getId() > child.getId()) {
             this.getLeftChild().resetParent(this);
-            return this.setLeftChild(child);
+            this.setLeftChild(child);
 
         } else {
             this.getRightChild().resetParent(this);
-            return this.setRightChild(child);
+            this.setRightChild(child);
 
         }
     }
 
-    public int setChild (InfraNode child, InfraNode oldParent) {
+    public void setChild (InfraNode child, InfraNode oldParent) {
         if (child.getId() == -1) {
-            if (this.getId() > oldParent.getId())
-                return this.setLeftChild(child);
-            else
-                return this.setRightChild(child);
+            if (this.getId() > oldParent.getId()) {
+                this.setLeftChild(child);
+
+            } else {
+                this.setRightChild(child);
+
+            }
 
         } else if (this.getId() > child.getId()) {
             this.getLeftChild().resetParent(this);
-            return this.setLeftChild(child);
+            this.setLeftChild(child);
 
         } else {
             this.getRightChild().resetParent(this);
-            return this.setRightChild(child);
+            this.setRightChild(child);
 
         }
     }
 
-    public int setLeftChild (InfraNode child) {
-        if (this.getId() == -1)
-            return -1;
+    public void setLeftChild (InfraNode child) {
+        if (this.getId() != -1) {
+            child.setParent(this);
+            this.leftChild = child;
 
-        child.setParent(this);
-        this.leftChild = child;
+            this.updateMin(child);
 
-        return this.updateMin(child);
+        }
+
     }
 
-    public int setRightChild (InfraNode child) {
-        if (this.getId() == -1)
-            return -1;
+    public void setRightChild (InfraNode child) {
+        if (this.getId() != -1) {
+            child.setParent(this);
+            this.rightChild = child;
 
-        child.setParent(this);
-        this.rightChild = child;
+            this.updateMax(child);
 
-        return this.updateMax(child);
+        }
     }
 
     public void resetChild (InfraNode rstNode) {
-        if (this.getId() == -1)
-            return;
+        if (this.getId() != -1) {
+            if (this.leftChild.getId() != -1 && this.leftChild == rstNode) {
+                this.updateMin(new InfraNode(-1));
+                this.leftChild = new InfraNode(-1);
 
-        if (this.leftChild.getId() != -1 && this.leftChild.getId() == rstNode.getId()) {
-            this.updateMin(new InfraNode(-1));
-            this.leftChild = new InfraNode(-1);
+            } else if (this.rightChild.getId() != -1 && this.rightChild == rstNode) {
+                this.updateMax(new InfraNode(-1));
+                this.rightChild = new InfraNode(-1);
 
-        } else if (this.rightChild.getId() != -1 && this.rightChild.getId() == rstNode.getId()) {
-            this.updateMax(new InfraNode(-1));
-            this.rightChild = new InfraNode(-1);
+            }
 
         }
     }
 
     public void resetParent (InfraNode rstNode) {
-        if (this.getId() == -1)
+        if (this.getId() == -1) {
             return;
+
+        }
 
         if (this.parent.getId() != -1 && this.parent.getId() == rstNode.getId()) {
             this.parent = new InfraNode(-1);
@@ -170,22 +176,30 @@ public class InfraNode implements Comparable<InfraNode> {
         }
     }
 
-    public int updateMin (InfraNode child) {
-        if (child.getId() == -1)
-            return this.minId = this.getId();
+    public void updateMin (InfraNode child) {
+        if (child.getId() == -1) {
+            this.minId = this.getId();
 
-        return this.minId = child.getMinId();
+        } else {
+            this.minId = child.getMinId();
+
+        }
     }
 
-    public int updateMax (InfraNode child) {
-        if (child.getId() == -1)
-            return this.maxId = this.getId();
+    public void updateMax (InfraNode child) {
+        if (child.getId() == -1) {
+            this.maxId = this.getId();
 
-        return this.maxId = child.getMaxId();
+        } else {
+            this.maxId = child.getMaxId();
+
+        }
+
     }
 
     public void setWeight (long weight) {
         this.weight = weight;
+
     }
 
     public void incrementPathWeight (InfraNode toNode, boolean rooted) {
@@ -264,6 +278,7 @@ public class InfraNode implements Comparable<InfraNode> {
 
     public void incrementWeight () {
         this.weight++;
+
     }
     /* End of Setters */
 
