@@ -10,7 +10,7 @@ sequentiality=$7
 
 input_file="input/projectorDS/${dataset}/${num_node}/${sim_id}_tor_${num_node}.txt"
 
-log_path="${dataset}/${project}_${switch_size}/${num_node}/${sim_id}/"
+log_path="${dataset}/${project}_${switch_size}/trigger/$num_node/${sim_id}/"
 filename="${dataset}_${num_node}"
 
 zip_path="/home/caioc/facul/IC/test-outputs/${log_path}"
