@@ -9,6 +9,9 @@ import sinalgo.tools.logging.Logging;
 import sinalgo.tools.statistics.DataSeries;
 import projects.opticalNet.nodes.models.InfraNode;
 
+/**
+ * This abstract class is responsible to log the simulation results
+ */
 public abstract class LoggerLayer extends SynchronizerLayer {
 
     private DataSeries rotationCounter = new DataSeries();
@@ -69,6 +72,11 @@ public abstract class LoggerLayer extends SynchronizerLayer {
 
     /* Logger Functions */
 
+    /**
+     * This functions logs the round results. It logs the rotation, alteration and
+     * routings performed this round, as well as this metrics distributed over the
+     * NetworkNode's and Switches.
+     */
     @Override
     public void logRoundResults () {
         this.rotationPerRound.logln(this.currentRoundRotations + "");
@@ -99,6 +107,10 @@ public abstract class LoggerLayer extends SynchronizerLayer {
 
     }
 
+    /**
+     * Logs the results stored on the rotation, alteration, routing and
+     * active requests counter on the operations.txt file.
+     */
     public void logEndOfSimulation () {
         this.operationsLog.logln("name,sum,mean,std_dvt,min,max");
         this.printRotationCounter();
@@ -113,12 +125,26 @@ public abstract class LoggerLayer extends SynchronizerLayer {
 
     /* Setter Functions */
 
+    /**
+     * Increment the number of active ports on the switch_swtid. Active ports
+     * are ports where the connection InputNode -> OutputNode are representatives
+     * of a real edge on our graph.
+     * @param swtId         the switch id
+     */
     public void logIncrementActivePorts (int swtId) {
         long value = this.activePortsPerSwitchRound.get(swtId);
         this.activePortsPerSwitchRound.set(swtId, value + 1);
 
     }
 
+    /**
+     * Increment the number of alterations performed on a given round, updating this counter
+     * for the parent node, child node and switch involved. An alteration occurs when you remove
+     * one edge on our graph and add another.
+     * @param swtId         the switch id
+     * @param fromNodeId    the parent node
+     * @param toNodeId      the child node
+     */
     public void logIncrementAlterations (int swtId, int fromNodeId, int toNodeId) {
         this.alterationCounter.addSample(1);
 
@@ -133,6 +159,12 @@ public abstract class LoggerLayer extends SynchronizerLayer {
 
     }
 
+    /**
+     * Increment the number of routings that the nodes fromNode, toNode and the switch that
+     * implements their edge are involed in this round.
+     * @param netFromNodeId the node that started the routing
+     * @param netToNodeId   the node that received the message
+     */
     public void logIncrementRouting (int netFromNodeId, int netToNodeId) {
         int swtId = this.getRoutingSwitchId(netFromNodeId, netToNodeId);
 
@@ -147,12 +179,22 @@ public abstract class LoggerLayer extends SynchronizerLayer {
 
     }
 
+    /**
+     * Update the message-routing counter with the number of times a message has been
+     * routed.
+     * @param num   how many times the message was routed
+     */
     public void logMessageRouting (long num) {
         this.messageRoutingCounter.addSample(num);
         this.routingPerMessage.logln(num + "");
 
     }
 
+    /**
+     * Update rotation counter and the number of rotations the nodesInvolved performed
+     * @param num           how many rotations this call represents
+     * @param nodesInvolved which nodes are involved in it
+     */
     public void logRotation (long num, InfraNode... nodesInvolved) {
         this.rotationCounter.addSample(num);
         this.currentRoundRotations += num;
@@ -169,11 +211,17 @@ public abstract class LoggerLayer extends SynchronizerLayer {
 
     }
 
+    /**
+     * Increment the number of active requests for the round
+     */
     public void logIncrementActiveRequests () {
         this.activeRequests++;
 
     }
 
+    /**
+     * Increment the number of completed requests for the round
+     */
     public void logIncrementCompletedRequests () {
         this.roundCompletedRequests++;
         this.completedRequests++;
@@ -189,26 +237,48 @@ public abstract class LoggerLayer extends SynchronizerLayer {
 
     /* Getters */
 
+    /**
+     * Sum the number of routings each switch performed to get the number of
+     * routings performed in the simulation on this round.
+     * @return the number of routings performed this round
+     */
     public long getCurrentRoundRoutings () {
         return this.routingsPerSwitchRound.stream().mapToLong(Long::longValue).sum();
 
     }
 
+    /**
+     * Sum the number of alterations each switch performed to get the number of
+     * alterations performed in the simulation on this round.
+     * @return the number of alterations performed this round
+     */
     public long getCurrentRoundAlterations () {
         return this.alterationsPerSwitchRound.stream().mapToLong(Long::longValue).sum();
 
     }
 
+    /**
+     * Getter for the number of completed requests
+     * @return The number of completed requests so far
+     */
     public long getCompletedRequests () {
         return completedRequests;
 
     }
 
+    /**
+     * Getter for the alteration counter
+     * @return The alteration Counter
+     */
     public DataSeries getAlterationCounterSeries () {
         return this.alterationCounter;
 
     }
 
+    /**
+     * Getter for the rotation counter
+     * @return The rotation Counter
+     */
     public DataSeries getRotationCounterSeries () {
         return this.rotationCounter;
 
@@ -217,25 +287,42 @@ public abstract class LoggerLayer extends SynchronizerLayer {
     /* End of Getters */
 
     /* Printer Functions */
+    /**
+     * Print Active Requests counter informations.
+     */
     public void printActiveRequestsCounter () {
         this.printCounter(this.activeRequestsCounter, "active-requests");
 
     }
 
+    /**
+     * Print Alteration counter informations.
+     */
     public void printAlterationCounter () {
         this.printCounter(this.alterationCounter, "alteration");
     }
 
+    /**
+     * Print Rotation counter informations.
+     */
     public void printRotationCounter () {
         this.printCounter(this.rotationCounter, "rotation");
 
     }
 
+    /**
+     * Print MessageRouting counter informations.
+     */
     public void printMessageRoutingCounter () {
         this.printCounter(this.messageRoutingCounter, "message-routing");
 
     }
 
+    /**
+     * Print the information of counter in the order: (sum, mean, std, min, max).
+     * @param counter       the DataSeries counter
+     * @param operation     the identification string of the counter
+     */
     public void printCounter (DataSeries counter, String operation) {
         System.out.println(operation);
         System.out.println("Number of request " + counter.getNumberOfSamples());
@@ -258,6 +345,9 @@ public abstract class LoggerLayer extends SynchronizerLayer {
 
     }
 
+    /**
+     * Reports the simulation info, the number and size of clusters of type 1 and 2.
+     */
     public void printSimulationInfo () {
         this.simulationLog.logln(
             "num-cluster-1 " + this.getNumClustersType1() +
@@ -273,6 +363,11 @@ public abstract class LoggerLayer extends SynchronizerLayer {
 
     /* Auxiliary Functions */
 
+    /**
+     * Configure the path of the logger files with the path provided by the output parameter
+     * in the simulation.
+     * @param path      path to folder where the logger files are stored
+     */
     public void setLogPath (String path) {
         this.rotationPerRound = Logging.getLogger(path + "/rotations_per_round.txt");
         this.routingPerRound = Logging.getLogger(path + "/routings_per_round.txt");
@@ -303,6 +398,12 @@ public abstract class LoggerLayer extends SynchronizerLayer {
         this.sequenceLog = Logging.getLogger(path + "/sequence.txt");
     }
 
+    /**
+     * Parse the logArray as a string, printing it's content divided by space.
+     * @param logArray      Array containing information about the round
+     * @return              String containing the array contents enclosed
+     * by open and closed [] and separated by space
+     */
     private String stringfyLogArray (ArrayList<Long> logArray) {
         return Stream.of(logArray).map(Object::toString).collect(Collectors.joining(" ", "", ""));
 
@@ -311,6 +412,10 @@ public abstract class LoggerLayer extends SynchronizerLayer {
     /* End of Auxiliary Functions */
 
     /* Reset counter Functions */
+
+    /**
+     * Called by the end of round to reset round related information.
+     */
     public void resetRoundInfo () {
         this.routingsPerNodeRound = new ArrayList<>(Collections.nCopies(this.getNumNodes(), 0L));
         this.rotationsPerNodeRound = new ArrayList<>(Collections.nCopies(this.getNumNodes(), 0L));
@@ -328,12 +433,6 @@ public abstract class LoggerLayer extends SynchronizerLayer {
         this.activeRequests = 0;
         this.currentRoundRotations = 0;
         this.roundCompletedRequests = 0;
-
-    }
-
-    public void resetCollection () {
-        this.alterationCounter.reset();
-        this.rotationCounter.reset();
 
     }
     /* End of Reset counter Functions */

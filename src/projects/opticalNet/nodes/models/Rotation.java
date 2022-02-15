@@ -1,5 +1,9 @@
 package projects.opticalNet.nodes.models;
 
+/**
+ * Enumerator indicating the rotation the node should perform over all
+ * permutations with (ZigZig-ZigZag), (Left-Right), (BottomUp-TopDown)
+ */
 public enum Rotation {
     ZIGZIGLEFT_BOTTOMUP,
     ZIGZIGRIGHT_BOTTOMUP,

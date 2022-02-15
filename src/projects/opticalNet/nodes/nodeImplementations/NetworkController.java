@@ -12,6 +12,11 @@ import projects.opticalNet.nodes.models.Rotation;
 import sinalgo.gui.transformation.PositionTransformation;
 import sinalgo.tools.Tools;
 
+/**
+ * The NetworkController is the abstract class of the controller node that will act
+ * as the intelligence of our algorithm. It initializes the simulation switches, inputNodes and
+ * outputNodes. It has the rotations implementations as well as their alteration methods.
+ */
 public abstract class NetworkController extends LoggerLayer {
 
     /* Attributes */
@@ -38,10 +43,26 @@ public abstract class NetworkController extends LoggerLayer {
 
     /* End of Attributes */
 
+    /**
+     * Initializes the NetworkController and its switches. The constructor builds the
+     * network as a balanced BST.
+     * @param numNodes      Number of nudes in the network
+     * @param switchSize    Number of input/output ports in the switch
+     * @param netNodes      Array with the initialized NetworkNodes
+     */
     public NetworkController (int numNodes, int switchSize, ArrayList<NetworkNode> netNodes) {
         this(numNodes, switchSize, netNodes, new ArrayList<Integer>());
     }
 
+    /**
+     * Initializes the NetworkController and its switches. If an edgeList is provided the tree
+     * topology follow the specified one. If the edge list can't build an BST, the cons'tructor
+     * builds a balanced BST instead.
+     * @param numNodes      Number of nudes in the network
+     * @param switchSize    Number of input/output ports in the switch
+     * @param netNodes      Array with the initialized NetworkNodes
+     * @param edgeList      Array with the network edges, if provided.
+     */
     public NetworkController (
         int numNodes, int switchSize, ArrayList<NetworkNode> netNodes, ArrayList<Integer> edgeList
     ) {
@@ -118,11 +139,19 @@ public abstract class NetworkController extends LoggerLayer {
         this.resetRoundInfo();
     }
 
+    /**
+     *  Initializes the network controller under the sinalgo simulation
+     */
     @Override
     public void init () {
         super.init();
     }
 
+    /**
+     * Setup the network tree based on the provided edgeList. Building over the
+     * edges, if they design a conected BST, or building a balanced BST, if not.
+     * @param edgeList  Array with the network edges, if provided
+     */
     private void setupTree (ArrayList<Integer> edgeList) {
         this.usedNodes = new ArrayList<>();
 
@@ -150,6 +179,13 @@ public abstract class NetworkController extends LoggerLayer {
         }
     }
 
+    /**
+     * Recursive method to build a balanced BST, connecting the middle node between min and max,
+     * to left with the minMiddle node, between min and the middle, and to the right with the
+     * maxMiddle node, between the middle and max.
+     * @param min       The minimum id of the subtree
+     * @param max       The maximum id of the subtree
+     */
     private void buildBalancedTree (int min, int max) {
         if (min >= max)
             return;
@@ -172,6 +208,15 @@ public abstract class NetworkController extends LoggerLayer {
     }
 
     /* Rotations */
+
+    /**
+     * This method selects the nodes involved in alterations over a zig-zig
+     * bottom up rotation and checks if they are available to perform this
+     * rotation. If they are it calls the zig-zig alteration related method
+     * and return true, if they arent return false.
+     * @param x         The node with the message
+     * @return          True of False wether the rotation is performed
+     */
     protected boolean zigZigBottomUp (InfraNode x) {
         /*
                  z                 *y
@@ -199,6 +244,14 @@ public abstract class NetworkController extends LoggerLayer {
         return false;
     }
 
+    /**
+     * This method selects the nodes involved in alterations over a zig-zag
+     * bottom up rotation and checks if they are available to perform this
+     * rotation. If they are it calls the zig-zag alteration related method
+     * and return true, if they arent return false.
+     * @param x         The node with the message
+     * @return          True of False wether the rotation is performed
+     */
     protected boolean zigZagBottomUp (InfraNode x) {
         /*
                   w              w
@@ -229,6 +282,14 @@ public abstract class NetworkController extends LoggerLayer {
         return false;
     }
 
+    /**
+     * This method selects the nodes involved in alterations over a zig-zig
+     * left top down rotation and checks if they are available to perform this
+     * rotation. If they are it calls the zig-zig alteration related method
+     * and return true, if they arent return false.
+     * @param z         The node with the message
+     * @return          True of False wether the rotation is performed
+     */
     protected boolean zigZigLeftTopDown (InfraNode z) {
         /*
                  *z                    y
@@ -253,6 +314,14 @@ public abstract class NetworkController extends LoggerLayer {
         return false;
     }
 
+    /**
+     * This method selects the nodes involved in alterations over a zig-zig
+     * right top down rotation and checks if they are available to perform this
+     * rotation. If they are it calls the zig-zig alteration related method
+     * and return true, if they arent return false.
+     * @param z         The node with the message
+     * @return          True of False wether the rotation is performed
+     */
     protected boolean zigZigRightTopDown (InfraNode z) {
         InfraNode w = z.getParent();
         InfraNode y = z.getRightChild();
@@ -268,6 +337,14 @@ public abstract class NetworkController extends LoggerLayer {
         return false;
     }
 
+    /**
+     * This method selects the nodes involved in alterations over a zig-zag
+     * left top down rotation and checks if they are available to perform this
+     * rotation. If they are it calls the zig-zag alteration related method
+     * and return true, if they arent return false.
+     * @param z         The node with the message
+     * @return          True of False wether the rotation is performed
+     */
     protected boolean zigZagLeftTopDown (InfraNode z) {
         /*
                  *z                      x
@@ -293,6 +370,14 @@ public abstract class NetworkController extends LoggerLayer {
         return false;
     }
 
+    /**
+     * This method selects the nodes involved in alterations over a zig-zag
+     * right top down rotation and checks if they are available to perform this
+     * rotation. If they are it calls the zig-zag alteration related method
+     * and return true, if they arent return false.
+     * @param z         The node with the message
+     * @return          True of False wether the rotation is performed
+     */
     protected boolean zigZagRightTopDown (InfraNode z) {
         InfraNode w = z.getParent();
         InfraNode y = z.getRightChild();
@@ -309,6 +394,15 @@ public abstract class NetworkController extends LoggerLayer {
         return false;
     }
 
+    /**
+     * This method realizes the alterations necessary on a zig-zig rotation based on the
+     * provided nodes. z becomes the new parent of c, y becomes the new parent o z and
+     * z becomes the new parent of y
+     * @param w         old parent of node z
+     * @param z         old parent of node y
+     * @param y         old parent of node x
+     * @param c         old child of x
+     */
     private void zigZigAlterations (InfraNode w, InfraNode z, InfraNode y, InfraNode c) {
         this.logRotation(1, w, z, y, c);
 
@@ -318,6 +412,18 @@ public abstract class NetworkController extends LoggerLayer {
 
     }
 
+    /**
+     * This method realizes the alterations necessary on a zig-zag rotation based on the
+     * provided nodes. y becomes the new parent of b, x becomes the new parent of y, z
+     * becomes the new parent of c, x becomes the new parent of z and w becomes the new
+     * parent o x
+     * @param w         old parent of node z
+     * @param z         old parent of node y
+     * @param y         old parent of node x
+     * @param x         node x
+     * @param b         old child of x
+     * @param c         old child of x
+     */
     private void zigZagAlterations (
         InfraNode w, InfraNode z, InfraNode y, InfraNode x, InfraNode b, InfraNode c
     ) {
@@ -331,6 +437,14 @@ public abstract class NetworkController extends LoggerLayer {
 
     }
 
+    /**
+     * This function checks if a set of nodes are available to realize one step. If none of them
+     * are already occupied this round it marks all of them as occupied and returns true, if not
+     * return false.
+     * @param nodes     Set of InfraNodes
+     * @return          True if the nodes can be used for this step, false if at
+     * least one of them are already occupied
+     */
     protected boolean areAvailableNodes (InfraNode... nodes) {
         for (InfraNode infNode: nodes) {
             if (infNode.getId() != -1 && this.usedNodes.get(infNode.getId())) {
@@ -351,84 +465,156 @@ public abstract class NetworkController extends LoggerLayer {
     /* End of Rotations */
 
     /* Getters */
+    /**
+     * Getter for the number of network nodes in the network
+     * @return          the number of nodes in the network
+     */
     @Override
     public int getNumNodes () {
         return this.numNodes;
     }
 
+    /**
+     * Getter for the number of switches, the sum of number switches in clusters of type 1
+     * and switches in clusters of type 2
+     * @return          the number of switches
+     */
     @Override
     public int getNumSwitches () {
         return this.numSwitches;
     }
 
 
-
+    /**
+     * Getter for the number of switches in the representation of clusters type 1
+     * @return          the number of switches in clusters type 1
+     */
     @Override
     public int getSwitchesPerClusterType1 () {
         return NetworkController.SIZE_CLUSTER_TYPE1;
 
     }
 
+    /**
+     * Getter for the number of switches in the representation of clusters type 2
+     * @return          the number of switches in clusters type 2
+     */
     public int getSwitchesPerClusterType2 () {
         return NetworkController.SIZE_CLUSTER_TYPE2;
 
     }
 
+    /**
+     * Getter for the numbers of clusters type 2. The result of the summation of 1 to
+     * the number of i from 1 to the number of clusters type 1 - 1.
+     * @return          the number of clusters type 2
+     */
     @Override
     public int getNumClustersType2 () {
         return this.numClustersType2;
     }
 
+    /**
+     * Getter for the number of clusters type 1. Equals to the floor of (2 * V) / SwitchSize.
+     * @return          the number of clusters type 1
+     */
     @Override
     public int getNumClustersType1 () {
         return this.numClustersType1;
 
     }
 
+    /**
+     * Getter for the number of clusters type 1 and 2. Equals to the sum of clusters type 1
+     * and clusters type 2
+     * @return          the number of clusters
+     */
     public int getNumClusters () {
         return this.numClustersType1 + this.numClustersType2;
 
     }
 
+    /**
+     * Getter for the number of vertices in a cluster. Equals to the number of ports
+     * in a switch divided by 2
+     * @return          the cluster size
+     */
     public int getClusterSize () {
         return this.clusterSize;
     }
 
+    /**
+     * Getter for the number of ports in a clusters. Equals to the number of input ports +
+     * output ports, provided by the start of the simulation
+     * @return          the switch size
+     */
     public int getSwitchSize () {
         return this.switchSize;
     }
 
+    /**
+     * Getter for the InfraNode with the specified id. Retrieves the InfraNode for the respective
+     * NetworkNode with netNodeId
+     * @param netNodeId the id of the network node
+     * @return          the respective infra node
+     */
     public InfraNode getInfraNode (int netNodeId) {
         return this.tree.get(netNodeId - 1);
     }
 
+    /**
+     * Getter for the NetworkNode with the specified id
+     * @param netNodeId the id of the network node
+     * @return          the respective network node
+     */
     public NetworkNode getNetNode (int netNodeId) {
         return this.netNodes.get(netNodeId - 1);
     }
 
+    /**
+     * Getter for the NetworkNode equivalent to the InfraNode node.
+     * @param node      the InfraNode
+     * @return          the equivalent NetworkNode
+     */
     public NetworkNode getNetNode (InfraNode node) {
         return this.netNodes.get(node.getId());
 
     }
 
+    /**
+     * Getter for the switch that can represent the edge fromNodeRtoNode. It uses the
+     * getSwitchId method to find the correct switch.
+     * @param fromNode  node parent in the edge representation
+     * @param toNode    node child in the edge representation
+     * @return          the switch
+     */
     public NetworkSwitch getSwitch (InfraNode fromNode, InfraNode toNode) {
         return this.switches.get(this.getSwitchId(fromNode, toNode));
     }
 
+    /**
+     * Getter for the switch with id equals to switchId
+     * @param switchId  the switch id
+     * @return          the switch
+     */
     public NetworkSwitch getSwitch (int switchId) {
         return this.switches.get(switchId);
     }
 
+    /**
+     * Getter for the id of the cluster the edge fromNodeRtoNode and it's mirror
+     * belongs to. </br>
+     * The clusterId of two nodes in the same cluster is the floor of
+     * the division between any of the nodes ids and the cluserSize. The clusterId of
+     * two nodes in different clusters is calculated by adding the number of clusters
+     * type 1, the maximum cluster type 1 id for fromNode or for toNode and the summation
+     * of numberClustersType1 - 1 with i ranging between 1 and the minimum cluster type 1 id
+     * for fromNode or for toNode.
+     * @param fromNode  the parent node in the edge representation
+     * @param toNode    the child node in the edge representation
+     * @return          the cluster id
+     */
     protected int getClusterId (InfraNode fromNode, InfraNode toNode) {
-        /*
-                The clusterId of two nodes in the same cluster is calculated
-                by the floor of the division between any of the nodes ids and the
-                size of the clusters of the system.
-
-                The clusterId of two nodes in different clusters is calculated
-                by adding the number of clusters and the position of the UnionCluster
-                from unionPos.
-        */
         if (this.areSameCluster(fromNode, toNode)) {
             return this.getClusterId(fromNode);
 
@@ -439,20 +625,43 @@ public abstract class NetworkController extends LoggerLayer {
         }
     }
 
+    /**
+     * Getter for the cluster id that holds every type 1 edge of the InfraNode node.
+     * Given by the floor of the divistion between the node id and the clusterSize
+     * @param node      InfraNode
+     * @return          the cluster id
+     */
     protected int getClusterId (InfraNode node) {
-        /*
-                The clusterId of a given node is calculated by the floor of the
-                division between the Node Id and the size of the clusters of the
-                system.
-        */
         return node.getId() / this.clusterSize;
+
     }
 
+    /**
+     * Getter for the switch id were the edge between fromNode and toNode can be represented.
+     * Equals to the sum between SIZE_CLUSTER_TYPE1 * min(clusterId, numClustersType1)
+     * SIZE_CLUSTER_TYPE_2 * max(0, clusterId - numClustersType1) and 1 if it is a mirrored edge,
+     * toNode is the real parent of fromNode in the network, or 0 if it is a real edge,
+     * fromNode is the parent of toNode.
+     * @param fromNode  the parent node in the edge representation
+     * @param toNode    the child node in the edge representation
+     * @return          the switch id
+     */
     private int getRoutingSwitchId (InfraNode fromNode, InfraNode toNode) {
         return this.getSwitchId(fromNode, toNode) + (toNode == fromNode.getParent() ? 1 : 0);
 
     }
 
+    /**
+     * Getter for the switch id were the edge between fromNode and toNode can be represented.
+     * Equals to the sum between SIZE_CLUSTER_TYPE1 * min(clusterId, numClustersType1)
+     * SIZE_CLUSTER_TYPE_2 * max(0, clusterId - numClustersType1) and 2 if it is an edge
+     * between an right child node, 0 if not, and 1 if it is a mirrored edge,
+     * toNode is the real parent of fromNode in the network, or 0 if it is a real edge,
+     * fromNode is the parent of toNode.
+     * @param fromNode  the parent node id in the edge representation
+     * @param toNode    the child node id in the edge representation
+     * @return          the switch id
+     */
     @Override
     protected int getRoutingSwitchId (int fromNodeId, int toNodeId) {
         InfraNode fromNode = this.getInfraNode(fromNodeId);
@@ -461,16 +670,16 @@ public abstract class NetworkController extends LoggerLayer {
         return this.getRoutingSwitchId(fromNode, toNode);
     }
 
+    /**
+     * Getter for the switch id were the edge between fromNode and toNode can be represented.
+     * Equals to the sum between SIZE_CLUSTER_TYPE1 * min(clusterId, numClustersType1)
+     * SIZE_CLUSTER_TYPE_2 * max(0, clusterId - numClustersType1) and 2 if it is an edge
+     * to a right child or 0 if it is an edge to a left child node
+     * @param fromNode  the parent node in the edge representation
+     * @param toNode    the child node in the edge representation
+     * @return          the switch id
+     */
     protected int getSwitchId (InfraNode fromNode, InfraNode toNode) {
-        /*
-                To find the switchId between two nodes from the same cluster
-                we need to multiply by 4 the numbers of clusters of type 1
-                prior to our. Then adding 2 to the result if it is a right edge.
-
-                To find the switchId between two nodes from different clusters
-                we need to multiply by 4 the numbers of clusters of type 1.
-                Then we add 4 times the number clusters of type 2 prior to our.
-        */
         int previousSwitches = (
                 this.areSameCluster(fromNode, toNode) ?
                 this.getClusterId(fromNode, toNode) * SIZE_CLUSTER_TYPE1 :
@@ -481,10 +690,23 @@ public abstract class NetworkController extends LoggerLayer {
         return previousSwitches + 2 * (fromNode.getId() > toNode.getId() ? 1 : 0);
     }
 
+    /**
+     * Returns a boolean true if the cluster type 1 id of both nodes are the same and
+     * false if are different
+     * @param node1 InfraNode x
+     * @param node2 InfraNode y
+     * @return      boolean
+     */
     protected boolean areSameCluster (InfraNode node1, InfraNode node2) {
         return this.getClusterId(node1) == this.getClusterId(node2);
     }
 
+    /**
+     * Returns true if the InfraNode Id is between 0, is not a dummy node, and the number
+     * of nodes in the network, is not the control root.
+     *
+     * @return      boolean
+     */
     @Override
     protected boolean isValidNode (InfraNode node) {
         if (node.getId() == -1) {
@@ -501,6 +723,9 @@ public abstract class NetworkController extends LoggerLayer {
     /* End of Getters */
 
     /* Setters */
+    /**
+     * [OUTDATED?] -> To be replaced the logIncrementation call in the mapConn needs to be replaced.
+     */
     private void setInitialCon (InfraNode fromNode, InfraNode toNode) {
         int swtId = this.getSwitchId(fromNode, toNode);
         fromNode.setChild(toNode);
@@ -519,10 +744,22 @@ public abstract class NetworkController extends LoggerLayer {
         return;
     }
 
+    /**
+     * Sets the connection between fromNode and toNode. Updating the former connections
+     * they shared.
+     * @param fromNode  the parent node
+     * @param toNode    the child node
+     */
     private void mapConn (InfraNode fromNode, InfraNode toNode) {
         this.mapConn(fromNode, toNode, new InfraNode(-1));
     }
 
+    /**
+     * Sets the connection between fromNode and toNode. Updating the former connections
+     * they shared.
+     * @param fromNode  the parent node
+     * @param toNode    the child node
+     */
     private void mapConn (InfraNode fromNode, InfraNode toNode, InfraNode oldParent) {
         int swtId = this.getSwitchId(fromNode, toNode);
         fromNode.setChild(toNode, oldParent);
@@ -553,24 +790,28 @@ public abstract class NetworkController extends LoggerLayer {
     /* End of Setters
 
     /* Auxiliary Functions */
+    /**
+     * Retrieves the position for the cluster of type 2. Given by the between the
+     * max(clsId1, clsId2) and the sum of terms belonging  to the arithmetic progression
+     * AP(n) = ((a0 + an) * n) / 2, such that a0 is the number of clusters type 1 - 1,
+     * an the number of clusters type 1 - min(clsId1, clsId2) and n the min(clsId1, clsId2)
+     * @param clsId1    the cluster type 1 id for the first node
+     * @param clsId2    the cluster type 1 id for the second node
+     * @return          the position of the cluster type 2 in the arithmetic progression
+     */
     protected int unionPos (int clsId1, int clsId2) {
-        /*
-            To calculate the postion of a UnionCluster we compute the
-            summation from (NUM_CLUSTERS - 1) to (NUM_CLUSTER - minimum(clsId1, clsId2))
-            and add to the result the distance between clsId1 to clsId2.
-        */
-        if (clsId1 > clsId2) {
-            int aux = clsId1;
-            clsId1 = clsId2;
-            clsId2 = aux;
-        }
-
         /*
             AP(n) = ((a0 + an) * n) / 2
             a0 = NUM_CLUSTERS - 1
             an = NUM_CLUSTER - 1 - clsId1 + 1
             n = clsId1
         */
+
+        if (clsId1 > clsId2) {
+            int aux = clsId1;
+            clsId1 = clsId2;
+            clsId2 = aux;
+        }
 
         int apSum = (
             clsId1 != 0 ?
@@ -582,6 +823,11 @@ public abstract class NetworkController extends LoggerLayer {
 
     protected abstract Rotation getRotationToPerform (InfraNode x, InfraNode dstNode);
 
+    /**
+     * This method traverses the nodes that still have messages pending routing and locks them
+     * and their remaining routing path. If at least one of this nodes wouldn't be able
+     * to finish it's routing the simulation must be ended with an error.
+     */
     private void lockRoutingNodes () {
         while (!this.routingNodes.isEmpty()) {
             RoutingInfoMessage routMsg = this.routingNodes.poll();
@@ -597,6 +843,12 @@ public abstract class NetworkController extends LoggerLayer {
 
     }
 
+    /**
+     * This method locks the routing nodes and then, for every node with a message, if it is
+     * possible, performs the rotation specified by the getRotationToPerformed, and if it is not
+     * tries to rout the message 2 times. If neither step is possible, due to involved nodes being
+     * locked or other issues, the node is not allowed to act in this round.
+     */
     private void updateConn () {
         this.lockRoutingNodes();
 
@@ -739,10 +991,28 @@ public abstract class NetworkController extends LoggerLayer {
         }
     }
 
+    /**
+     * Creates a RoutingInfoMessage and send it to the NetworkNode equivalent to node
+     * if the nodes in the path are available
+     * @param node          node with the message
+     * @param dstNode       message destination node
+     * @param routingTimes  number of times the message should be routed before next step
+     * @return              true if message is allowed to rout and false if it isn't
+     */
     private boolean allowRouting (InfraNode node, InfraNode dstNode, int routingTimes) {
         return this.allowRouting(node, dstNode, new RoutingInfoMessage(routingTimes));
     }
 
+    /**
+     * This method checks if the nodes in the path of length routMsg.getRoutingTimes of the
+     * RoutingInfoMessage, are available, if they are, send it to the equivalent NetworkNode and
+     * return true, if they are not return false
+     *
+     * @param node          node with the message
+     * @param dstNode       message destination node
+     * @param routMsg       the RoutingInfoMessage
+     * @return              true if message is allowed to rout and false if it isn't
+     */
     private boolean allowRouting (InfraNode node, InfraNode dstNode, RoutingInfoMessage routMsg) {
         ArrayList<InfraNode> routNodes = new ArrayList<>();
         InfraNode currNode = node;
@@ -769,6 +1039,13 @@ public abstract class NetworkController extends LoggerLayer {
         return false;
     }
 
+    /**
+     * Retrieve the equivalent NetworkNode, inform the next node in the path of the message
+     * to the routMsg and send the RoutingInfoMessage to it.
+     * @param node      InfraNode hodler of the message
+     * @param nxtNode   next node in the message path
+     * @param routMsg   the RoutingInfoMessage
+     */
     private void configureRoutingMessage (
         InfraNode node, InfraNode nxtNode, RoutingInfoMessage routMsg
     ) {
@@ -778,10 +1055,17 @@ public abstract class NetworkController extends LoggerLayer {
         this.sendDirect(routMsg, netNode);
     }
 
+    /**
+     * Debug method used to print the network topology
+     */
     public void debugInfraTree () {
         this.debugInfraTree(this.tree.get(this.numNodes));
     }
 
+    /**
+     * Recursive debug method to print the network tree in pre-order traversal
+     * @param node  current InfraNode
+     */
     public void debugInfraTree (InfraNode node) {
         if (node.getId() == -1)
             return;
@@ -794,6 +1078,10 @@ public abstract class NetworkController extends LoggerLayer {
 
     /* End of Auxiliary Functions */
 
+    /**
+     * Control function that ensures the Infrasctructure stored in the NetworkController
+     * matches the one represented by the NetworkNode connections
+     */
     private void checkRoundConfiguration () {
         if (!this.validTree()) {
             Tools.fatalError("Invalid infra tree");
@@ -809,6 +1097,10 @@ public abstract class NetworkController extends LoggerLayer {
         }
     }
 
+    /**
+     * Method with the controller timeslot operations. Checks the network topology
+     * and then informs the nodes allowed to perform rotations or routings this round.
+     */
     @Override
     public void controllerStep () {
         this.checkRoundConfiguration();
@@ -826,6 +1118,12 @@ public abstract class NetworkController extends LoggerLayer {
         );
     }
 
+    /**
+     * This method confirms that the child and parent nodes of a given InfraNode are the
+     * equivalent same to the child and parent nodes of it's respective NetworkNode
+     * @param nodeId    the id of the nodes in the controller array
+     * @return          true if they are equivalent, false if they are not
+     */
     private boolean equivalentNodes (int nodeId) {
         InfraNode infraNode = this.tree.get(nodeId);
         NetworkNode netNode = this.netNodes.get(nodeId);
@@ -858,10 +1156,22 @@ public abstract class NetworkController extends LoggerLayer {
         return flag;
     }
 
+    /**
+     * This function ensures that the represented tree topology is of a Binary Search Tree
+     */
     private boolean validTree () {
-        return this.validSubtree(this.tree.get(this.numNodes).getLeftChild(), 0, this.numNodes - 1);
+        InfraNode rootNode = this.getInfraNode(this.numNodes + 1);
+        return this.validSubtree(rootNode.getLeftChild(), 0, this.numNodes - 1);
     }
 
+    /**
+     * Returns true if all the nodes inside a ancestor node subtree are inside the range
+     * minId and maxId of the node. Should be re-formulated to reduce number of redundant calls.
+     * @param x     InfraNode currentNode
+     * @param min   Minimum id of the current ancestor
+     * @param max   Maximum id of the current ancestor
+     * @return      true if all the nodes inside a ancestor node subtree are inside the range
+     */
     private boolean validSubtree (InfraNode x, int min, int max) {
         if (x.getId() == -1) {
             return true;

@@ -2,6 +2,11 @@ package projects.opticalNet.nodes.models;
 
 import sinalgo.tools.Tools;
 
+/**
+ * InfraNodes are used by the NetworkController to represent the current
+ * network topology. They store the left and right child and it's parent,
+ * as well as their subtree min and max id.
+ */
 public class InfraNode implements Comparable<InfraNode> {
 
     /* Attributes */
@@ -19,6 +24,10 @@ public class InfraNode implements Comparable<InfraNode> {
     /* End of Attributes */
 
     /* Constructors */
+
+    /**
+     * Create a InfraNode unitialized, without children nor parents.
+     */
     public InfraNode () {
         this.id = ID++;
         this.parent = new InfraNode(-1);
@@ -28,53 +37,97 @@ public class InfraNode implements Comparable<InfraNode> {
         this.maxId = this.id;
     }
 
+    /**
+     * Create a dummy node, that should be deemed invalid during the simulation.
+     * @param dummy variable to represent dummy id, should be -1
+     */
     public InfraNode (int dummy) {
         this.id = dummy;
         this.minId = this.id;
         this.maxId = this.id;
     }
 
+    /**
+     * Create a new InfraNode already informing it's parent and children, already initializing
+     * it's subtree
+     * @param parent        This node parent or a dummy node
+     * @param leftChild     This node leftChild or a dummy node
+     * @param rightChild    This node rightChild or a dummy node
+     */
     public InfraNode (InfraNode parent, InfraNode leftChild, InfraNode rightChild) {
         this.id = ID++;
         this.parent = parent;
         this.leftChild = leftChild;
         this.rightChild = rightChild;
-        this.minId = this.leftChild.getId() == -1 ? this.getId() : this.leftChild.getId();
-        this.maxId = this.rightChild.getId() == -1 ? this.getId() : this.rightChild.getId();
+        this.minId = this.leftChild.getId() == -1 ? this.getId() : this.leftChild.getMinId();
+        this.maxId = this.rightChild.getId() == -1 ? this.getId() : this.rightChild.getMaxId();
     }
     /* End of Constructors */
 
     /* Getters */
+
+    /**
+     * Getter for this node id in the InfraTree.
+     * @return This node id
+     */
     public int getId () {
         return this.id;
 
     }
 
+    /**
+     * Getter for the id of this node equivalent NetworkNode
+     * @return The equivalent NetworkNode id
+     */
     public int getNetId () {
         return this.id + 1;
 
     }
 
+    /**
+     * Getter for this node parent
+     * @return This node parent
+     */
     public InfraNode getParent () {
         return this.parent;
     }
 
+    /**
+     * Getter for this node left child
+     * @return This node left child
+     */
     public InfraNode getLeftChild () {
         return this.leftChild;
     }
 
+    /**
+     * Getter for this node right child
+     * @return This node right child
+     */
     public InfraNode getRightChild () {
         return this.rightChild;
     }
 
+    /**
+     * Getter for this node's subtree minimum id
+     * @return This node's subtree minimum id
+     */
     public int getMinId () {
         return this.minId;
     }
 
+    /**
+     * Getter for this node's subtree maximum id
+     * @return This node's subtree maximum id
+     */
     public int getMaxId () {
         return this.maxId;
     }
 
+    /**
+     * Getter for this node weight. Obsolete with weight-tree.
+     * @return This node's weight
+     */
     public long getWeight () {
         return (this.getId() == -1 ? 0 : this.weight);
     }
@@ -82,6 +135,11 @@ public class InfraNode implements Comparable<InfraNode> {
     /* End of Getters */
 
     /* Setters */
+    /**
+     * Sets this node new parent and resets the respective child from this
+     * node old parent.
+     * @param parent This node new parent
+     */
     public void setParent (InfraNode parent) {
         if (this.getId() == -1)
             return;
@@ -90,6 +148,12 @@ public class InfraNode implements Comparable<InfraNode> {
         this.parent = parent;
     }
 
+    /**
+     * Sets this node new child, calling the apropriated left or right
+     * method depending on the comparison betwen this and the child id.
+     * This method is used when the child is assuredly not a dummy node.
+     * @param child The new child node
+     */
     public void setChild (InfraNode child) {
         if (child.getId() == -1) {
             Tools.fatalError(
@@ -107,6 +171,14 @@ public class InfraNode implements Comparable<InfraNode> {
         }
     }
 
+    /**
+     * Sets this node new child, calling the apropriated left or right
+     * method depending on the comparison betwen this and the child id.
+     * If the child is a dummy node, the decision on wether left or right
+     * child is made by the child old parent id. [ CONFIRM DECISION ]
+     * @param child      new child node
+     * @param oldParent  new child old parent
+     */
     public void setChild (InfraNode child, InfraNode oldParent) {
         if (child.getId() == -1) {
             if (this.getId() > oldParent.getId()) {
@@ -128,6 +200,11 @@ public class InfraNode implements Comparable<InfraNode> {
         }
     }
 
+    /**
+     * Set the left child of this node as child and set this child parent as this.
+     * After that update the minimum id of the subtree.
+     * @param child new child node
+     */
     public void setLeftChild (InfraNode child) {
         if (this.getId() != -1) {
             child.setParent(this);
@@ -139,6 +216,11 @@ public class InfraNode implements Comparable<InfraNode> {
 
     }
 
+    /**
+     * Set the right child of this node as child and set this child parent as this.
+     * After that update the maximum id of the subtree.
+     * @param child new child node
+     */
     public void setRightChild (InfraNode child) {
         if (this.getId() != -1) {
             child.setParent(this);
@@ -149,6 +231,11 @@ public class InfraNode implements Comparable<InfraNode> {
         }
     }
 
+    /**
+     * Remove its node child equals to rstNode, removing its subtree for the
+     * respective left or right side.
+     * @param rstNode the old child node.
+     */
     public void resetChild (InfraNode rstNode) {
         if (this.getId() != -1) {
             if (this.leftChild.getId() != -1 && this.leftChild == rstNode) {
@@ -164,6 +251,10 @@ public class InfraNode implements Comparable<InfraNode> {
         }
     }
 
+    /**
+     * Reset this node parent. Setting it as a dummy node.
+     * @param rstNode this node old parent.
+     */
     public void resetParent (InfraNode rstNode) {
         if (this.getId() == -1) {
             return;
@@ -176,6 +267,11 @@ public class InfraNode implements Comparable<InfraNode> {
         }
     }
 
+    /**
+     * Update minimum id from this node subtree. Setting it as this node id if the new child
+     * is a dummy node or as the child node minimum id in their subtree.
+     * @param child This node new child
+     */
     public void updateMin (InfraNode child) {
         if (child.getId() == -1) {
             this.minId = this.getId();
@@ -186,6 +282,11 @@ public class InfraNode implements Comparable<InfraNode> {
         }
     }
 
+    /**
+     * Update maximum id from this node subtree. Setting it as this node id if the new child
+     * is a dummy node or as the child node maximum id in their subtree.
+     * @param child This node new child
+     */
     public void updateMax (InfraNode child) {
         if (child.getId() == -1) {
             this.maxId = this.getId();
@@ -197,11 +298,32 @@ public class InfraNode implements Comparable<InfraNode> {
 
     }
 
+    /**
+     * Update this node weight, called after a rotation. Obsolete with weight-tree.
+     * @param weight This node new weight
+     */
     public void setWeight (long weight) {
         this.weight = weight;
 
     }
 
+    /**
+     * Increment the weight of this node subtree. Obsolete with weight-tree.
+     */
+    public void incrementWeight () {
+        this.weight++;
+
+    }
+
+    /**
+     * Increment the weight of the nodes in the path between this node and the destination
+     * node, toNode. It traverse the path from the source node to the root and from the
+     * root to the destination node. Effectively adding 2 to every node ancestor to the LCA
+     * and adding one to every node ancestor to only one of the source and destination nodes.
+     * @param toNode    destination node
+     * @param rooted    boolean with true if it already has traversed to the root and false if
+     *                  it still hasn't
+     */
     public void incrementPathWeight (InfraNode toNode, boolean rooted) {
         this.incrementWeight();
         Direction direction = this.getRoutingDirection(toNode);
@@ -224,11 +346,25 @@ public class InfraNode implements Comparable<InfraNode> {
         }
     }
 
+    /**
+     * Getter for the next node in the path between this node and the destination node.
+     * @param toNode    the destination node
+     * @return          the next node in the path.
+     */
     public InfraNode getRoutingNode (InfraNode toNode) {
         return this.getRoutingNode(this.getRoutingDirection(toNode));
 
     }
 
+    /**
+     * Getter for which node is next in the specified direction.
+     * Left child for the LEFT and LEFTROUT direction
+     * Right child for the RIGHT and RIGHTROUT direction
+     * Parent for the PARENT and PARENTROUT direction
+     * This for the NULL direction
+     * @param direction     the routing direction.
+     * @return              the next node in the direction.
+     */
     public InfraNode getRoutingNode (Direction direction) {
         if (direction == Direction.NULL) {
             return this;
@@ -245,6 +381,12 @@ public class InfraNode implements Comparable<InfraNode> {
         }
     }
 
+    /**
+     * Getter for the routing direction the next node in the path between this and the
+     * destination node is.
+     * @param toNode    destination node
+     * @return          the routing the direction the next node in the path is
+     */
     public Direction getRoutingDirection (InfraNode toNode) {
         if (toNode.getId() == -1) {
             System.out.println("Invalid toNode");
@@ -276,13 +418,14 @@ public class InfraNode implements Comparable<InfraNode> {
         }
     }
 
-    public void incrementWeight () {
-        this.weight++;
-
-    }
     /* End of Setters */
 
     /* Auxiliary Functions */
+
+    /**
+     * Method to print this InfraNode informations, such as his left and right child ids,
+     * his parent id, and his minimum and maximum id of his subtree.
+     */
     public void debugNode () {
         if (this.id == -1) {
             System.out.println("Dummy Node");
@@ -299,6 +442,11 @@ public class InfraNode implements Comparable<InfraNode> {
         }
     }
 
+    /**
+     * Comparator between two InfraNodes, returning less than if this node is a dummy node,
+     * bigger than if the other node is a dummy node. And comparing their id if both of them
+     * are valid nodes.
+     */
     @Override
     public int compareTo (InfraNode othNode) {
         if (this.getId() == -1) {
