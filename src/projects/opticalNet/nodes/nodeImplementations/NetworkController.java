@@ -165,7 +165,7 @@ public abstract class NetworkController extends LoggerLayer {
             this.buildBalancedTree(1, this.numNodes);
             this.setInitialCon(
                 this.getInfraNode(this.numNodes + 1),
-                this.getInfraNode(this.numNodes / 2)
+                this.getInfraNode((1 + this.numNodes) / 2)
             );
 
         } else {
