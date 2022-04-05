@@ -2,8 +2,6 @@ package projects.opticalNet.nodes.infrastructureImplementations;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.stream.Stream;
-import java.util.stream.Collectors;
 
 import sinalgo.tools.logging.Logging;
 import sinalgo.tools.statistics.DataSeries;
@@ -85,21 +83,13 @@ public abstract class LoggerLayer extends SynchronizerLayer {
         this.activeRequestsPerRound.logln(this.activeRequests + "");
         this.activeRequestsCounter.addSample(this.activeRequests);
 
-        this.nodesRoutingsPerRound.logln(this.stringfyLogArray(this.routingsPerNodeRound));
-        this.nodesRotationsPerRound.logln(
-            this.stringfyLogArray(this.rotationsPerNodeRound)
-        );
-        this.nodesAlterationsPerRound.logln(
-            this.stringfyLogArray(this.alterationsPerNodeRound)
-        );
+        this.logSparceLogger(this.nodesRoutingsPerRound, this.routingsPerNodeRound);
+        this.logSparceLogger(this.nodesRotationsPerRound, this.rotationsPerNodeRound);
+        this.logSparceLogger(this.nodesAlterationsPerRound, this.alterationsPerNodeRound);
 
-        this.switchesRoutingsPerRound.logln(this.stringfyLogArray(this.routingsPerSwitchRound));
-        this.switchesActivePortsPerRound.logln(
-            this.stringfyLogArray(this.activePortsPerSwitchRound)
-        );
-        this.switchesAlterationsPerRound.logln(
-            this.stringfyLogArray(this.alterationsPerSwitchRound)
-        );
+        this.logSparceLogger(this.switchesRoutingsPerRound, this.routingsPerSwitchRound);
+        this.logSparceLogger(this.switchesActivePortsPerRound, this.activePortsPerSwitchRound);
+        this.logSparceLogger(this.switchesAlterationsPerRound, this.alterationsPerSwitchRound);
 
         this.throughputLog.logln(this.roundCompletedRequests + "");
 
@@ -124,6 +114,22 @@ public abstract class LoggerLayer extends SynchronizerLayer {
     /* End of Logger Functions */
 
     /* Setter Functions */
+
+    /**
+     * Increment round actions per node or switch as a sparse matrix to save space.
+     * @param logger        Logging object for the parameter
+     * @param logArray      Array containing information about the round
+     */
+    private void logSparceLogger (Logging logger, ArrayList<Long> logArray) {
+        for (int indx = 0; indx < logArray.size(); indx++) {
+            Long value = logArray.get(indx);
+            if (value > 0) {
+                logger.logln(indx + " " + value + " " + this.getCurrentRound());
+            }
+
+        }
+
+    }
 
     /**
      * Increment the number of active ports on the switch_swtid. Active ports
@@ -397,18 +403,6 @@ public abstract class LoggerLayer extends SynchronizerLayer {
         this.operationsLog = Logging.getLogger(path + "/operations.txt");
         this.sequenceLog = Logging.getLogger(path + "/sequence.txt");
     }
-
-    /**
-     * Parse the logArray as a string, printing it's content divided by space.
-     * @param logArray      Array containing information about the round
-     * @return              String containing the array contents enclosed
-     * by open and closed [] and separated by space
-     */
-    private String stringfyLogArray (ArrayList<Long> logArray) {
-        return Stream.of(logArray).map(Object::toString).collect(Collectors.joining(" ", "", ""));
-
-    }
-
     /* End of Auxiliary Functions */
 
     /* Reset counter Functions */
