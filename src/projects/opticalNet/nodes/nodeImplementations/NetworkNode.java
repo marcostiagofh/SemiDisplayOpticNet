@@ -7,6 +7,7 @@ import java.util.PriorityQueue;
 
 import projects.opticalNet.nodes.messages.NewMessage;
 import projects.opticalNet.nodes.messages.RoutingInfoMessage;
+import projects.opticalNet.nodes.models.InfraNode;
 import projects.opticalNet.nodes.messages.HasMessage;
 import projects.opticalNet.nodes.messages.OpticalNetMessage;
 import projects.opticalNet.nodes.infrastructureImplementations.InputNode;
@@ -226,9 +227,10 @@ public class NetworkNode extends SynchronizerLayer {
      */
     public void sendMsg (RoutingInfoMessage routMsg) {
         routMsg.getRoutedMsg().incrementRouting();
-        this.controller.logIncrementRouting(
-            this.ID, routMsg.getRoutNodeId()
-        );
+
+        InfraNode fromNode = this.controller.getInfraNode(this.ID);
+        InfraNode toNode = this.controller.getInfraNode(routMsg.getRoutNodeId());
+        this.controller.logIncrementRouting(fromNode, toNode);
 
         this.sendToInputNode(routMsg);
     }

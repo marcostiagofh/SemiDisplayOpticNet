@@ -135,8 +135,8 @@ public abstract class NetworkController extends LoggerLayer {
             }
         }
 
-        this.setupTree(edgeList);
         this.resetRoundInfo();
+        this.setupTree(edgeList);
     }
 
     /**
@@ -405,6 +405,7 @@ public abstract class NetworkController extends LoggerLayer {
      */
     private void zigZigAlterations (InfraNode w, InfraNode z, InfraNode y, InfraNode c) {
         this.logRotation(1, w, z, y, c);
+        this.logZigZigUpdateActivePorts(w, z, y, c);
 
         this.mapConn(z, c, y);
         this.mapConn(y, z);
@@ -428,6 +429,7 @@ public abstract class NetworkController extends LoggerLayer {
         InfraNode w, InfraNode z, InfraNode y, InfraNode x, InfraNode b, InfraNode c
     ) {
         this.logRotation(2, w, z, y, x, b, c);
+        this.logZigZagUpdateActivePorts(w, z, y, x, b, c);
 
         this.mapConn(y, b, x);
         this.mapConn(x, y);
@@ -646,28 +648,10 @@ public abstract class NetworkController extends LoggerLayer {
      * @param toNode    the child node in the edge representation
      * @return          the switch id
      */
-    private int getRoutingSwitchId (InfraNode fromNode, InfraNode toNode) {
+    @Override
+    protected int getRoutingSwitchId (InfraNode fromNode, InfraNode toNode) {
         return this.getSwitchId(fromNode, toNode) + (toNode == fromNode.getParent() ? 1 : 0);
 
-    }
-
-    /**
-     * Getter for the switch id were the edge between fromNode and toNode can be represented.
-     * Equals to the sum between SIZE_CLUSTER_TYPE1 * min(clusterId, numClustersType1)
-     * SIZE_CLUSTER_TYPE_2 * max(0, clusterId - numClustersType1) and 2 if it is an edge
-     * between an right child node, 0 if not, and 1 if it is a mirrored edge,
-     * toNode is the real parent of fromNode in the network, or 0 if it is a real edge,
-     * fromNode is the parent of toNode.
-     * @param fromNode  the parent node id in the edge representation
-     * @param toNode    the child node id in the edge representation
-     * @return          the switch id
-     */
-    @Override
-    protected int getRoutingSwitchId (int fromNodeId, int toNodeId) {
-        InfraNode fromNode = this.getInfraNode(fromNodeId);
-        InfraNode toNode = this.getInfraNode(toNodeId);
-
-        return this.getRoutingSwitchId(fromNode, toNode);
     }
 
     /**
@@ -679,6 +663,7 @@ public abstract class NetworkController extends LoggerLayer {
      * @param toNode    the child node in the edge representation
      * @return          the switch id
      */
+    @Override
     protected int getSwitchId (InfraNode fromNode, InfraNode toNode) {
         int previousSwitches = (
                 this.areSameCluster(fromNode, toNode) ?
@@ -738,6 +723,7 @@ public abstract class NetworkController extends LoggerLayer {
 
         }
 
+        this.logIncrementActivePorts(fromNode, toNode);
         this.getSwitch(swtId).updateParent(fromNode.getId() + 1, toNode.getId() + 1);
         this.getSwitch(swtId + 1).updateChild(toNode.getId() + 1, fromNode.getId() + 1);
 
@@ -781,7 +767,7 @@ public abstract class NetworkController extends LoggerLayer {
 
         }
 
-        this.logIncrementAlterations(swtId, fromNode.getId(), toNode.getId());
+        this.logIncrementAlterations(fromNode, toNode);
 
         this.getSwitch(swtId).updateParent(fromNode.getId() + 1, toNode.getId() + 1);
         this.getSwitch(swtId + 1).updateChild(toNode.getId() + 1, fromNode.getId() + 1);
@@ -1181,12 +1167,6 @@ public abstract class NetworkController extends LoggerLayer {
         if (x.getId() < min || x.getId() > max) {
             x.debugNode();
             return false;
-
-        }
-
-        if (this.isValidNode(x) && this.isValidNode(x.getParent())) {
-            int swtId = this.getRoutingSwitchId(x.getParent(), x);
-            this.logIncrementActivePorts(swtId);
 
         }
 

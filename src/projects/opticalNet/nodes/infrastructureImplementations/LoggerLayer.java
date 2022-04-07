@@ -64,7 +64,9 @@ public abstract class LoggerLayer extends SynchronizerLayer {
 
     public abstract int getSwitchesPerClusterType2 ();
 
-    protected abstract int getRoutingSwitchId (int fromNodeId, int toNodeId);
+    protected abstract int getRoutingSwitchId (InfraNode fromNode, InfraNode toNode);
+
+    protected abstract int getSwitchId (InfraNode fromNode, InfraNode toNode);
 
     protected abstract boolean isValidNode (InfraNode node);
 
@@ -123,11 +125,36 @@ public abstract class LoggerLayer extends SynchronizerLayer {
     private void logSparceLogger (Logging logger, ArrayList<Long> logArray) {
         for (int indx = 0; indx < logArray.size(); indx++) {
             Long value = logArray.get(indx);
-            if (value > 0) {
-                logger.logln(indx + " " + value + " " + this.getCurrentRound());
+            if (value != 0) {
+                logger.logln(this.getCurrentRound() + " " + indx + " " + value);
             }
 
         }
+
+    }
+
+    public void logZigZigUpdateActivePorts (InfraNode w, InfraNode z, InfraNode y, InfraNode c) {
+        this.logDecrementActivePorts(w, z);
+        this.logDecrementActivePorts(z, y);
+        this.logDecrementActivePorts(y, c);
+        this.logIncrementActivePorts(w, y);
+        this.logIncrementActivePorts(y, z);
+        this.logIncrementActivePorts(z, c);
+    }
+
+    public void logZigZagUpdateActivePorts (
+        InfraNode w, InfraNode z, InfraNode y, InfraNode x, InfraNode b, InfraNode c
+    ) {
+        this.logDecrementActivePorts(w, z);
+        this.logDecrementActivePorts(z, y);
+        this.logDecrementActivePorts(y, x);
+        this.logDecrementActivePorts(x, b);
+        this.logDecrementActivePorts(x, c);
+        this.logIncrementActivePorts(w, x);
+        this.logIncrementActivePorts(x, y);
+        this.logIncrementActivePorts(x, z);
+        this.logIncrementActivePorts(y, b);
+        this.logIncrementActivePorts(z, c);
 
     }
 
@@ -137,31 +164,57 @@ public abstract class LoggerLayer extends SynchronizerLayer {
      * of a real edge on our graph.
      * @param swtId         the switch id
      */
-    public void logIncrementActivePorts (int swtId) {
+    public void logIncrementActivePorts (InfraNode fromNode, InfraNode toNode) {
+        if (!this.isValidNode(fromNode) || !this.isValidNode(toNode)) {
+            return;
+
+        }
+
+        int swtId = this.getSwitchId(fromNode, toNode);
         long value = this.activePortsPerSwitchRound.get(swtId);
         this.activePortsPerSwitchRound.set(swtId, value + 1);
 
     }
 
     /**
+     * Decrement the number of active ports on the switch_swtid. Active ports
+     * are ports where the connection InputNode -> OutputNode are representatives
+     * of a real edge on our graph.
+     * @param swtId         the switch id
+     */
+    public void logDecrementActivePorts (InfraNode fromNode, InfraNode toNode) {
+        if (!this.isValidNode(fromNode) || !this.isValidNode(toNode)) {
+            return;
+
+        }
+
+        int swtId = this.getSwitchId(fromNode, toNode);
+        long value = this.activePortsPerSwitchRound.get(swtId);
+        this.activePortsPerSwitchRound.set(swtId, value - 1);
+
+    }
+
+
+    /**
      * Increment the number of alterations performed on a given round, updating this counter
      * for the parent node, child node and switch involved. An alteration occurs when you remove
      * one edge on our graph and add another.
      * @param swtId         the switch id
-     * @param fromNodeId    the parent node
-     * @param toNodeId      the child node
+     * @param fromNode      the parent node
+     * @param toNode        the child node
      */
-    public void logIncrementAlterations (int swtId, int fromNodeId, int toNodeId) {
+    public void logIncrementAlterations (InfraNode fromNode, InfraNode toNode) {
         this.alterationCounter.addSample(1);
+        int swtId = this.getRoutingSwitchId(fromNode, toNode);
 
         long value = this.alterationsPerSwitchRound.get(swtId);
         this.alterationsPerSwitchRound.set(swtId, value + 1);
 
-        long fromNodeAlterations = this.alterationsPerNodeRound.get(fromNodeId);
-        this.alterationsPerNodeRound.set(fromNodeId, fromNodeAlterations + 1);
+        long fromNodeAlterations = this.alterationsPerNodeRound.get(fromNode.getId());
+        this.alterationsPerNodeRound.set(fromNode.getId(), fromNodeAlterations + 1);
 
-        long toNodeAlterations = this.alterationsPerNodeRound.get(toNodeId);
-        this.alterationsPerNodeRound.set(toNodeId, toNodeAlterations + 1);
+        long toNodeAlterations = this.alterationsPerNodeRound.get(toNode.getId());
+        this.alterationsPerNodeRound.set(toNode.getId(), toNodeAlterations + 1);
 
     }
 
@@ -171,17 +224,17 @@ public abstract class LoggerLayer extends SynchronizerLayer {
      * @param netFromNodeId the node that started the routing
      * @param netToNodeId   the node that received the message
      */
-    public void logIncrementRouting (int netFromNodeId, int netToNodeId) {
-        int swtId = this.getRoutingSwitchId(netFromNodeId, netToNodeId);
+    public void logIncrementRouting (InfraNode fromNode, InfraNode toNode) {
+        int swtId = this.getRoutingSwitchId(fromNode, toNode);
 
         long switchRouting = this.routingsPerSwitchRound.get(swtId);
         this.routingsPerSwitchRound.set(swtId, switchRouting + 1);
 
-        long fromNodeRouting = this.routingsPerNodeRound.get(netFromNodeId - 1);
-        this.routingsPerNodeRound.set(netFromNodeId - 1, fromNodeRouting + 1);
+        long fromNodeRouting = this.routingsPerNodeRound.get(fromNode.getId());
+        this.routingsPerNodeRound.set(fromNode.getId(), fromNodeRouting + 1);
 
-        long toNodeRouting = this.routingsPerNodeRound.get(netToNodeId - 1);
-        this.routingsPerNodeRound.set(netToNodeId - 1, toNodeRouting + 1);
+        long toNodeRouting = this.routingsPerNodeRound.get(toNode.getId());
+        this.routingsPerNodeRound.set(toNode.getId(), toNodeRouting + 1);
 
     }
 
