@@ -11,6 +11,7 @@ import projects.opticalNet.nodes.models.InfraNode;
  * This abstract class is responsible to log the simulation results
  */
 public abstract class LoggerLayer extends SynchronizerLayer {
+    protected String projectName;
 
     private DataSeries rotationCounter = new DataSeries();
     private DataSeries alterationCounter = new DataSeries();
@@ -79,10 +80,10 @@ public abstract class LoggerLayer extends SynchronizerLayer {
      */
     @Override
     public void logRoundResults () {
-        this.rotationPerRound.logln(this.currentRoundRotations + "");
-        this.routingPerRound.logln(this.getCurrentRoundRoutings() + "");
-        this.alterationPerRound.logln(this.getCurrentRoundAlterations() + "");
-        this.activeRequestsPerRound.logln(this.activeRequests + "");
+        this.rotationPerRound.logln(this.projectName + "," + this.currentRoundRotations);
+        this.routingPerRound.logln(this.projectName + "," + this.getCurrentRoundRoutings());
+        this.alterationPerRound.logln(this.projectName + "," + this.getCurrentRoundAlterations());
+        this.activeRequestsPerRound.logln(this.projectName + "," + this.activeRequests);
         this.activeRequestsCounter.addSample(this.activeRequests);
 
         this.logSparceLogger(this.nodesRoutingsPerRound, this.routingsPerNodeRound);
@@ -126,7 +127,9 @@ public abstract class LoggerLayer extends SynchronizerLayer {
         for (int indx = 0; indx < logArray.size(); indx++) {
             Long value = logArray.get(indx);
             if (value != 0) {
-                logger.logln(this.getCurrentRound() + " " + indx + " " + value);
+                logger.logln(
+                    this.projectName + "," + this.getCurrentRound() + "," + indx + "," + value
+                );
             }
 
         }
@@ -245,7 +248,7 @@ public abstract class LoggerLayer extends SynchronizerLayer {
      */
     public void logMessageRouting (long num) {
         this.messageRoutingCounter.addSample(num);
-        this.routingPerMessage.logln(num + "");
+        this.routingPerMessage.logln(this.projectName + "," + num);
 
     }
 
@@ -455,11 +458,31 @@ public abstract class LoggerLayer extends SynchronizerLayer {
         this.throughputLog = Logging.getLogger(path + "/throughput.txt");
         this.operationsLog = Logging.getLogger(path + "/operations.txt");
         this.sequenceLog = Logging.getLogger(path + "/sequence.txt");
+
+        this.initSimulationLog();
     }
+
+    public void initSimulationLog () {
+
+        this.rotationPerRound.logln("project,rotation");
+        this.routingPerRound.logln("project,routing");
+        this.alterationPerRound.logln("project,alteration");
+        this.activeRequestsPerRound.logln("project,active_requests");
+
+        this.nodesRoutingsPerRound.logln("project,round,node,routing");
+        this.nodesRotationsPerRound.logln("project,round,node,rotation");
+        this.nodesAlterationsPerRound.logln("project,round,node,alteration");
+
+        this.switchesRoutingsPerRound.logln("project,round,switch,routing");
+        this.switchesActivePortsPerRound.logln("project,round,switch,active_ports");
+        this.switchesAlterationsPerRound.logln("project,round,switch,alteration");
+
+        this.routingPerMessage.logln("project,round,message,times");
+    }
+
     /* End of Auxiliary Functions */
 
     /* Reset counter Functions */
-
     /**
      * Called by the end of round to reset round related information.
      */
