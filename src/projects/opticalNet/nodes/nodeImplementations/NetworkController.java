@@ -404,7 +404,7 @@ public abstract class NetworkController extends LoggerLayer {
      * @param c         old child of x
      */
     private void zigZigAlterations (InfraNode w, InfraNode z, InfraNode y, InfraNode c) {
-        this.logRotation(1, w, z, y, c);
+        this.logRotation(1);
         this.logZigZigUpdateActivePorts(w, z, y, c);
 
         this.mapConn(z, c, y);
@@ -428,7 +428,7 @@ public abstract class NetworkController extends LoggerLayer {
     private void zigZagAlterations (
         InfraNode w, InfraNode z, InfraNode y, InfraNode x, InfraNode b, InfraNode c
     ) {
-        this.logRotation(2, w, z, y, x, b, c);
+        this.logRotation(2);
         this.logZigZagUpdateActivePorts(w, z, y, x, b, c);
 
         this.mapConn(y, b, x);
