@@ -5,3 +5,5 @@ input/
 input
 logs/
 src/projects/defaultProject/appConfig.xml
+*.pyc
+**/*-checkpoint*
