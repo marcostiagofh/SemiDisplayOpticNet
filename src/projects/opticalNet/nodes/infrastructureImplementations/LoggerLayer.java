@@ -75,7 +75,11 @@ public abstract class LoggerLayer extends SynchronizerLayer {
 
         this.logSparceLogger(this.switchesActivePortsPerRound, this.activePortsPerSwitchRound);
 
-        this.throughputLog.logln(this.projectName + "," + this.roundCompletedRequests);
+        if (this.roundCompletedRequests > 0) {
+            this.throughputLog.logln(
+                this.projectName + "," + this.getCurrentRound() + "," + this.roundCompletedRequests
+            );
+        }
 
         this.resetRoundInfo();
 
@@ -354,7 +358,7 @@ public abstract class LoggerLayer extends SynchronizerLayer {
      * Reports the simulation info, the number and size of clusters of type 1 and 2.
      */
     public void printSimulationInfo () {
-        this.simulationLog.logln(this.getCurrentRound() + "");
+        this.simulationLog.logln("num-rounds," + this.getCurrentRound());
         this.simulationLog.logln(
             "num-cluster-1," + this.getNumClustersType1() +
             ",size-cluster-1," + this.getSwitchesPerClusterType1()
@@ -403,7 +407,7 @@ public abstract class LoggerLayer extends SynchronizerLayer {
         this.switchesActivePortsPerRound.logln("project,round,switch,active_ports");
 
         this.routingPerMessage.logln("project,times");
-        this.throughputLog.logln("project,completed_requests");
+        this.throughputLog.logln("project,round,completed_requests");
         this.activeRequestsPerRound.logln("project,active_requests");
     }
 
