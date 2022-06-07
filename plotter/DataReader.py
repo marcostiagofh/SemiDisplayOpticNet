@@ -41,6 +41,10 @@ class DataReader:
         return self.num_switches_1 + self.num_switches_2
 
     @property
+    def node_ports (self) -> int:
+        return 1 + self.num_switches_1
+
+    @property
     def file_path (self) -> Path:
         return Path(
             Path(__file__).parent.parent /
@@ -90,13 +94,13 @@ class DataReader:
 
     def read_total_alterations (
         self, alterations: bool = False, nodes_alterations: bool = False,
-        switches_alterations: bool = False, altered_ports: bool = False, sims: int = None
+        switch_alterations: bool = False, altered_ports: bool = False, sims: int = None
     ) -> list[np.ndarray]:
         sims = list(range(1, self.num_sims + 1)) if sims is None else [ sims ]
-        alt_round = np.zeros(self.max_rounds) if alterations else None
-        alt_node = np.zeros(self.num_nodes) if nodes_alterations else None
-        alt_switch = np.zeros(self.num_switches) if switches_alterations else None
-        alt_ports = np.zeros((self.num_switches, self.switch_ports)) if altered_ports else None
+        alt_round = np.zeros(self.max_rounds) if alterations else []
+        alt_node = np.zeros(self.num_nodes) if nodes_alterations else []
+        alt_switch = np.zeros(self.num_switches) if switch_alterations else []
+        alt_ports = np.zeros((self.num_switches, self.switch_ports)) if altered_ports else []
 
         for sim_id in sims:
             file_df = pd.read_csv(self.file_path / f"{sim_id}/alterations_per_round.csv")
@@ -108,7 +112,7 @@ class DataReader:
                 if nodes_alterations:
                     alt_node[row["node"]] += 1
 
-                if switches_alterations:
+                if switch_alterations:
                     alt_switch[row["switch"]] += 1
 
                 if altered_ports:
@@ -118,19 +122,19 @@ class DataReader:
         ret.append(alt_ports / len(sims)) if altered_ports else None
         ret.append(alt_round / (len(sims) * 2)) if alterations else None
         ret.append(alt_node / len(sims)) if nodes_alterations else None
-        ret.append(alt_switch / len(sims)) if switches_alterations else None
+        ret.append(alt_switch / len(sims)) if switch_alterations else None
 
         return ret
 
     def read_total_routings (
-        self, routings: bool = False, nodes_routings: bool = False, switches_routings: bool = False,
+        self, routings: bool = False, nodes_routings: bool = False, switch_routings: bool = False,
         routing_ports: bool = False, sims: int = None
     ) -> list[np.ndarray]:
         sims = list(range(1, self.num_sims + 1)) if sims is None else [ sims ]
         rout_round = np.zeros(self.max_rounds) if routings else []
         rout_node = np.zeros(self.num_nodes) if nodes_routings else []
-        rout_switch = np.zeros(self.num_switches) if switches_routings else []
-        rout_ports = np.zeros((self.num_switches, self.switch_ports)) if routing_ports else None
+        rout_switch = np.zeros(self.num_switches) if switch_routings else []
+        rout_ports = np.zeros((self.num_switches, self.switch_ports)) if routing_ports else []
 
         for sim_id in sims:
             file_df = pd.read_csv(self.file_path / f"{sim_id}/routings_per_round.csv")
@@ -143,7 +147,7 @@ class DataReader:
                     rout_node[row["from_node"]] += 1
                     rout_node[row["to_node"]] += 1
 
-                if switches_routings:
+                if switch_routings:
                     rout_switch[row["switch"]] += 1
 
                 if routing_ports:
@@ -153,42 +157,64 @@ class DataReader:
         ret.append(rout_round / len(sims)) if routings else None
         ret.append(rout_ports / len(sims)) if routing_ports else None
         ret.append(rout_node / len(sims)) if nodes_routings else None
-        ret.append(rout_switch / len(sims)) if switches_routings else None
+        ret.append(rout_switch / len(sims)) if switch_routings else None
 
         return ret
 
-    def read_altered_ports (self, sims: int = None) -> list[np.ndarray]:
+    def read_altered_ports (
+        self, per_node: bool = False, per_switch: bool = False, sims: int = None
+    ) -> list[np.ndarray]:
         sims = list(range(1, self.num_sims + 1)) if sims is None else [ sims ]
-        alt_switch = np.zeros((self.num_switches, self.switch_ports))
+        alt_node = np.zeros((self.num_nodes, self.num_switches)) if per_node else []
+        alt_switch = np.zeros((self.num_switches, self.switch_ports)) if per_switch else []
 
         for sim_id in sims:
             file_df = pd.read_csv(self.file_path / f"{sim_id}/alterations_per_round.csv")
             ports_df = file_df.drop_duplicates(subset=["node", "switch"])
 
             for _, row in ports_df.iterrows():
-                alt_switch[ row["switch"], row["node"] % self.switch_ports ] += 1
+                if per_switch:
+                    alt_switch[ row["switch"], row["node"] % self.switch_ports ] += 1
 
-        return alt_switch / len(sims)
+                if per_node:
+                    alt_node[ row["node"], row["switch"] ] += 1
 
-    def read_routing_ports (self, sims: int = None) -> np.ndarray:
+        ret = []
+        ret.append(alt_switch / len(sims)) if per_switch else None
+        ret.append(alt_node / (len(sims) * self.node_ports)) if per_node else None
+
+        return ret
+
+    def read_routing_ports (
+        self, per_node: bool = False, per_switch: bool = False, sims: int = None
+    ) -> list[np.ndarray]:
         sims = list(range(1, self.num_sims + 1)) if sims is None else [ sims ]
-        rout_switch = np.zeros((self.num_switches, self.switch_ports))
+        rout_node = np.zeros((self.num_nodes, self.num_switches)) if per_node else []
+        rout_switch = np.zeros((self.num_switches, self.switch_ports)) if per_switch else []
 
         for sim_id in sims:
             file_df = pd.read_csv(self.file_path / f"{sim_id}/routings_per_round.csv")
             ports_df = file_df.drop_duplicates(subset=["from_node", "switch"])
 
             for _, row in ports_df.iterrows():
-                rout_switch[row["switch"], row["from_node"] % self.switch_ports ] += 1
+                if per_switch:
+                    rout_switch[row["switch"], row["from_node"] % self.switch_ports ] += 1
 
-        return rout_switch / len(sims)
+                if per_node:
+                    rout_node[ row["node"], row["switch"]] += 1
+
+        ret = []
+        ret.append(rout_switch / len(sims)) if per_switch else None
+        ret.append(rout_node / (len(sims) * self.node_ports)) if per_node else None
+
+        return ret
 
     def read_routings (
-        self, nodes_routings: bool = False, switches_routings: bool = False, sims: int = None
+        self, nodes_routings: bool = False, switch_routings: bool = False, sims: int = None
     ) -> list[np.ndarray]:
         sims = list(range(1, self.num_sims + 1)) if sims is None else [ sims ]
         rout_node = np.zeros((self.num_nodes, self.max_rounds)) if nodes_routings else []
-        rout_switch = np.zeros((self.num_switches, self.max_rounds)) if switches_routings else []
+        rout_switch = np.zeros((self.num_switches, self.max_rounds)) if switch_routings else []
 
         for sim_id in sims:
             file_df = pd.read_csv(self.file_path / f"{sim_id}/routings_per_round.csv")
@@ -198,21 +224,23 @@ class DataReader:
                     rout_node[row["from_node"], row["round"]] += 1
                     rout_node[row["to_node"], row["round"]] += 1
 
-                if switches_routings:
+                if switch_routings:
                     rout_switch[row["switch"], row["round"]] += 1
 
         ret = []
         ret.append(rout_node / len(sims)) if nodes_routings else None
-        ret.append(rout_switch / len(sims)) if switches_routings else None
+        ret.append(rout_switch / len(sims)) if switch_routings else None
 
         return ret
 
     def read_alterations (
-        self, nodes_alterations: bool = False, switches_alterations: bool = False, sims: int = None
+        self, nodes_alterations: bool = False, switch_alterations: bool = False, sims: int = None
     ) -> list[np.ndarray]:
         sims = list(range(1, self.num_sims + 1)) if sims is None else [ sims ]
         alt_node = np.zeros((self.num_nodes, self.max_rounds)) if nodes_alterations else None
-        alt_switch = np.zeros((self.num_switches, self.max_rounds)) if switches_alterations else None
+        alt_switch = np.zeros(
+            (self.num_switches, self.max_rounds)
+        ) if switch_alterations else None
 
         for sim_id in sims:
             file_df = pd.read_csv(self.file_path / f"{sim_id}/alterations_per_round.csv")
@@ -221,12 +249,12 @@ class DataReader:
                 if nodes_alterations:
                     alt_node[row["node"], row["round"]] += 1
 
-                if switches_alterations:
+                if switch_alterations:
                     alt_switch[row["switch"], row["round"]] += 1
 
         ret = []
         ret.append(alt_node / len(sims)) if nodes_alterations else None
-        ret.append(alt_switch / (len(sims) * 2)) if switches_alterations else None
+        ret.append(alt_switch / (len(sims) * 2)) if switch_alterations else None
 
         return ret
 
