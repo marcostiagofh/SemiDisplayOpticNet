@@ -27,9 +27,9 @@ public abstract class LoggerLayer extends SynchronizerLayer {
     private long completedRequests = 0;
 
     // LOGS
-    private Logging rotationPerRound;
-    private Logging routingPerRound;
-    private Logging alterationPerRound;
+    private Logging rotationLog;
+    private Logging routingLog;
+    private Logging alterationLog;
     private Logging activeRequestsPerRound;
 
     private Logging switchesActivePortsPerRound;
@@ -40,7 +40,6 @@ public abstract class LoggerLayer extends SynchronizerLayer {
 
     private Logging simulationLog;
     private Logging operationsLog;
-    private Logging sequenceLog;
 
     public abstract int getNumNodes ();
 
@@ -69,7 +68,7 @@ public abstract class LoggerLayer extends SynchronizerLayer {
      */
     @Override
     public void logRoundResults () {
-        this.rotationPerRound.logln(this.projectName + "," + this.currentRoundRotations);
+        this.rotationLog.logln(this.projectName + "," + this.currentRoundRotations);
         this.activeRequestsPerRound.logln(this.projectName + "," + this.activeRequests);
         this.activeRequestsCounter.addSample(this.activeRequests);
 
@@ -195,12 +194,12 @@ public abstract class LoggerLayer extends SynchronizerLayer {
         this.alterationCounter.addSample(1);
 
         int swtId = this.getRoutingSwitchId(fromNode, toNode);
-        this.alterationPerRound.logln(
+        this.alterationLog.logln(
             this.projectName + "," + this.getCurrentRound() + "," + fromNode.getId() + "," + swtId
         );
 
         int altSwtId = this.getRoutingSwitchId(toNode, fromNode);
-        this.alterationPerRound.logln(
+        this.alterationLog.logln(
             this.projectName + "," + this.getCurrentRound() + "," + toNode.getId() + "," + altSwtId
         );
     }
@@ -214,7 +213,7 @@ public abstract class LoggerLayer extends SynchronizerLayer {
     public void logIncrementRouting (InfraNode fromNode, InfraNode toNode) {
         int swtId = this.getRoutingSwitchId(fromNode, toNode);
 
-        this.routingPerRound.logln(
+        this.routingLog.logln(
             this.projectName + "," + this.getCurrentRound() + "," +
             fromNode.getId() + "," + toNode.getId() + "," + swtId
         );
@@ -255,11 +254,6 @@ public abstract class LoggerLayer extends SynchronizerLayer {
     public void logIncrementCompletedRequests () {
         this.roundCompletedRequests++;
         this.completedRequests++;
-
-    }
-
-    public void addSequence (int src, int dst) {
-        this.sequenceLog.logln(src + "," + dst);
 
     }
 
@@ -379,9 +373,9 @@ public abstract class LoggerLayer extends SynchronizerLayer {
      * @param path      path to folder where the logger files are stored
      */
     public void setLogPath (String path) {
-        this.rotationPerRound = Logging.getLogger(path + "/rotations_per_round.csv");
-        this.routingPerRound = Logging.getLogger(path + "/routings_per_round.csv");
-        this.alterationPerRound = Logging.getLogger(path + "/alterations_per_round.csv");
+        this.rotationLog = Logging.getLogger(path + "/rotations.csv");
+        this.routingLog = Logging.getLogger(path + "/routings.csv");
+        this.alterationLog = Logging.getLogger(path + "/alterations.csv");
         this.activeRequestsPerRound = Logging.getLogger(path + "/active_requests_per_round.csv");
 
         this.switchesActivePortsPerRound = Logging.getLogger(
@@ -393,16 +387,18 @@ public abstract class LoggerLayer extends SynchronizerLayer {
         this.simulationLog = Logging.getLogger(path + "/simulation_info.txt");
         this.throughputLog = Logging.getLogger(path + "/throughput.csv");
         this.operationsLog = Logging.getLogger(path + "/operations.csv");
-        this.sequenceLog = Logging.getLogger(path + "/sequence.txt");
 
         this.initSimulationLog();
     }
 
+    /**
+     * Prints the collumn names for th log files
+     */
     public void initSimulationLog () {
-        this.rotationPerRound.logln("project,rotation");
+        this.rotationLog.logln("project,rotation");
 
-        this.routingPerRound.logln("project,round,from_node,to_node,switch");
-        this.alterationPerRound.logln("project,round,node,switch");
+        this.routingLog.logln("project,round,from_node,to_node,switch");
+        this.alterationLog.logln("project,round,node,switch");
 
         this.switchesActivePortsPerRound.logln("project,round,switch,active_ports");
 
