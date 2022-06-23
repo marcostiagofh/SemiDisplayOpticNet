@@ -1,9 +1,9 @@
 #! /usr/bin/env python
-
-import sys
 import os
-import threading
 import numpy
+import threading
+
+from util import check_sim
 
 # this file keep all completed experiments
 log_path = "./scripts/logs/"
@@ -12,86 +12,105 @@ log_file = "pfabLog.txt"
 if not os.path.exists(log_path):
     os.makedirs(log_path)
 
-# read log file    
+# read log file
 open(os.path.join(log_path, log_file), 'a').close()
-    
 log = set(line.rstrip() for line in open(os.path.join(log_path, log_file), 'r'))
 
 # open log file for append and create a lock variable
 file = open("scripts/logs/pfabLog.txt", "a+")
 file_lock = threading.Lock()
 
-projects = ["optnet", "cbnet", "splaynet", "displaynet", "semisplaynet", "seqsemisplaynet", "simplenet"]
-# project = sys.argv[1]
+projects = [ "cbOptNet" ]
 
 # parameters of simulation
+num_nodes = [ 144 ]
+switch_sizes = [ 16, 32, 64, 128, -1 ]
 datasets = ["trace_0_1", "trace_0_5", "trace_0_8"]
+sequential = [ "false" ]
 
 #number of threads to simulation
-numThreads = 10
+num_threads = 2
 
-java = 'java'
-classpath = 'binaries/bin:binaries/jdom.jar'
-program = 'sinalgo.Run'
-args = ['-batch', "-project"]
-command = '{} -cp {} {} {}'.format(java, classpath, program, ' '.join(args))
+java = "java"
+classpath = "binaries/bin:binaries/jdom.jar"
+program = "sinalgo.Run"
+args = " ".join(["-batch", "-project"])
+base_cmd = f"{java} -cp {classpath} {program} {args}"
 
 #extends thread class
-class myThread (threading.Thread):
-    def __init__(self, threadID, commands):
+class Threader (threading.Thread):
+    threadID: int
+    commands: list[str]
+
+    def __init__ (self, threadID: int, commands: list[str]) -> None:
         threading.Thread.__init__(self)
         self.threadID = threadID
         self.commands = commands
-    def run(self):
-        execute(self.commands)
 
+    def run(self) -> None:
+        for command in self.commands:
+            self.execute(command)
 
-def execute(commands):
-    for command in commands:
+    def execute (self, command) -> None:
         print(command)
         os.system(command)
 
-        file_lock.acquire()
-        file.write(command + "\n")
-        file_lock.release()
+        sim_file = command.split(" > ")[-1]
+        if not check_sim(sim_file):
+            file_lock.acquire()
+            file.write(f"Error with {command}\n")
+            file_lock.release()
 
+        else:
+            os.remove(sim_file)
 
 #for each project executed
 for project in projects:
-
-    #list of commands to be executed
     commands = []
 
     # generate all possibles inputs for simulation
     for dataset in datasets:
-        input = 'input/p_fabDS/{}.txt'.format(dataset)
-        output = 'output/pfab/{}/{}'.format(project, dataset)
-        cmd = '{} {} -overwrite input={} output={} AutoStart=true > /dev/null'.format(command, project, input, output)
+        for num_node in num_nodes:
+            for sequentiality in sequential:
+                    for switch_size in switch_sizes:
+                        if switch_size == -1:
+                            switch_size = 2 * num_node
+                        input_file = f"input/p_fabDS/{dataset}.txt"
+                        output_path = f"output/pfabDS-{dataset}/{project}_{num_node}/{switch_size}/1/"
+                        sim_stream = f"logs/{output_path}sim.txt"
 
-        # not executed yet
-        if cmd not in log:
-            commands.append(cmd)
+                        if not os.path.exists(f"logs/{output_path}"):
+                            os.makedirs(f"logs/{output_path}")
 
-    numCommands = len(commands)
+                        cmd = (
+                            f"time --verbose {base_cmd} {project} -overwrite input={input_file} " \
+                            f"switchSize={switch_size} output={output_path} " \
+                            f"isSequential={sequentiality} AutoStart=true > {sim_stream}"
+                        )
+
+                        print(cmd)
+                        commands.append(cmd)
+
+    num_commands = len(commands)
 
     # if number of threads is greater than pairsLenght
     # just makes number of threads equals to pairsLenght
-    if numCommands == 0:
+    if num_commands == 0:
         print("No experiment to be executed for project {}".format(project))
         exit
-    elif numThreads > numCommands:
-        numThreads = numCommands
+    elif num_threads > num_commands:
+        num_threads = num_commands
 
     # split task for threads
-    size = numCommands // numThreads
-    chunks =  numpy.array_split(commands, numThreads)
+    size = num_commands // num_threads
+    chunks =  numpy.array_split(commands, num_threads)
 
     threads = []
     threadID = 1
 
     # Create new threads
-    for idx in range(0, numThreads):
-        thread = myThread(threadID, chunks[idx])
+    for idx in range(0, num_threads):
+        thread = Threader(threadID, chunks[idx])
         thread.start()
         threads.append(thread)
         threadID += 1

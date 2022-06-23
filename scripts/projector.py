@@ -1,9 +1,9 @@
 #!/usr/bin/env python
-
-import sys
 import os
-import threading
 import numpy
+import threading
+
+from util import check_sim
 
 # this file keep all completed experiments
 log_path = "./scripts/logs/"
@@ -23,9 +23,9 @@ file_lock = threading.Lock()
 projects = [ "cbOptNet" ]
 
 # parameters of simulation
-num_nodes = [ 1024 ]
-datasets = [ "newTor" ]
-switch_sizes = [ -1 ]
+num_nodes = [ 128, 256, 512, 1024 ]
+datasets = [ "tor" ]
+switch_sizes = [ 16, 32, 64, 128, 256, -1 ]
 sequential = [ "false" ]
 num_simulations = 30
 
@@ -38,25 +38,31 @@ program = "sinalgo.Run"
 args = " ".join(["-batch", "-project"])
 base_cmd = f"{java} -cp {classpath} {program} {args}"
 
-#extends thread class
-class myThread (threading.Thread):
+class Threader (threading.Thread):
+    threadID: int
+    commands: list[str]
+
     def __init__ (self, threadID: int, commands: list[str]) -> None:
         threading.Thread.__init__(self)
         self.threadID = threadID
         self.commands = commands
 
-    def run (self) -> None:
-        execute(self.commands)
+    def run(self) -> None:
+        for command in self.commands:
+            self.execute(command)
 
-def execute (commands) -> None:
-    for command in commands:
+    def execute (self, command) -> None:
         print(command)
         os.system(command)
 
-        file_lock.acquire()
-        file.write(command + "\n")
-        file_lock.release()
+        sim_file = command.split(" > ")[-1]
+        if not check_sim(sim_file):
+            file_lock.acquire()
+            file.write(f"Error with {command}\n")
+            file_lock.release()
 
+        else:
+            os.remove(sim_file)
 
 for project in projects:
     commands = []
@@ -70,20 +76,35 @@ for project in projects:
                         if switch_size == -1:
                             switch_size = 2 * num_node
 
-                        elif switch_size <= 16 and num_node >= 512:
+                        elif switch_size == 256 and num_node == 128:
                             continue
 
-                        elif switch_size <= 8 and num_node >= 256:
+                        elif switch_size <= 16 and num_node >= 256:
                             continue
+
+                        elif switch_size <= 64 and num_node >= 512:
+                            continue
+
+
+                        input_file = (
+                            f"input/projectorDS/{dataset}/{num_node}/{sim_id}_tor_{num_node}.txt"
+                        )
+                        output_path = (
+                            f"output/{dataset}/{project}_{num_node}/{switch_size}/{sim_id}/"
+                        )
+                        sim_stream = f"logs/{output_path}sim.txt"
+
+                        if not os.path.exists(f"logs/{output_path}"):
+                            os.makedirs(f"logs/{output_path}")
 
                         cmd = (
-                            f"./scripts/compress-results.sh \"{base_cmd}\" {project} {dataset} {num_node} " \
-                            f"{sim_id} {switch_size} {sequentiality}"
+                            f"time --verbose {base_cmd} {project} -overwrite input={input_file} " \
+                            f"switchSize={switch_size} output={output_path} " \
+                            f"isSequential={sequentiality} AutoStart=true > {sim_stream}"
                         )
 
                         print(cmd)
-                        if cmd not in log:
-                            commands.append(cmd)
+                        commands.append(cmd)
 
     num_commands = len(commands)
 
@@ -105,7 +126,7 @@ for project in projects:
 
     # Create new threads
     for idx in range(0, num_threads):
-        thread = myThread(threadID, chunks[idx])
+        thread = Threader(threadID, chunks[idx])
         thread.start()
         threads.append(thread)
         threadID += 1
