@@ -24,7 +24,7 @@ projects = [ "cbOptNet" ]
 
 # parameters of simulation
 num_nodes = [ 367 ]
-datasets = [ "datasetC_pairs" ]
+datasets = [ "datasetA_pairs", "datasetC_pairs" ]
 switch_sizes = [ 16, 32, 64, -1 ]
 sequential = [ "false" ]
 
@@ -76,10 +76,12 @@ for project in projects:
             for switch_size in switch_sizes:
                 for sequentiality in sequential:
                     if switch_size == -1:
-                        switch_size = 2 * num_nodes
+                        switch_size = 2 * num_node
 
                     input_file = f"input/facebookDS/{dataset}.txt"
-                    output_path = f"output/facebookDS/{project}_{num_node}/{switch_size}/1/"
+                    output_path = (
+                        f"output/facebookDS-{dataset}/{project}_{num_node}/{switch_size}/1/"
+                    )
                     sim_stream = f"logs/{output_path}sim.txt"
 
                     if not os.path.exists(f"logs/{output_path}"):

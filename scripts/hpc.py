@@ -25,9 +25,7 @@ projects = [ "cbOptNet" ]
 # parameters of simulation
 num_nodes = [ 1024 ] # Fixed number of nodes
 datasets = [
-    "cesar_mocfe",
     "cesar_nekbone",
-    "exact_boxlib_cns_nospec_large",
     "exact_boxlib_multigrid_c_large"
 ]
 switch_sizes = [ 256, 512, 1024, -1 ]
@@ -77,7 +75,7 @@ for project in projects:
             for sequentiality in sequential:
                 for switch_size in switch_sizes:
                     if switch_size == -1:
-                        switch_size = 2 * num_nodes
+                        switch_size = 2 * num_node
 
                     input_file = (f"input/hpcDS/{dataset}.txt")
                     output_path = (f"output/hpcDS-{dataset}/{project}_{num_node}/{switch_size}/1/")

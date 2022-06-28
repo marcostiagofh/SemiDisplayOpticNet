@@ -75,6 +75,7 @@ for project in projects:
                     for switch_size in switch_sizes:
                         if switch_size == -1:
                             switch_size = 2 * num_node
+
                         input_file = f"input/p_fabDS/{dataset}.txt"
                         output_path = f"output/pfabDS-{dataset}/{project}_{num_node}/{switch_size}/1/"
                         sim_stream = f"logs/{output_path}sim.txt"
