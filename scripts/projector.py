@@ -26,6 +26,7 @@ projects = [ "cbOptNet" ]
 num_nodes = [ 128, 256, 512, 1024 ]
 datasets = [ "tor" ]
 switch_sizes = [ 16, 32, 64, 128, 256, -1 ]
+mus = [ 4 ]
 sequential = [ "false" ]
 num_simulations = 30
 
@@ -61,50 +62,48 @@ class Threader (threading.Thread):
             file.write(f"Error with {command}\n")
             file_lock.release()
 
-        else:
-            os.remove(sim_file)
-
 for project in projects:
     commands = []
 
     # generate all possibles inputs for simulation
     for dataset in datasets:
         for num_node in num_nodes:
-            for sequentiality in sequential:
-                for sim_id in range(1, num_simulations + 1):
-                    for switch_size in switch_sizes:
-                        if switch_size == -1:
-                            switch_size = 2 * num_node
+            for sim_id in range(1, num_simulations + 1):
+                for switch_size in switch_sizes:
+                    for sequentiality in sequential:
+                        for mu in mus:
+                            if switch_size == -1:
+                                switch_size = 2 * num_node
 
-                        elif switch_size == 256 and num_node == 128:
-                            continue
+                            elif switch_size == 256 and num_node == 128:
+                                continue
 
-                        elif switch_size <= 16 and num_node >= 256:
-                            continue
+                            elif switch_size <= 16 and num_node >= 256:
+                                continue
 
-                        elif switch_size <= 64 and num_node >= 512:
-                            continue
+                            elif switch_size <= 64 and num_node >= 512:
+                                continue
 
 
-                        input_file = (
-                            f"input/projectorDS/{dataset}/{num_node}/{sim_id}_tor_{num_node}.txt"
-                        )
-                        output_path = (
-                            f"output/{dataset}/{project}_{num_node}/{switch_size}/{sim_id}/"
-                        )
-                        sim_stream = f"logs/{output_path}sim.txt"
+                            input_file = (
+                                f"input/projectorDS/{dataset}/{num_node}/{sim_id}_tor_{num_node}.txt"
+                            )
+                            output_path = (
+                                f"output/{dataset}/{project}_{num_node}/{switch_size}/{mu}/{sim_id}/"
+                            )
+                            sim_stream = f"logs/{output_path}sim.txt"
 
-                        if not os.path.exists(f"logs/{output_path}"):
-                            os.makedirs(f"logs/{output_path}")
+                            if not os.path.exists(f"logs/{output_path}"):
+                                os.makedirs(f"logs/{output_path}")
 
-                        cmd = (
-                            f"time --verbose {base_cmd} {project} -overwrite input={input_file} " \
-                            f"switchSize={switch_size} output={output_path} " \
-                            f"isSequential={sequentiality} AutoStart=true > {sim_stream}"
-                        )
+                            cmd = (
+                                f"time --verbose {base_cmd} {project} -overwrite input={input_file} " \
+                                f"switchSize={switch_size} mu={mu} output={output_path} " \
+                                f"isSequential={sequentiality} AutoStart=true > {sim_stream}"
+                            )
 
-                        print(cmd)
-                        commands.append(cmd)
+                            print(cmd)
+                            commands.append(cmd)
 
     num_commands = len(commands)
 

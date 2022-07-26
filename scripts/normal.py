@@ -28,6 +28,7 @@ num_nodes = [ 128, 1024 ]
 std = [ 0.2, 0.8, 1.6, 3.2, 6.4 ]
 switch_sizes = [ 16, 32, 64, 128, 256, -1 ]
 sequential = [ "false" ]
+mus = [ 4 ]
 
 #number of threads to simulation
 num_threads = 2
@@ -62,47 +63,44 @@ class Threader (threading.Thread):
             file.write(f"Error with {command}\n")
             file_lock.release()
 
-        else:
-            os.remove(sim_file)
-
-
 #for each project executed
 for project in projects:
     commands = []
 
     # generate all possibles inputs for simulation
-    for num_node in num_nodes:
-        for dataset in std:
-            for sequentiality in sequential:
-                for switch_size in switch_sizes:
-                    if switch_size == -1:
-                        switch_size = 2 * num_node
+    for dataset in std:
+        for num_node in num_nodes:
+            for switch_size in switch_sizes:
+                for sequentiality in sequential:
+                    for mu in mus:
+                        if switch_size == -1:
+                            switch_size = 2 * num_node
 
-                    elif switch_size == 256 and num_nodes == 128:
-                        continue
+                        elif switch_size == 256 and num_nodes == 128:
+                            continue
 
-                    elif switch_size <= 16 and num_node >= 256:
-                        continue
+                        elif switch_size <= 16 and num_node >= 256:
+                            continue
 
-                    elif switch_size <= 64 and num_node >= 512:
-                        continue
+                        elif switch_size <= 64 and num_node >= 512:
+                            continue
 
-                    input_file = f"input/normalDS/{num_node}/{num_node}-{dataset}-std.txt"
-                    output_path = f"output/normalDS-{dataset}/{project}_{num_node}/{switch_size}/1/"
-                    sim_stream = f"logs/{output_path}sim.txt"
+                        input_file = f"input/normalDS/{num_node}/{num_node}-{dataset}-std.txt"
+                        output_path = f"output/normalDS-{dataset}/{project}_{num_node}/{switch_size}/1/"
+                        sim_stream = f"logs/{output_path}sim.txt"
 
 
-                    if not os.path.exists(f"logs/{output_path}"):
-                        os.makedirs(f"logs/{output_path}")
+                        if not os.path.exists(f"logs/{output_path}"):
+                            os.makedirs(f"logs/{output_path}")
 
-                    cmd = (
-                        f"time --verbose{base_cmd} {project} -overwrite input={input_file} " \
-                        f"switchSize={switch_size} output={output_path} " \
-                        f"isSequential={sequentiality} AutoStart=true > {sim_stream}"
-                    )
+                        cmd = (
+                            f"time --verbose {base_cmd} {project} -overwrite input={input_file} " \
+                            f"switchSize={switch_size} output={output_path} " \
+                            f"isSequential={sequentiality} AutoStart=true > {sim_stream}"
+                        )
 
-                    print(cmd)
-                    commands.append(cmd)
+                        print(cmd)
+                        commands.append(cmd)
 
     num_commands = len(commands)
 

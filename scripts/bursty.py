@@ -26,6 +26,7 @@ projects = [ "cbOptNet" ]
 num_nodes = [ 128, 256, 512, 1024 ]
 switch_sizes = [ 16, 32, 64, 128, 256, -1 ]
 sequential = [ "false" ]
+mus = [ 4 ]
 num_simulations = 30
 
 #x = [0.4, 0.8, 1]
@@ -66,9 +67,6 @@ class Threader (threading.Thread):
             file.write(f"Error with {command}\n")
             file_lock.release()
 
-        else:
-            os.remove(sim_file)
-
 #for each project executed
 for project in projects:
     commands = []
@@ -77,39 +75,40 @@ for project in projects:
     for num_node in num_nodes:
         for idx in x:
             for idy in y:
-                for sequentiality in sequential:
-                    for sim_id in range(1, num_simulations + 1):
-                        for switch_size in switch_sizes:
-                            if switch_size == -1:
-                                switch_size = 2 * num_node
+                for sim_id in range(1, num_simulations + 1):
+                    for switch_size in switch_sizes:
+                        for mu in mus:
+                            for sequentiality in sequential:
+                                if switch_size == -1:
+                                    switch_size = 2 * num_node
 
-                            elif switch_size == 256 and num_nodes == 128:
-                                continue
+                                elif switch_size == 256 and num_nodes == 128:
+                                    continue
 
-                            elif switch_size <= 16 and num_node >= 256:
-                                continue
+                                elif switch_size <= 16 and num_node >= 256:
+                                    continue
 
-                            elif switch_size <= 64 and num_node >= 512:
-                                continue
+                                elif switch_size <= 64 and num_node >= 512:
+                                    continue
 
-                            dataset = f"{idx}-{idy}"
-                            input_file = (
-                                f"input/bursty/{dataset}/{num_node}/{sim_id}_tor_{num_node}.txt"
-                            )
-                            output_path = (
-                                "output/bursty-" +
-                                f"{dataset}/{project}_{num_node}/{switch_size}/{sim_id}/"
-                            )
-                            sim_stream = f"logs/{output_path}sim.txt"
+                                dataset = f"{idx}-{idy}"
+                                input_file = (
+                                    f"input/bursty/{dataset}/{num_node}/{sim_id}_tor_{num_node}.txt"
+                                )
+                                output_path = (
+                                    "output/bursty-" +
+                                    f"{dataset}/{project}_{num_node}/{switch_size}/{mu}/{sim_id}/"
+                                )
+                                sim_stream = f"logs/{output_path}sim.txt"
 
-                            if not os.path.exists(f"logs/{output_path}"):
-                                os.makedirs(f"logs/{output_path}")
+                                if not os.path.exists(f"logs/{output_path}"):
+                                    os.makedirs(f"logs/{output_path}")
 
-                            cmd = (
-                                f"time --verbose {base_cmd} {project} -overwrite input=" \
-                                f"{input_file} switchSize={switch_size} output={output_path} " \
-                                f"isSequential={sequentiality} AutoStart=true > {sim_stream}"
-                            )
+                                cmd = (
+                                    f"time --verbose {base_cmd} {project} -overwrite mu={mu} input=" \
+                                    f"{input_file} switchSize={switch_size} output={output_path} " \
+                                    f"isSequential={sequentiality} AutoStart=true > {sim_stream}"
+                                )
 
                             print(cmd)
                             commands.append(cmd)

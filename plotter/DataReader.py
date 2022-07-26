@@ -11,6 +11,7 @@ class DataReader:
     num_nodes: int = dc.field(init=True)
     switch_size: int = dc.field(init=True)
     num_sims: int = dc.field(init=True)
+    mu: int = dc.field(init=True, default=None)
     switch_ports: int = dc.field(init=False)
     num_switches_1: int = dc.field(init=False)
     num_switches_2: int = dc.field(init=False)
@@ -20,7 +21,9 @@ class DataReader:
         self.max_rounds = -1
         for sim_id in range(1, self.num_sims + 1):
             with open(self.file_path / f"{sim_id}/simulation_info.txt") as sim_file:
-                self.max_rounds = max(self.max_rounds, int(sim_file.readline().split(",")[1]))
+                self.max_rounds = max(
+                    self.max_rounds, int(sim_file.readline().split(",")[1])
+                )
 
         with open(self.file_path / f"{sim_id}/simulation_info.txt") as sim_file:
             sim_file.readline()
@@ -48,7 +51,7 @@ class DataReader:
     def file_path (self) -> Path:
         return Path(
             Path(__file__).parent.parent /
-            f"logs/output/{self.dataset}/{self.project}_{self.num_nodes}/{self.switch_size}"
+            f"logs/output/{self.dataset}/{self.project}_{self.num_nodes}/{self.switch_size}/{self.mu}/"
         )
 
     def cdf_active_switches (self) -> np.ndarray:

@@ -27,6 +27,7 @@ num_nodes = [ 144 ]
 switch_sizes = [ 16, 32, 64, 128, -1 ]
 datasets = ["trace_0_1", "trace_0_5", "trace_0_8"]
 sequential = [ "false" ]
+mus = [ 4 ]
 
 #number of threads to simulation
 num_threads = 2
@@ -61,9 +62,6 @@ class Threader (threading.Thread):
             file.write(f"Error with {command}\n")
             file_lock.release()
 
-        else:
-            os.remove(sim_file)
-
 #for each project executed
 for project in projects:
     commands = []
@@ -71,13 +69,13 @@ for project in projects:
     # generate all possibles inputs for simulation
     for dataset in datasets:
         for num_node in num_nodes:
-            for sequentiality in sequential:
-                    for switch_size in switch_sizes:
+            for switch_size in switch_sizes:
+                for sequentiality in sequential:
+                    for mu in mus:
                         if switch_size == -1:
                             switch_size = 2 * num_node
-
                         input_file = f"input/p_fabDS/{dataset}.txt"
-                        output_path = f"output/pfabDS-{dataset}/{project}_{num_node}/{switch_size}/1/"
+                        output_path = f"output/pfabDS-{dataset}/{project}_{num_node}/{switch_size}/{mu}/1/"
                         sim_stream = f"logs/{output_path}sim.txt"
 
                         if not os.path.exists(f"logs/{output_path}"):
@@ -85,7 +83,7 @@ for project in projects:
 
                         cmd = (
                             f"time --verbose {base_cmd} {project} -overwrite input={input_file} " \
-                            f"switchSize={switch_size} output={output_path} " \
+                            f"switchSize={switch_size} mu={mu} output={output_path} " \
                             f"isSequential={sequentiality} AutoStart=true > {sim_stream}"
                         )
 

@@ -24,9 +24,10 @@ projects = [ "cbOptNet" ]
 
 # parameters of simulation
 num_nodes = [ 367 ]
-datasets = [ "datasetA_pairs", "datasetC_pairs" ]
+datasets = [ "datasetC_pairs" ]
 switch_sizes = [ 16, 32, 64, -1 ]
 sequential = [ "false" ]
+mus = [ 4 ]
 
 #number of threads to simulation
 num_threads = 2
@@ -61,9 +62,6 @@ class Threader (threading.Thread):
             file.write(f"Error with {command}\n")
             file_lock.release()
 
-        else:
-            os.remove(sim_file)
-
 #for each project executed
 for project in projects:
 
@@ -75,26 +73,25 @@ for project in projects:
         for num_node in num_nodes:
             for switch_size in switch_sizes:
                 for sequentiality in sequential:
-                    if switch_size == -1:
-                        switch_size = 2 * num_node
+                    for mu in mus:
+                        if switch_size == -1:
+                            switch_size = 2 * num_node
 
-                    input_file = f"input/facebookDS/{dataset}.txt"
-                    output_path = (
-                        f"output/facebookDS-{dataset}/{project}_{num_node}/{switch_size}/1/"
-                    )
-                    sim_stream = f"logs/{output_path}sim.txt"
+                        input_file = f"input/facebookDS/{dataset}.txt"
+                        output_path = f"output/facebookDS/{project}_{num_node}/{switch_size}/1/"
+                        sim_stream = f"logs/{output_path}sim.txt"
 
-                    if not os.path.exists(f"logs/{output_path}"):
-                        os.makedirs(f"logs/{output_path}")
+                        if not os.path.exists(f"logs/{output_path}"):
+                            os.makedirs(f"logs/{output_path}")
 
-                    cmd = (
-                        f"time --verbose {base_cmd} {project} -overwrite input={input_file} " \
-                        f"switchSize={switch_size} output={output_path} " \
-                        f"isSequential={sequentiality} AutoStart=true > {sim_stream}"
-                    )
+                        cmd = (
+                            f"time --verbose {base_cmd} {project} -overwrite input={input_file} " \
+                            f"switchSize={switch_size} output={output_path} " \
+                            f"isSequential={sequentiality} AutoStart=true > {sim_stream}"
+                        )
 
-                    print(cmd)
-                    commands.append(cmd)
+                        print(cmd)
+                        commands.append(cmd)
 
     num_commands = len(commands)
 
