@@ -4,6 +4,8 @@ import numpy as np
 
 import statsmodels.api as sm
 
+plt.style.use(["science","ieee"])
+
 @dc.dataclass()
 class Plotter:
     def cdf_active_switches (cdf_array: np.ndarray, ax: plt.axes = None) -> None:
@@ -20,6 +22,7 @@ class Plotter:
         x = np.linspace(min_indx, max(cdf_array))
         y = ecdf(x)
 
+        ax.autoscale(axis="x", tight=True)
         return ax.step(x, y)
 
     def cdf_active_ports (cdf_array: np.ndarray, ax: plt.axes = None) -> None:
@@ -34,8 +37,8 @@ class Plotter:
 
         x = np.linspace(0, max(cdf_array) + 100)
         y = ecdf(x)
-        ax.set_xscale("symlog", linthresh=0.1)
 
+        ax.autoscale(axis="x", tight=True)
         return ax.step(x, y)
 
     def cdf_switches_active_ports (cdf_array: np.ndarray, ax: plt.axes = None) -> None:
@@ -70,7 +73,8 @@ class Plotter:
         x = np.linspace(min_indx, max_indx)
         y = ecdf(x)
 
-        ax.step(x, y)
+        ax.autoscale(axis="x", tight=True)
+        return ax.step(x, y)
 
     def cdf_alterations (cdf_array: np.ndarray, ax: plt.axes = None) -> None:
         ecdf = sm.distributions.empirical_distribution.ECDF(cdf_array)
@@ -87,4 +91,4 @@ class Plotter:
         x = np.linspace(min_indx, max_indx)
         y = ecdf(x)
 
-        ax.step(x, y)
+        return ax.step(x, y)
