@@ -22,7 +22,6 @@ class Plotter:
         x = np.linspace(min_indx, max(cdf_array))
         y = ecdf(x)
 
-        ax.autoscale(axis="x", tight=True)
         return ax.step(x, y)
 
     def cdf_active_ports (cdf_array: np.ndarray, ax: plt.axes = None) -> None:
@@ -38,7 +37,6 @@ class Plotter:
         x = np.linspace(0, max(cdf_array) + 100)
         y = ecdf(x)
 
-        ax.autoscale(axis="x", tight=True)
         return ax.step(x, y)
 
     def cdf_switches_active_ports (cdf_array: np.ndarray, ax: plt.axes = None) -> None:
@@ -73,7 +71,6 @@ class Plotter:
         x = np.linspace(min_indx, max_indx)
         y = ecdf(x)
 
-        ax.autoscale(axis="x", tight=True)
         return ax.step(x, y)
 
     def cdf_alterations (cdf_array: np.ndarray, ax: plt.axes = None) -> None:
