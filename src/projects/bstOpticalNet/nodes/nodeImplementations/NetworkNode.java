@@ -1,17 +1,17 @@
-package projects.opticalNet.nodes.nodeImplementations;
+package projects.bstOpticalNet.nodes.nodeImplementations;
 
 import java.util.Random;
 
 import java.awt.Graphics;
 import java.util.PriorityQueue;
 
-import projects.opticalNet.nodes.messages.NewMessage;
-import projects.opticalNet.nodes.messages.RoutingInfoMessage;
-import projects.opticalNet.nodes.models.InfraNode;
-import projects.opticalNet.nodes.messages.HasMessage;
-import projects.opticalNet.nodes.messages.OpticalNetMessage;
-import projects.opticalNet.nodes.infrastructureImplementations.InputNode;
-import projects.opticalNet.nodes.infrastructureImplementations.SynchronizerLayer;
+import projects.bstOpticalNet.nodes.messages.NewMessage;
+import projects.bstOpticalNet.nodes.messages.RoutingInfoMessage;
+import projects.bstOpticalNet.nodes.models.InfraNode;
+import projects.bstOpticalNet.nodes.messages.HasMessage;
+import projects.bstOpticalNet.nodes.messages.OpticalNetMessage;
+import projects.bstOpticalNet.nodes.infrastructureImplementations.InputNode;
+import projects.bstOpticalNet.nodes.infrastructureImplementations.SynchronizerLayer;
 
 import sinalgo.tools.Tools;
 import sinalgo.runtime.Global;

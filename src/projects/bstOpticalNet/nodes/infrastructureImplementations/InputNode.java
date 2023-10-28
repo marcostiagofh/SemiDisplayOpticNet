@@ -1,7 +1,7 @@
-package projects.opticalNet.nodes.infrastructureImplementations;
+package projects.bstOpticalNet.nodes.infrastructureImplementations;
 
-import projects.opticalNet.nodes.nodeImplementations.NetworkController;
-import projects.opticalNet.nodes.nodeImplementations.NetworkNode;
+import projects.bstOpticalNet.nodes.nodeImplementations.NetworkController;
+import projects.bstOpticalNet.nodes.nodeImplementations.NetworkNode;
 
 import sinalgo.nodes.messages.Message;
 

@@ -1,4 +1,4 @@
-package projects.opticalNet.nodes.models;
+package projects.bstOpticalNet.nodes.models;
 
 import sinalgo.tools.Tools;
 

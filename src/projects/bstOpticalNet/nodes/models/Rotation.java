@@ -1,4 +1,4 @@
-package projects.opticalNet.nodes.models;
+package projects.bstOpticalNet.nodes.models;
 
 /**
  * Enumerator indicating the rotation the node should perform over all

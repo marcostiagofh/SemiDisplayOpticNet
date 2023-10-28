@@ -1,4 +1,4 @@
-package projects.opticalNet.nodes.messages;
+package projects.bstOpticalNet.nodes.messages;
 
 import sinalgo.nodes.messages.Message;
 

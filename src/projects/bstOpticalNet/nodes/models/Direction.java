@@ -1,4 +1,4 @@
-package projects.opticalNet.nodes.models;
+package projects.bstOpticalNet.nodes.models;
 
 /**
  * Enumerator indicating the direction where the node should rout it's message

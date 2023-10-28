@@ -1,4 +1,4 @@
-package projects.opticalNet.nodes.infrastructureImplementations;
+package projects.bstOpticalNet.nodes.infrastructureImplementations;
 
 import sinalgo.configuration.WrongConfigurationException;
 import sinalgo.nodes.Node;

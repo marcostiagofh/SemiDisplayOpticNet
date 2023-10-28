@@ -1,10 +1,10 @@
-package projects.opticalNet.nodes.nodeImplementations;
+package projects.bstOpticalNet.nodes.nodeImplementations;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import projects.opticalNet.nodes.infrastructureImplementations.InputNode;
-import projects.opticalNet.nodes.infrastructureImplementations.OutputNode;
+import projects.bstOpticalNet.nodes.infrastructureImplementations.InputNode;
+import projects.bstOpticalNet.nodes.infrastructureImplementations.OutputNode;
 
 public class NetworkSwitch {
 
