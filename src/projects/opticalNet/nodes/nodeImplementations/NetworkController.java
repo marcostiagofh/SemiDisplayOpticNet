@@ -31,8 +31,8 @@ public abstract class NetworkController extends LoggerLayer {
     protected PriorityQueue<RoutingInfoMessage> routingNodes = new PriorityQueue<RoutingInfoMessage>();
 
     protected ArrayList<InfraNode> tree;
-    protected ArrayList<NetworkSwitch> switches;
     protected ArrayList<NetworkNode> netNodes;
+    protected ArrayList<ArrayList<NetworkSwitch>> clusters;
 
     protected int numNodes = 0;
     protected int switchSize = 0;
@@ -40,12 +40,13 @@ public abstract class NetworkController extends LoggerLayer {
     protected int numClustersType1 = 0;
     protected int numClustersType2 = 0;
     protected int clusterSize;
+    protected boolean mirrored;
 
     protected int rcvMsgs = 0;
     protected int cmpMsgs = 0;
 
-    private static final int SIZE_CLUSTER_TYPE1 = 4;
-    private static final int SIZE_CLUSTER_TYPE2 = 4;
+    private int SIZE_CLUSTER_TYPE1;
+    private int SIZE_CLUSTER_TYPE2 = 4;
 
     /* End of Attributes */
 
@@ -56,8 +57,10 @@ public abstract class NetworkController extends LoggerLayer {
      * @param switchSize    Number of input/output ports in the switch
      * @param netNodes      Array with the initialized NetworkNodes
      */
-    public NetworkController (int numNodes, int switchSize, ArrayList<NetworkNode> netNodes) {
-        this(numNodes, switchSize, netNodes, new ArrayList<Integer>());
+        public NetworkController (
+        int numNodes, int switchSize, ArrayList<NetworkNode> netNodes, boolean mirrored
+    ) {
+        this(numNodes, switchSize, netNodes, new ArrayList<Integer>(), mirrored);
     }
 
     /**
@@ -70,13 +73,23 @@ public abstract class NetworkController extends LoggerLayer {
      * @param edgeList      Array with the network edges, if provided.
      */
     public NetworkController (
-        int numNodes, int switchSize, ArrayList<NetworkNode> netNodes, ArrayList<Integer> edgeList
+        int numNodes, int switchSize, ArrayList<NetworkNode> netNodes,
+        ArrayList<Integer> edgeList, boolean mirrored
     ) {
         this.numNodes = numNodes;
+        this.numSwitches = 0;
         this.switchSize = switchSize;
         this.tree = new ArrayList<>();
-        this.switches = new ArrayList<>();
+        this.clusters = new ArrayList<>();
         this.netNodes = netNodes;
+        this.mirrored = mirrored;
+
+        if (mirrored) {
+            this.SIZE_CLUSTER_TYPE1 = 4;
+
+        } else {
+            this.SIZE_CLUSTER_TYPE1 = 3;
+        }
 
         this.clusterSize = this.switchSize / 2;
         this.numClustersType1 = (this.numNodes + this.clusterSize - 1) / this.clusterSize;
@@ -85,59 +98,45 @@ public abstract class NetworkController extends LoggerLayer {
             this.unionPos(this.numClustersType1 - 2, this.numClustersType1 - 1) + 1 :
             0
         );
-        this.numSwitches = (
-            this.numClustersType1 * SIZE_CLUSTER_TYPE1 +
-            this.numClustersType2 * SIZE_CLUSTER_TYPE2
-        );
 
         for (int clsId = 0; clsId < this.numClustersType1; clsId++) {
-            for (int i = 0; i < 4; i++) {
+            this.clusters.add(new ArrayList<>());
+
+            for (int i = 0; i < SIZE_CLUSTER_TYPE1; i++) {
                 NetworkSwitch swt = new NetworkSwitch(
                     clsId * this.clusterSize + 1, (clsId + 1) * this.clusterSize, this.netNodes
                 );
-                swt.setIndex(this.switches.size() + 1);
+                swt.setIndex(this.numSwitches++);
 
-                this.switches.add(swt);
+                this.clusters.get(clsId).add(swt);
             }
         }
 
         for (int clsId1 = 0; clsId1 < this.numClustersType1; clsId1++) {
             for (int clsId2 = clsId1 + 1; clsId2 < this.numClustersType1; clsId2++) {
-                NetworkSwitch swt = new NetworkSwitch(
-                    clsId1 * this.clusterSize + 1, (clsId1 + 1) * this.clusterSize,
-                    clsId2 * this.clusterSize + 1, (clsId2 + 1) * this.clusterSize,
-                    this.netNodes
-                );
-                swt.setIndex(this.switches.size() + 1);
+                int clsId = this.clusters.size();
+                this.clusters.add(new ArrayList<>());
 
-                this.switches.add(swt);
+                for (int swtIdx = 0; swtIdx < SIZE_CLUSTER_TYPE2; swtIdx += 2) {
+                    int minIdInput = (swtIdx % 4 == 0 ? clsId2 : clsId1) * this.clusterSize + 1;
+                    int minIdOutput = (swtIdx % 4 == 0 ? clsId1 : clsId2) * this.clusterSize + 1;
 
-                NetworkSwitch swt2 = new NetworkSwitch(
-                    clsId2 * this.clusterSize + 1, (clsId2 + 1) * this.clusterSize,
-                    clsId1 * this.clusterSize + 1, (clsId1 + 1) * this.clusterSize,
-                    this.netNodes
-                );
-                swt2.setIndex(this.switches.size() + 1);
+                    NetworkSwitch swt = new NetworkSwitch(
+                        minIdInput, minIdInput + this.clusterSize - 1,
+                        minIdOutput, minIdOutput + this.clusterSize - 1, this.netNodes
+                    );
+                    swt.setIndex(this.numSwitches++);
 
-                this.switches.add(swt2);
+                    this.clusters.get(clsId).add(swt);
 
-                swt2 = new NetworkSwitch(
-                    clsId2 * this.clusterSize + 1, (clsId2 + 1) * this.clusterSize,
-                    clsId1 * this.clusterSize + 1, (clsId1 + 1) * this.clusterSize,
-                    this.netNodes
-                );
-                swt2.setIndex(this.switches.size() + 1);
+                    swt = new NetworkSwitch(
+                        minIdOutput, minIdOutput + this.clusterSize - 1,
+                        minIdInput, minIdInput + this.clusterSize - 1, this.netNodes
+                    );
+                    swt.setIndex(this.numSwitches++);
 
-                this.switches.add(swt2);
-
-                swt = new NetworkSwitch(
-                    clsId1 * this.clusterSize + 1, (clsId1 + 1) * this.clusterSize,
-                    clsId2 * this.clusterSize + 1, (clsId2 + 1) * this.clusterSize,
-                    this.netNodes
-                );
-                swt.setIndex(this.switches.size() + 1);
-
-                this.switches.add(swt);
+                    this.clusters.get(clsId).add(swt);
+                }
             }
         }
 
@@ -407,14 +406,33 @@ public abstract class NetworkController extends LoggerLayer {
      * @param w         old parent of node z
      * @param z         old parent of node y
      * @param y         old parent of node x
-     * @param c         old child of x
+     * @param c         old child of y
      */
     private void zigZigAlterations (InfraNode w, InfraNode z, InfraNode y, InfraNode c) {
         this.logRotation(1);
-        this.logZigZigUpdateActivePorts(w, z, y, c);
+
+        {
+            this.removeEdge(w, z);
+            this.removeEdge(z, w);
+
+            if (this.mirrored) {
+                this.removeEdge(z, y);
+                this.removeEdge(y, z);
+            }
+
+            this.removeEdge(y, c);
+            this.removeEdge(c, y);
+
+        }
 
         this.mapConn(z, c, y);
-        this.mapConn(y, z);
+        if (this.mirrored) {
+            this.mapConn(y, z);
+
+        } else {
+            // swap
+
+        }
         this.mapConn(w, y);
 
     }
@@ -434,11 +452,44 @@ public abstract class NetworkController extends LoggerLayer {
     private void zigZagAlterations (
         InfraNode w, InfraNode z, InfraNode y, InfraNode x, InfraNode b, InfraNode c
     ) {
+        /*
+                 *z                      x
+                 / \        -->       /    \
+                y   d                y      z
+               / \                  / \    / \
+              a   x                a  *b *c  d
+                 / \
+                b   c
+        */
         this.logRotation(2);
-        this.logZigZagUpdateActivePorts(w, z, y, x, b, c);
+
+        {
+            this.removeEdge(w, z);
+            this.removeEdge(z, w);
+
+            this.removeEdge(z, y);
+            this.removeEdge(y, z);
+
+            if (this.mirrored) {
+                this.removeEdge(y, x);
+                this.removeEdge(x, y);
+
+            }
+
+            this.removeEdge(x, b);
+            this.removeEdge(b, x);
+
+            this.removeEdge(x, c);
+            this.removeEdge(c, x);
+        }
 
         this.mapConn(y, b, x);
-        this.mapConn(x, y);
+        if (this.mirrored) {
+            this.mapConn(x, y);
+
+        } else {
+
+        }
         this.mapConn(z, c, x);
         this.mapConn(x, z);
         this.mapConn(w, x);
@@ -499,7 +550,7 @@ public abstract class NetworkController extends LoggerLayer {
      */
     @Override
     public int getSwitchesPerClusterType1 () {
-        return NetworkController.SIZE_CLUSTER_TYPE1;
+        return this.SIZE_CLUSTER_TYPE1;
 
     }
 
@@ -508,7 +559,7 @@ public abstract class NetworkController extends LoggerLayer {
      * @return          the number of switches in clusters type 2
      */
     public int getSwitchesPerClusterType2 () {
-        return NetworkController.SIZE_CLUSTER_TYPE2;
+        return this.SIZE_CLUSTER_TYPE2;
 
     }
 
@@ -590,26 +641,6 @@ public abstract class NetworkController extends LoggerLayer {
     }
 
     /**
-     * Getter for the switch that can represent the edge fromNodeRtoNode. It uses the
-     * getSwitchId method to find the correct switch.
-     * @param fromNode  node parent in the edge representation
-     * @param toNode    node child in the edge representation
-     * @return          the switch
-     */
-    public NetworkSwitch getSwitch (InfraNode fromNode, InfraNode toNode) {
-        return this.switches.get(this.getSwitchId(fromNode, toNode));
-    }
-
-    /**
-     * Getter for the switch with id equals to switchId
-     * @param switchId  the switch id
-     * @return          the switch
-     */
-    public NetworkSwitch getSwitch (int switchId) {
-        return this.switches.get(switchId);
-    }
-
-    /**
      * Getter for the id of the cluster the edge fromNodeRtoNode and it's mirror
      * belongs to. </br>
      * The clusterId of two nodes in the same cluster is the floor of
@@ -656,29 +687,8 @@ public abstract class NetworkController extends LoggerLayer {
      */
     @Override
     protected int getRoutingSwitchId (InfraNode fromNode, InfraNode toNode) {
-        return this.getSwitchId(fromNode, toNode) + (toNode == fromNode.getParent() ? 1 : 0);
+        return fromNode.getSwtId(toNode);
 
-    }
-
-    /**
-     * Getter for the switch id were the edge between fromNode and toNode can be represented.
-     * Equals to the sum between SIZE_CLUSTER_TYPE1 * min(clusterId, numClustersType1)
-     * SIZE_CLUSTER_TYPE_2 * max(0, clusterId - numClustersType1) and 2 if it is an edge
-     * to a right child or 0 if it is an edge to a left child node
-     * @param fromNode  the parent node in the edge representation
-     * @param toNode    the child node in the edge representation
-     * @return          the switch id
-     */
-    @Override
-    protected int getSwitchId (InfraNode fromNode, InfraNode toNode) {
-        int previousSwitches = (
-                this.areSameCluster(fromNode, toNode) ?
-                this.getClusterId(fromNode, toNode) * SIZE_CLUSTER_TYPE1 :
-                this.numClustersType1 * SIZE_CLUSTER_TYPE1 + this.unionPos(
-                        this.getClusterId(fromNode), this.getClusterId(toNode)
-                ) * SIZE_CLUSTER_TYPE2
-        );
-        return previousSwitches + 2 * (fromNode.getId() > toNode.getId() ? 1 : 0);
     }
 
     /**
@@ -733,7 +743,6 @@ public abstract class NetworkController extends LoggerLayer {
      * [OUTDATED?] -> To be replaced the logIncrementation call in the mapConn needs to be replaced.
      */
     private void setInitialCon (InfraNode fromNode, InfraNode toNode) {
-        int swtId = this.getSwitchId(fromNode, toNode);
         fromNode.setChild(toNode);
 
         if (fromNode.getId() == this.numNodes) {
@@ -744,9 +753,8 @@ public abstract class NetworkController extends LoggerLayer {
 
         }
 
-        this.logIncrementActivePorts(fromNode, toNode);
-        this.getSwitch(swtId).updateParent(fromNode.getId() + 1, toNode.getId() + 1);
-        this.getSwitch(swtId + 1).updateChild(toNode.getId() + 1, fromNode.getId() + 1);
+        this.addEdge(fromNode, toNode, true, true);
+        this.addEdge(toNode, fromNode, false, true);
 
         return;
     }
@@ -768,7 +776,6 @@ public abstract class NetworkController extends LoggerLayer {
      * @param toNode    the child node
      */
     private void mapConn (InfraNode fromNode, InfraNode toNode, InfraNode oldParent) {
-        int swtId = this.getSwitchId(fromNode, toNode);
         fromNode.setChild(toNode, oldParent);
 
         if (fromNode.getId() == this.numNodes) {
@@ -788,12 +795,58 @@ public abstract class NetworkController extends LoggerLayer {
 
         }
 
-        this.logIncrementAlterations(fromNode, toNode);
-
-        this.getSwitch(swtId).updateParent(fromNode.getId() + 1, toNode.getId() + 1);
-        this.getSwitch(swtId + 1).updateChild(toNode.getId() + 1, fromNode.getId() + 1);
+        this.addEdge(fromNode, toNode, true, false);
+        this.addEdge(toNode, fromNode, false, false);
     }
 
+    private void addEdge (InfraNode fromNode, InfraNode toNode, boolean downward, boolean initial) {
+        int clsId = this.getClusterId(fromNode, toNode);
+        if (this.mirrored) {
+            boolean left = (downward ?
+                fromNode.getId() > toNode.getId() :
+                toNode.getId() > fromNode.getId()
+            );
+            int swtOffset = (left ? 0 : 2) + (downward ? 0 : 1);
+            int swtId = this.clusters.get(clsId).get(swtOffset).getIndex();
+
+            this.logIncrementActivePorts(swtId);
+            if (!initial) {
+                this.logIncrementAlterations(swtId, fromNode);
+
+            }
+
+            if (downward) {
+                this.clusters.get(clsId).get(swtOffset).updateParent(fromNode.getNetId(), toNode.getNetId());
+                if (left) {
+                    fromNode.setLeftChildSwitchId(swtId);
+
+                } else {
+                    fromNode.setRightChildSwitchId(swtId);
+
+                }
+
+            } else {
+                this.clusters.get(clsId).get(swtOffset).updateChild(fromNode.getNetId(), toNode.getNetId());
+                fromNode.setParentSwitchId(swtId);
+
+            }
+
+        } else {
+
+
+        }
+    }
+
+    private void removeEdge (InfraNode fromNode, InfraNode toNode) {
+        if (!this.isValidNode(fromNode) || !this.isValidNode(toNode))
+            return;
+
+        int swtIdx = fromNode.getSwtId(toNode);
+        fromNode.updateSwtId(toNode, -1);
+
+        this.logDecrementActivePorts(swtIdx);
+
+    }
     /* End of Setters
 
     /* Auxiliary Functions */
@@ -827,6 +880,11 @@ public abstract class NetworkController extends LoggerLayer {
         );
         return apSum + clsId2 - clsId1 - 1;
     }
+
+
+    /**
+     * Returns the augmenting path between the two switches */
+
 
     /**
      * This method traverses the nodes that still have messages pending routing and locks them
@@ -1273,21 +1331,21 @@ public abstract class NetworkController extends LoggerLayer {
 
         boolean flag = infraNode.getId() == netNode.getId() - 1;
         flag &= (
-                infraNode.getLeftChild().getId() != -1 ?
-                infraNode.getLeftChild().getId() == netNode.getLeftChildId() - 1 :
+                infraNode.getLeftChildId() != -1 ?
+                infraNode.getLeftChildId() == netNode.getLeftChildId() - 1 :
                 netNode.getLeftChildId() == -1
         );
         flag &= (
-                infraNode.getRightChild().getId() != -1 ?
-                infraNode.getRightChild().getId() == netNode.getRightChildId() - 1 :
+                infraNode.getRightChildId() != -1 ?
+                infraNode.getRightChildId() == netNode.getRightChildId() - 1 :
                 netNode.getRightChildId() == -1
         );
         flag &= (
                 (
-                    infraNode.getParent().getId() != -1 &&
-                    infraNode.getParent().getId() != this.numNodes
+                    infraNode.getParentId() != -1 &&
+                    infraNode.getParentId() != this.numNodes
                 ) ?
-                infraNode.getParent().getId() == netNode.getParentId() - 1 :
+                infraNode.getParentId() == netNode.getParentId() - 1 :
                 netNode.getParentId() == -1
         );
 

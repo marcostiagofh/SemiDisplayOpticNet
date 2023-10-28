@@ -120,44 +120,13 @@ public abstract class LoggerLayer extends SynchronizerLayer {
 
     }
 
-    public void logZigZigUpdateActivePorts (InfraNode w, InfraNode z, InfraNode y, InfraNode c) {
-        this.logDecrementActivePorts(w, z);
-        this.logDecrementActivePorts(z, y);
-        this.logDecrementActivePorts(y, c);
-        this.logIncrementActivePorts(w, y);
-        this.logIncrementActivePorts(y, z);
-        this.logIncrementActivePorts(z, c);
-    }
-
-    public void logZigZagUpdateActivePorts (
-        InfraNode w, InfraNode z, InfraNode y, InfraNode x, InfraNode b, InfraNode c
-    ) {
-        this.logDecrementActivePorts(w, z);
-        this.logDecrementActivePorts(z, y);
-        this.logDecrementActivePorts(y, x);
-        this.logDecrementActivePorts(x, b);
-        this.logDecrementActivePorts(x, c);
-        this.logIncrementActivePorts(w, x);
-        this.logIncrementActivePorts(x, y);
-        this.logIncrementActivePorts(x, z);
-        this.logIncrementActivePorts(y, b);
-        this.logIncrementActivePorts(z, c);
-
-    }
-
     /**
      * Increment the number of active ports on the switch_swtid. Active ports
      * are ports where the connection InputNode -> OutputNode are representatives
      * of a real edge on our graph.
      * @param swtId         the switch id
      */
-    public void logIncrementActivePorts (InfraNode fromNode, InfraNode toNode) {
-        if (!this.isValidNode(fromNode) || !this.isValidNode(toNode)) {
-            return;
-
-        }
-
-        int swtId = this.getSwitchId(fromNode, toNode);
+    public void logIncrementActivePorts (int swtId) {
         long value = this.activePortsPerSwitchRound.get(swtId);
         this.activePortsPerSwitchRound.set(swtId, value + 1);
 
@@ -169,13 +138,7 @@ public abstract class LoggerLayer extends SynchronizerLayer {
      * of a real edge on our graph.
      * @param swtId         the switch id
      */
-    public void logDecrementActivePorts (InfraNode fromNode, InfraNode toNode) {
-        if (!this.isValidNode(fromNode) || !this.isValidNode(toNode)) {
-            return;
-
-        }
-
-        int swtId = this.getSwitchId(fromNode, toNode);
+    public void logDecrementActivePorts (int swtId) {
         long value = this.activePortsPerSwitchRound.get(swtId);
         this.activePortsPerSwitchRound.set(swtId, value - 1);
 
@@ -187,20 +150,13 @@ public abstract class LoggerLayer extends SynchronizerLayer {
      * for the parent node, child node and switch involved. An alteration occurs when you remove
      * one edge on our graph and add another.
      * @param swtId         the switch id
-     * @param fromNode      the parent node
-     * @param toNode        the child node
+     * @param fromNode      the node connected to the input port
      */
-    public void logIncrementAlterations (InfraNode fromNode, InfraNode toNode) {
+    public void logIncrementAlterations (int swtId, InfraNode fromNode) {
         this.alterationCounter.addSample(1);
 
-        int swtId = this.getRoutingSwitchId(fromNode, toNode);
         this.alterationLog.logln(
             this.projectName + "," + this.getCurrentRound() + "," + fromNode.getId() + "," + swtId
-        );
-
-        int altSwtId = this.getRoutingSwitchId(toNode, fromNode);
-        this.alterationLog.logln(
-            this.projectName + "," + this.getCurrentRound() + "," + toNode.getId() + "," + altSwtId
         );
     }
 
