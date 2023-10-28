@@ -55,8 +55,6 @@ public abstract class LoggerLayer extends SynchronizerLayer {
 
     protected abstract int getRoutingSwitchId (InfraNode fromNode, InfraNode toNode);
 
-    protected abstract int getSwitchId (InfraNode fromNode, InfraNode toNode);
-
     protected abstract boolean isValidNode (InfraNode node);
 
     /* Logger Functions */
