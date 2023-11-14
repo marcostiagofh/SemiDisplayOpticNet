@@ -5,6 +5,7 @@ import java.util.HashMap;
 
 import projects.bstOpticalNet.nodes.infrastructureImplementations.InputNode;
 import projects.bstOpticalNet.nodes.infrastructureImplementations.OutputNode;
+import projects.bstOpticalNet.nodes.models.AvailablePorts;
 
 public class NetworkSwitch {
 
@@ -86,7 +87,7 @@ public class NetworkSwitch {
             InputNode inNode = this.inputNodes.get(i);
             OutputNode outNode = this.outputNodes.get((i + 1 == this.size ? 0 : i + 1));
 
-            inNode.setLinkToOutputNode(outNode);
+            inNode.setLinkToOutputNode(outNode, false);
         }
     }
 
@@ -128,8 +129,8 @@ public class NetworkSwitch {
         int oldInNodeIndex = outNode.getInputNode().getIndex();
         InputNode oldInNode = this.inputId2Node.get(oldInNodeIndex);
 
-        oldInNode.setLinkToOutputNode(inNode.getOutputNode());
-        inNode.setLinkToOutputNode(outNode);
+        oldInNode.setLinkToOutputNode(inNode.getOutputNode(), false);
+        inNode.setLinkToOutputNode(outNode, true);
     }
 
     /**

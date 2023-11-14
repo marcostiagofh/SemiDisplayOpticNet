@@ -4,6 +4,7 @@ import projects.bstOpticalNet.nodes.nodeImplementations.NetworkController;
 import projects.bstOpticalNet.nodes.nodeImplementations.NetworkNode;
 
 import sinalgo.nodes.messages.Message;
+import sinalgo.tools.Tools;
 
 /**
  * This node represents the Input Port of a switch. It passes each message along
@@ -13,6 +14,7 @@ public class InputNode {
     private int index = -1;
     private NetworkNode connectedNode = null;
     private OutputNode outputNode = null;
+    private boolean active = false;
 
     public void setIndex (int index) {
         this.index = index;
@@ -49,11 +51,14 @@ public class InputNode {
 
     /**
      * Update linked OutputNode and its respective link
-     * @param node  the outputNode
+     * @param node      the outputNode
+     * @param active    true if this port's link active
      */
-    public void setLinkToOutputNode (OutputNode node) {
+    public void setLinkToOutputNode (OutputNode node, boolean active) {
         this.outputNode = node;
-        node.setInputNode(this);
+        this.active = active;
+
+        node.setInputNode(this, true);
     }
 
     /**
@@ -62,6 +67,11 @@ public class InputNode {
      * @param controller    Simulation NetworkController node
      */
     public void sendToOutputNode (Message msg, NetworkController controller) {
+        if (!this.active) {
+            Tools.fatalError("Sending message through inactive input node");
+
+        }
+
         this.outputNode.sendToConnectedNode(msg, controller);
 
     }
