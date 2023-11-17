@@ -11,11 +11,11 @@ public class InfraNode implements Comparable<InfraNode> {
 
     /* Attributes */
     private InfraNode parent = null;
-    private int pSwtId = -1;
+    private int pSwtOffset = -1;
     private InfraNode leftChild = null;
-    private int lcSwtId = -1;
+    private int lcSwtOffset = -1;
     private InfraNode rightChild = null;
-    private int rcSwtId = -1;
+    private int rcSwtOffset = -1;
 
     private int minId = -1;
     private int maxId = -1;
@@ -34,11 +34,11 @@ public class InfraNode implements Comparable<InfraNode> {
     public InfraNode () {
         this.id = ID++;
         this.parent = new InfraNode(-1);
-        this.pSwtId = -1;
+        this.pSwtOffset = -1;
         this.leftChild = new InfraNode(-1);
-        this.lcSwtId = -1;
+        this.lcSwtOffset = -1;
         this.rightChild = new InfraNode(-1);
-        this.rcSwtId = -1;
+        this.rcSwtOffset = -1;
         this.minId = this.id;
         this.maxId = this.id;
     }
@@ -108,10 +108,10 @@ public class InfraNode implements Comparable<InfraNode> {
 
     /**
      * Getter for this node parent switch index
-     * @return the switch id connected to this node parent
+     * @return the switch Offset connected to this node parent
      */
-    public int getParentSwitchId () {
-        return this.pSwtId;
+    public int getParentSwitchOffset () {
+        return this.pSwtOffset;
     }
 
     /**
@@ -134,8 +134,8 @@ public class InfraNode implements Comparable<InfraNode> {
      * Getter for this node left child switch index
      * @return the switch id connected to this node left child
      */
-    public int getLeftChildSwitchId () {
-        return this.lcSwtId;
+    public int getLeftChildSwitchOffset () {
+        return this.lcSwtOffset;
     }
 
     /**
@@ -158,8 +158,8 @@ public class InfraNode implements Comparable<InfraNode> {
      * Getter for this node right child switch index
      * @return the switch id connected to this node right child
      */
-    public int getRightChildSwitchId () {
-        return this.rcSwtId;
+    public int getRightChildSwitchOffset () {
+        return this.rcSwtOffset;
     }
 
     /**
@@ -167,19 +167,19 @@ public class InfraNode implements Comparable<InfraNode> {
      * @param toNode  this edge endpoint
      * @return        the switch id
      */
-    public int getSwtId (InfraNode toNode) {
+    public int getSwtOffset (InfraNode toNode) {
         if (this.getParentId() == toNode.getId()) {
-            return this.getParentSwitchId();
+            return this.getParentSwitchOffset();
 
         } else if (this.getLeftChildId() == toNode.getId()) {
-            return this.getLeftChildSwitchId();
+            return this.getLeftChildSwitchOffset();
 
         } else if (this.getRightChildId() == toNode.getId()) {
-            return this.getRightChildSwitchId();
+            return this.getRightChildSwitchOffset();
 
         }
 
-        Tools.fatalError("ToNode is neither parent nor child from this node");
+        Tools.fatalError("ToNode is neither parent nor child from this node on get");
 
         return -1;
     }
@@ -220,68 +220,20 @@ public class InfraNode implements Comparable<InfraNode> {
         if (this.getId() == -1)
             return;
 
-        this.parent.resetChild(this);
         this.parent = parent;
+    }
+
+    public void removeParent () {
+        this.parent = new InfraNode(-1);
+        this.pSwtOffset = -1;
     }
 
     /**
      * Sets the switch id for the switch connected to this node's parent
-     * @param swtId the switch id
+     * @param swtOffset the switch Offset
      */
-    public void setParentSwitchId (int swtId) {
-        this.pSwtId = swtId;
-    }
-
-    /**
-     * Sets this node new child, calling the apropriated left or right
-     * method depending on the comparison betwen this and the child id.
-     * This method is used when the child is assuredly not a dummy node.
-     * @param child The new child node
-     */
-    public void setChild (InfraNode child) {
-        if (child.getId() == -1) {
-            Tools.fatalError(
-                "Trying to add a Dummy node to " + ID + " without specifying its parent"
-            );
-
-        } else if (this.getId() > child.getId()) {
-            this.getLeftChild().resetParent(this);
-            this.setLeftChild(child);
-
-        } else {
-            this.getRightChild().resetParent(this);
-            this.setRightChild(child);
-
-        }
-    }
-
-    /**
-     * Sets this node new child, calling the apropriated left or right
-     * method depending on the comparison betwen this and the child id.
-     * If the child is a dummy node, the decision on wether left or right
-     * child is made by the child old parent id. [ CONFIRM DECISION ]
-     * @param child      new child node
-     * @param oldParent  new child old parent
-     */
-    public void setChild (InfraNode child, InfraNode oldParent) {
-        if (child.getId() == -1) {
-            if (this.getId() > oldParent.getId()) {
-                this.setLeftChild(child);
-
-            } else {
-                this.setRightChild(child);
-
-            }
-
-        } else if (this.getId() > child.getId()) {
-            this.getLeftChild().resetParent(this);
-            this.setLeftChild(child);
-
-        } else {
-            this.getRightChild().resetParent(this);
-            this.setRightChild(child);
-
-        }
+    public void setParentSwitchOffset (int swtOffset) {
+        this.pSwtOffset = swtOffset;
     }
 
     /**
@@ -291,21 +243,25 @@ public class InfraNode implements Comparable<InfraNode> {
      */
     public void setLeftChild (InfraNode child) {
         if (this.getId() != -1) {
-            child.setParent(this);
             this.leftChild = child;
 
             this.updateMin(child);
 
         }
+    }
 
+    public void removeLeftChild () {
+        this.leftChild = new InfraNode(-1);
+        this.minId = this.getId();
+        this.lcSwtOffset = -1;
     }
 
     /**
      * Sets the switch id for the switch connected to this node's left chiuld
-     * @param swtId the switch id
+     * @param swtOffset the switch Offset
      */
-    public void setLeftChildSwitchId (int swtId) {
-        this.lcSwtId = swtId;
+    public void setLeftChildSwitchOffset (int swtOffset) {
+        this.lcSwtOffset = swtOffset;
     }
 
     /**
@@ -315,46 +271,50 @@ public class InfraNode implements Comparable<InfraNode> {
      */
     public void setRightChild (InfraNode child) {
         if (this.getId() != -1) {
-            child.setParent(this);
             this.rightChild = child;
 
             this.updateMax(child);
-
         }
+    }
+
+    public void removeRightChild () {
+        this.rightChild = new InfraNode(-1);
+        this.maxId = this.getId();
+        this.rcSwtOffset = -1;
     }
 
     /**
      * Sets the switch id for the switch connected to this node's right child
-     * @param swtId the switch id
+     * @param swtOffset the switch Offset
      */
-    public void setRightChildSwitchId (int swtId) {
-        this.rcSwtId = swtId;
+    public void setRightChildSwitchOffset (int swtOffset) {
+        this.rcSwtOffset = swtOffset;
     }
 
     /**
      * Update the switch id for the switch connected to toNode
      * @param toNode  this edge endpoint
-     * @param swtId   the switch id
+     * @param swtOffset   the switch id
      */
-    public void updateSwtId (InfraNode toNode, int swtId) {
+    public void updateSwtOffset (InfraNode toNode, int swtOffset) {
         if (this.getParentId() == toNode.getId()) {
-            this.setParentSwitchId(swtId);
+            this.setParentSwitchOffset(swtOffset);
 
             return;
 
         } else if (this.getLeftChildId() == toNode.getId()) {
-            this.setLeftChildSwitchId(swtId);
+            this.setLeftChildSwitchOffset(swtOffset);
 
             return;
 
         } else if (this.getRightChildId() == toNode.getId()) {
-            this.setRightChildSwitchId(swtId);
+            this.setRightChildSwitchOffset(swtOffset);
 
             return;
 
         }
 
-        Tools.fatalError("ToNode is neither parent nor child from this node");
+        Tools.fatalError("ToNode is neither parent nor child from this node on update");
     }
 
     /**
@@ -559,9 +519,9 @@ public class InfraNode implements Comparable<InfraNode> {
         } else {
             System.out.println(
                 "INFRAID: " + this.getId()
-                + " lftID: " + this.getLeftChildId() + " swtIdx: " + this.getLeftChildSwitchId()
-                + " rgtID: " + this.getRightChildId() + " swtIdx: " + this.getRightChildSwitchId()
-                + " parentId: " + this.getParentId() + " swtIdx: " + this.getParentSwitchId()
+                + " lftID: " + this.getLeftChildId() + " swtIdx: " + this.getLeftChildSwitchOffset()
+                + " rgtID: " + this.getRightChildId() + " swtIdx: " + this.getRightChildSwitchOffset()
+                + " parentId: " + this.getParentId() + " swtIdx: " + this.getParentSwitchOffset()
                 + " leftSUB: " + this.getMinId() + " rightSUB: " + this.getMaxId()
             );
 

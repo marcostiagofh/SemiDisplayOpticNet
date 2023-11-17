@@ -6,6 +6,7 @@ import java.util.HashMap;
 import projects.bstOpticalNet.nodes.infrastructureImplementations.InputNode;
 import projects.bstOpticalNet.nodes.infrastructureImplementations.OutputNode;
 import projects.bstOpticalNet.nodes.models.AvailablePorts;
+import sinalgo.tools.Tools;
 
 public class NetworkSwitch {
 
@@ -91,6 +92,13 @@ public class NetworkSwitch {
         }
     }
 
+    public void removeLink (int in, int out) {
+        InputNode inNode = this.inputId2Node.get(in);
+        OutputNode outNode = this.outputId2Node.get(out);
+
+        inNode.setLinkToOutputNode(outNode, false);
+    }
+
     /**
      * Function that sets the link between the InputNode connected to the NetworkNode in and the
      * OutputNode connected to the NetworkNode out
@@ -102,7 +110,7 @@ public class NetworkSwitch {
         OutputNode outNode = this.outputId2Node.get(out);
 
         this.connectNodes(inNode, outNode);
-        inNode.getConnectedNode().setChild(inNode);
+        inNode.getConnectedNode().setParent(inNode);
     }
 
     /**
@@ -111,12 +119,12 @@ public class NetworkSwitch {
      * @param in    the child network node id
      * @param out   the parent network node id
      */
-    public void updateChild (int in, int out) {
+    public void updateChild (int in, int out, NetworkController controller) {
         InputNode inNode = this.inputId2Node.get(in);
         OutputNode outNode = this.outputId2Node.get(out);
 
         this.connectNodes(inNode, outNode);
-        inNode.getConnectedNode().setParent(inNode);
+        inNode.getConnectedNode().setChild(inNode);
     }
 
     /**
@@ -126,10 +134,10 @@ public class NetworkSwitch {
      * @param outNode   the outputNode
      */
     private void connectNodes (InputNode inNode, OutputNode outNode) {
-        int oldInNodeIndex = outNode.getInputNode().getIndex();
-        InputNode oldInNode = this.inputId2Node.get(oldInNodeIndex);
+        InputNode oldInNode = outNode.getInputNode();
+        OutputNode oldOutNode = inNode.getOutputNode();
 
-        oldInNode.setLinkToOutputNode(inNode.getOutputNode(), false);
+        oldInNode.setLinkToOutputNode(oldOutNode, false);
         inNode.setLinkToOutputNode(outNode, true);
     }
 
@@ -157,13 +165,14 @@ public class NetworkSwitch {
      */
     public void debugSwitch () {
         System.out.println("SWITCH ID: " + this.index);
-        System.out.println("Input Nodes: ");
+        System.out.println("Links: ");
         for (int i = 0; i < this.size; i++) {
-            System.out.println((i + 1) + " Node: " + this.inputNodes.get(i).getIndex());
-        }
-        System.out.println("Output Nodes: ");
-        for (int i = 0; i < this.size; i++) {
-            System.out.println((i + 1) + " Node: " + this.outputNodes.get(i).getIndex());
+            InputNode in = this.inputNodes.get(i);
+            OutputNode out = in.getOutputNode();
+
+            System.out.println(i + "th link ----------");
+            in.debugPort();
+            out.debugPort();
         }
     }
 

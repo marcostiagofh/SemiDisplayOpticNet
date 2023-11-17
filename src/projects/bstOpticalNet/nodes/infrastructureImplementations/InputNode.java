@@ -32,6 +32,10 @@ public class InputNode {
         return this.outputNode;
     }
 
+    public boolean isActive () {
+        return this.active;
+    }
+
     /**
      * Update which node is connected to this port, should be used only
      * when initializing the InputNode.
@@ -47,6 +51,10 @@ public class InputNode {
      */
     public NetworkNode getConnectedNode () {
         return this.connectedNode;
+    }
+
+    public int getOutputConnectedNodeId () {
+        return (this.getOutputNode() == null ? -1 : this.getOutputNode().getConnectedNode().getId());
     }
 
     /**
@@ -74,5 +82,9 @@ public class InputNode {
 
         this.outputNode.sendToConnectedNode(msg, controller);
 
+    }
+
+    public void debugPort () {
+        System.out.println(this.getConnectedNode().getId() + " -> " + this.getOutputConnectedNodeId() + " " + this.isActive());
     }
 }

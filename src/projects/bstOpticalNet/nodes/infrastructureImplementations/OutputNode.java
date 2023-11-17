@@ -42,6 +42,10 @@ public class OutputNode {
         return this.inputNode;
     }
 
+    public boolean isActive () {
+        return this.active;
+    }
+
     /**
      * Update which node is connected to this port, should only be used
      * when initializing the OutputNode.
@@ -59,6 +63,10 @@ public class OutputNode {
         return this.connectedNode;
     }
 
+    public int getInputConnectedNodeId () {
+        return (this.getInputNode() == null ? -1 : this.getInputNode().getConnectedNode().getId());
+    }
+
     /**
      * Sends the message to it's connected node using the controller node.
      * @param msg           message sent
@@ -73,4 +81,7 @@ public class OutputNode {
         controller.sendDirect(msg, this.connectedNode);
     }
 
+    public void debugPort () {
+        System.out.println(this.getInputConnectedNodeId() + " -> " + this.getConnectedNode().getId() + " " + this.isActive());
+    }
 }

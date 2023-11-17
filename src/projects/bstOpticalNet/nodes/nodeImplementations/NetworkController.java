@@ -1,6 +1,7 @@
 package projects.bstOpticalNet.nodes.nodeImplementations;
 
 import java.awt.Graphics;
+import java.util.Stack;
 import java.util.ArrayList;
 import java.util.PriorityQueue;
 
@@ -9,6 +10,7 @@ import projects.bstOpticalNet.nodes.messages.HasMessage;
 import projects.bstOpticalNet.nodes.messages.NewMessage;
 import projects.bstOpticalNet.nodes.messages.OpticalNetMessage;
 import projects.bstOpticalNet.nodes.messages.RoutingInfoMessage;
+import projects.bstOpticalNet.nodes.models.Edge;
 import projects.bstOpticalNet.nodes.models.Direction;
 import projects.bstOpticalNet.nodes.models.InfraNode;
 import projects.bstOpticalNet.nodes.models.Rotation;
@@ -29,6 +31,8 @@ public abstract class NetworkController extends LoggerLayer {
     private ArrayList<Boolean> usedNodes;
     protected PriorityQueue<HasMessage> nodesWithMsg = new PriorityQueue<HasMessage>();
     protected PriorityQueue<RoutingInfoMessage> routingNodes = new PriorityQueue<RoutingInfoMessage>();
+    protected Stack<Edge> rmvEdges = new Stack<Edge>();
+    protected Stack<Edge> addEdges = new Stack<Edge>();
 
     protected ArrayList<InfraNode> tree;
     protected ArrayList<NetworkNode> netNodes;
@@ -412,16 +416,16 @@ public abstract class NetworkController extends LoggerLayer {
         this.logRotation(1);
 
         {
-            this.removeEdge(w, z);
-            this.removeEdge(z, w);
+            this.pushRmvEdge(w, z, true);
+            this.pushRmvEdge(z, w, false);
 
             if (this.mirrored) {
-                this.removeEdge(z, y);
-                this.removeEdge(y, z);
+                this.pushRmvEdge(z, y, true);
+                this.pushRmvEdge(y, z, false);
             }
 
-            this.removeEdge(y, c);
-            this.removeEdge(c, y);
+            this.pushRmvEdge(y, c, true);
+            this.pushRmvEdge(c, y, false);
 
         }
 
@@ -464,23 +468,23 @@ public abstract class NetworkController extends LoggerLayer {
         this.logRotation(2);
 
         {
-            this.removeEdge(w, z);
-            this.removeEdge(z, w);
+            this.pushRmvEdge(w, z, true);
+            this.pushRmvEdge(z, w, false);
 
-            this.removeEdge(z, y);
-            this.removeEdge(y, z);
+            this.pushRmvEdge(z, y, true);
+            this.pushRmvEdge(y, z, false);
 
             if (this.mirrored) {
-                this.removeEdge(y, x);
-                this.removeEdge(x, y);
+                this.pushRmvEdge(y, x, true);
+                this.pushRmvEdge(x, y, false);
 
             }
 
-            this.removeEdge(x, b);
-            this.removeEdge(b, x);
+            this.pushRmvEdge(x, b, true);
+            this.pushRmvEdge(b, x, false);
 
-            this.removeEdge(x, c);
-            this.removeEdge(c, x);
+            this.pushRmvEdge(x, c, true);
+            this.pushRmvEdge(c, x, false);
         }
 
         this.mapConn(y, b, x);
@@ -687,7 +691,9 @@ public abstract class NetworkController extends LoggerLayer {
      */
     @Override
     protected int getRoutingSwitchId (InfraNode fromNode, InfraNode toNode) {
-        return fromNode.getSwtId(toNode);
+    	int clsId = this.getClusterId(fromNode, toNode);
+    	int swtOffset = fromNode.getSwtOffset(toNode);
+        return this.clusters.get(clsId).get(swtOffset).getIndex();
 
     }
 
@@ -743,15 +749,22 @@ public abstract class NetworkController extends LoggerLayer {
      * [OUTDATED?] -> To be replaced the logIncrementation call in the mapConn needs to be replaced.
      */
     private void setInitialCon (InfraNode fromNode, InfraNode toNode) {
-        fromNode.setChild(toNode);
-
-        if (fromNode.getId() == this.numNodes) {
-            return;
-
-        } else if (toNode.getId() == this.numNodes) {
+        if (toNode.getId() == this.numNodes) {
             Tools.fatalError("Trying to make root node as a child");
 
         }
+
+        if (fromNode.getId() > toNode.getId()) {
+            fromNode.setLeftChild(toNode);
+
+        } else {
+            fromNode.setRightChild(toNode);
+
+        }
+
+        toNode.setParent(fromNode);
+        if (!this.isValidNode(fromNode))
+            return;
 
         this.addEdge(fromNode, toNode, true, true);
         this.addEdge(toNode, fromNode, false, true);
@@ -776,27 +789,57 @@ public abstract class NetworkController extends LoggerLayer {
      * @param toNode    the child node
      */
     private void mapConn (InfraNode fromNode, InfraNode toNode, InfraNode oldParent) {
-        fromNode.setChild(toNode, oldParent);
+        if (
+            (this.isValidNode(fromNode) || fromNode.getId() == this.getNumNodes()) &&
+            this.isValidNode(toNode)
+        ) {
+            Edge downEdge = new Edge(fromNode, toNode, true);
+            Edge upEdge = new Edge(toNode, fromNode, false);
 
-        if (fromNode.getId() == this.numNodes) {
-            this.getNetNode(toNode).removeParent();
-            return;
+            if (fromNode.getId() > toNode.getId()) {
+                fromNode.setLeftChild(toNode);
 
-        } else if (toNode.getId() == -1 && fromNode.getId() > oldParent.getId()) {
-            this.getNetNode(fromNode).removeLeftChild();
-            return;
+            } else {
+                fromNode.setRightChild(toNode);
 
-        } else if (toNode.getId() == -1 && fromNode.getId() < oldParent.getId()) {
-            this.getNetNode(fromNode).removeRightChild();
-            return;
+            }
+            toNode.setParent(fromNode);
 
-        } else if (toNode.getId() == this.numNodes) {
-            Tools.fatalError("Trying to make root node as a child");
+            this.addEdges.push(downEdge);
+            this.addEdges.push(upEdge);
 
         }
+    }
 
-        this.addEdge(fromNode, toNode, true, false);
-        this.addEdge(toNode, fromNode, false, false);
+    private void updateLinks () {
+        while (!this.rmvEdges.isEmpty()) {
+            Edge edge = this.rmvEdges.pop();
+            int clsId = this.getClusterId(edge.getFromNode(), edge.getToNode());
+            NetworkSwitch swt = this.clusters.get(clsId).get(edge.getSwtOffset());
+
+            swt.removeLink(
+                edge.getFromNode().getNetId(), edge.getToNode().getNetId()
+            );
+            this.logDecrementActivePorts(swt.getIndex());
+
+            if (edge.isDownward() && edge.getFromNodeId() > edge.getToNodeId()) {
+                this.getNetNode(edge.getFromNode()).removeLeftChild();
+
+            } else if (edge.isDownward()) {
+                this.getNetNode(edge.getFromNode()).removeRightChild();
+
+            } else {
+                this.getNetNode(edge.getFromNode()).removeParent();
+
+            }
+        }
+
+        while (!this.addEdges.isEmpty()) {
+            Edge edge = this.addEdges.pop();
+
+            this.addEdge(edge.getFromNode(), edge.getToNode(), edge.isDownward(), false);
+
+        }
     }
 
     private void addEdge (InfraNode fromNode, InfraNode toNode, boolean downward, boolean initial) {
@@ -807,7 +850,8 @@ public abstract class NetworkController extends LoggerLayer {
                 toNode.getId() > fromNode.getId()
             );
             int swtOffset = (left ? 0 : 2) + (downward ? 0 : 1);
-            int swtId = this.clusters.get(clsId).get(swtOffset).getIndex();
+            NetworkSwitch swt = this.clusters.get(clsId).get(swtOffset);
+            int swtId = swt.getIndex();
 
             this.logIncrementActivePorts(swtId);
             if (!initial) {
@@ -816,18 +860,18 @@ public abstract class NetworkController extends LoggerLayer {
             }
 
             if (downward) {
-                this.clusters.get(clsId).get(swtOffset).updateParent(fromNode.getNetId(), toNode.getNetId());
+                swt.updateChild(fromNode.getNetId(), toNode.getNetId(), this);
                 if (left) {
-                    fromNode.setLeftChildSwitchId(swtId);
+                    fromNode.setLeftChildSwitchOffset(swtOffset);
 
                 } else {
-                    fromNode.setRightChildSwitchId(swtId);
+                    fromNode.setRightChildSwitchOffset(swtOffset);
 
                 }
 
             } else {
-                this.clusters.get(clsId).get(swtOffset).updateChild(fromNode.getNetId(), toNode.getNetId());
-                fromNode.setParentSwitchId(swtId);
+                swt.updateParent(fromNode.getNetId(), toNode.getNetId());
+                fromNode.setParentSwitchOffset(swtOffset);
 
             }
 
@@ -837,14 +881,34 @@ public abstract class NetworkController extends LoggerLayer {
         }
     }
 
-    private void removeEdge (InfraNode fromNode, InfraNode toNode) {
-        if (!this.isValidNode(fromNode) || !this.isValidNode(toNode))
+    private void pushRmvEdge (InfraNode fromNode, InfraNode toNode, boolean downward) {
+        if (!this.isValidNode(fromNode) || !this.isValidNode(toNode)) {
+            if (downward && fromNode.getId() == this.getNumNodes()) {
+                fromNode.removeLeftChild();
+
+            } else if (!downward && toNode.getId() == this.getNumNodes()) {
+                fromNode.removeParent();
+
+            }
+
             return;
 
-        int swtIdx = fromNode.getSwtId(toNode);
-        fromNode.updateSwtId(toNode, -1);
+        }
 
-        this.logDecrementActivePorts(swtIdx);
+        int swtOffset = fromNode.getSwtOffset(toNode);
+        if (downward && fromNode.getId() > toNode.getId()) {
+            fromNode.removeLeftChild();
+
+        } else if (downward) {
+            fromNode.removeRightChild();
+
+        } else {
+            fromNode.removeParent();
+
+        }
+
+        Edge edge = new Edge(fromNode, toNode, downward, swtOffset);
+        this.rmvEdges.push(edge);
 
     }
     /* End of Setters
@@ -1310,6 +1374,7 @@ public abstract class NetworkController extends LoggerLayer {
             this.usedNodes.set(i, false);
 
         this.updateConn();
+        this.updateLinks();
 
         int missingMessages = this.rcvMsgs - this.cmpMsgs;
         System.out.println(
