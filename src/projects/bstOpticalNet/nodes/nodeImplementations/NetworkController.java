@@ -1,7 +1,9 @@
 package projects.bstOpticalNet.nodes.nodeImplementations;
 
 import java.awt.Graphics;
+import java.util.Set;
 import java.util.Deque;
+import java.util.HashSet;
 import java.util.Stack;
 import java.util.ArrayList;
 import java.util.ArrayDeque;
@@ -13,6 +15,7 @@ import projects.bstOpticalNet.nodes.messages.NewMessage;
 import projects.bstOpticalNet.nodes.messages.OpticalNetMessage;
 import projects.bstOpticalNet.nodes.messages.RoutingInfoMessage;
 import projects.bstOpticalNet.nodes.models.Edge;
+import projects.bstOpticalNet.nodes.models.Pair;
 import projects.bstOpticalNet.nodes.models.Rotation;
 import projects.bstOpticalNet.nodes.models.Direction;
 import projects.bstOpticalNet.nodes.models.InfraNode;
@@ -862,14 +865,14 @@ public abstract class NetworkController extends LoggerLayer {
         while (!this.addEdges.isEmpty() && this.addEdges.peekFirst().getSwtOffset() == -1) {
             Edge edge = this.addEdges.removeFirst();
 
-            this.addEdge(edge.getFromNode(), edge.getToNode(), edge.isDownward(), edge.isInitial());
+            this.setLink(edge.getFromNode(), edge.getToNode(), edge.isDownward(), edge.isInitial());
 
         }
 
         this.logEssentialLinkUpdates();
     }
 
-    private void addEdge (InfraNode fromNode, InfraNode toNode, boolean downward, boolean initial) {
+    private void setLink (InfraNode fromNode, InfraNode toNode, boolean downward, boolean initial) {
         int clsId = this.getClusterId(fromNode, toNode);
         if (this.mirrored) {
             boolean left = (downward ?
@@ -938,18 +941,21 @@ public abstract class NetworkController extends LoggerLayer {
     }
 
     private void logEssentialLinkUpdates () {
+        Set<Pair> redundantLinks = new HashSet<Pair>();
 
         while (!this.addEdges.isEmpty()) {
             Edge link = this.addEdges.removeLast();
             InfraNode fromNode = link.getFromNode();
-            int clsId = this.getClusterId(fromNode, link.getToNode());
-            NetworkSwitch swt = this.clusters.get(clsId).get(link.getSwtOffset());
-            int swtId = swt.getIndex();
+            Pair linkPair = new Pair(fromNode.getId(), link.getToNode().getId());
 
-            if (!link.isInitial()) {
+            if (!link.isInitial() && !redundantLinks.contains(linkPair)) {
+                int clsId = this.getClusterId(fromNode, link.getToNode());
+                NetworkSwitch swt = this.clusters.get(clsId).get(link.getSwtOffset());
+                int swtId = swt.getIndex();
+                redundantLinks.add(linkPair);
                 this.logIncrementAlterations(swtId, fromNode);
-
             }
+
         }
     }
 
