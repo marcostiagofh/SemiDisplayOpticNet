@@ -504,6 +504,31 @@ public class InfraNode implements Comparable<InfraNode> {
         }
     }
 
+    public boolean isDownwardEdge (InfraNode toNode) {
+        if (toNode.getId() == -1) {
+            System.out.println("Invalid toNode");
+            Tools.fatalError("Invalid toNode");
+
+        }
+
+        if (this.getLeftChild() == toNode) {
+            return true;
+
+        } else if (this.getRightChild() == toNode) {
+            return true;
+
+        } else if (this.getParent() == toNode) {
+            return false;
+
+        }
+
+        this.debugNode();
+        toNode.debugNode();
+
+        Tools.fatalError("Not a real edge");
+        return false;
+    }
+
     /* End of Setters */
 
     /* Auxiliary Functions */

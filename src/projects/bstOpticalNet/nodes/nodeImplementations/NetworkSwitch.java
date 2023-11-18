@@ -13,6 +13,7 @@ public class NetworkSwitch {
     private int index = -1;
 
     private int size = 0;
+    private int offset = -1;
 
     private HashMap<Integer, InputNode> inputId2Node;
     private HashMap<Integer, OutputNode> outputId2Node;
@@ -28,6 +29,11 @@ public class NetworkSwitch {
         return this.index;
     }
 
+    public int getOffset () {
+        return this.offset;
+
+    }
+
     /**
      * Constructor for switches belonging to clusters of type 1. Sets the ranges for the input
      * and output ports as the same, minId to maxId.
@@ -35,8 +41,8 @@ public class NetworkSwitch {
      * @param maxId     the biggest id in the range of nodes in the switch
      * @param netNodes  the NetworkNodes
      */
-    public NetworkSwitch (int minId, int maxId, ArrayList<NetworkNode> netNodes) {
-        this(minId, maxId, minId, maxId, netNodes);
+    public NetworkSwitch (int minId, int maxId, int offset, ArrayList<NetworkNode> netNodes) {
+        this(minId, maxId, minId, maxId, offset, netNodes);
     }
 
     /**
@@ -50,9 +56,10 @@ public class NetworkSwitch {
      * @param netNodes  the NetworkNodes
      */
     public NetworkSwitch (
-        int minId1, int maxId1, int minId2, int maxId2, ArrayList<NetworkNode> netNodes
+        int minId1, int maxId1, int minId2, int maxId2, int offset, ArrayList<NetworkNode> netNodes
     ) {
         this.size = maxId1 - minId1 + 1;
+        this.offset = offset;
         this.inputId2Node = new HashMap<>();
         this.outputId2Node = new HashMap<>();
         this.inputNodes = new ArrayList<>();
@@ -92,6 +99,48 @@ public class NetworkSwitch {
         }
     }
 
+    public int getConnectedInputNodeId (int out) {
+        OutputNode outNode = this.outputId2Node.get(out);
+
+        return outNode.getInputConnectedNodeId();
+    }
+
+    public int getConnectedOutputNodeId (int in) {
+        InputNode inNode = this.inputId2Node.get(in);
+
+        return inNode.getOutputConnectedNodeId();
+    }
+
+    public AvailablePorts getAvailablePorts (int in, int out) {
+        InputNode inNode = this.inputId2Node.get(in);
+        if (inNode == null) {
+        	if (this.outputId2Node.get(in) == null) {
+        		Tools.fatalError("Wrong cluster to check available ports");
+
+        	}
+
+        	return AvailablePorts.NONE;
+
+        }
+        OutputNode outNode = this.outputId2Node.get(out);
+
+        boolean inActive = inNode.isActive();
+        boolean outActive = outNode.isActive();
+
+        if (!inActive && !outActive) {
+            return AvailablePorts.BOTH;
+
+        } else if (!inActive) {
+            return AvailablePorts.INPUT;
+
+        } else if (!outActive) {
+            return AvailablePorts.OUTPUT;
+
+        }
+
+        return AvailablePorts.NONE;
+    }
+
     public void removeLink (int in, int out) {
         InputNode inNode = this.inputId2Node.get(in);
         OutputNode outNode = this.outputId2Node.get(out);
@@ -119,7 +168,7 @@ public class NetworkSwitch {
      * @param in    the child network node id
      * @param out   the parent network node id
      */
-    public void updateChild (int in, int out, NetworkController controller) {
+    public void updateChild (int in, int out) {
         InputNode inNode = this.inputId2Node.get(in);
         OutputNode outNode = this.outputId2Node.get(out);
 

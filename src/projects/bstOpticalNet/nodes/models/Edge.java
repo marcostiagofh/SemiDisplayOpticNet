@@ -11,17 +11,19 @@ public class Edge {
     private InfraNode fromNode;
     private InfraNode toNode;
     private boolean downward;
+    private boolean initial;
     private int swtOffset = -1;
 
 
-    public Edge (InfraNode fromNode, InfraNode toNode, boolean downward) {
-        this(fromNode, toNode, downward, -1);
+    public Edge (InfraNode fromNode, InfraNode toNode, boolean downward, boolean initial) {
+        this(fromNode, toNode, downward, initial, -1);
     }
 
-    public Edge (InfraNode fromNode, InfraNode toNode, boolean downward, int swtOffset) {
+    public Edge (InfraNode fromNode, InfraNode toNode, boolean downward, boolean initial, int swtOffset) {
         this.fromNode = fromNode;
         this.toNode = toNode;
         this.downward = downward;
+        this.initial = initial;
         this.swtOffset = swtOffset;
     }
 
@@ -47,6 +49,11 @@ public class Edge {
 
     public boolean isDownward () {
         return this.downward;
+
+    }
+
+    public boolean isInitial () {
+        return this.initial;
 
     }
 

@@ -66,7 +66,7 @@ public class InputNode {
         this.outputNode = node;
         this.active = active;
 
-        node.setInputNode(this, true);
+        node.setInputNode(this, active);
     }
 
     /**

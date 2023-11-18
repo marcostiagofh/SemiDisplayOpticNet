@@ -86,6 +86,30 @@ public class NetworkNode extends SynchronizerLayer {
         }
     }
 
+    public void swapChild (int childId) {
+    	if (this.getLeftChildId() == childId) {
+    		this.parent = this.leftChild;
+    		this.leftChild = null;
+
+    	} else if (this.getRightChildId() == childId) {
+    		this.parent = this.rightChild;
+    		this.rightChild = null;
+
+    	}
+    }
+
+    public void swapParent () {
+    	if (this.ID > this.getParentId()) {
+    		this.leftChild = this.parent;
+    		this.parent = null;
+
+    	} else {
+    		this.rightChild = this.parent;
+    		this.parent = null;
+
+    	}
+    }
+
     /**
      * Setter to update de left child InputNode
      * @param node  the new inputNode
