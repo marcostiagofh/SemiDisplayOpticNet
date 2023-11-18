@@ -996,10 +996,10 @@ public abstract class NetworkController extends LoggerLayer {
                     this.allowRouting(node, dstNode, 1);
                     break;
 
-                case ZIGZIGLEFT_BOTTOMUP:
-                case ZIGZIGRIGHT_BOTTOMUP:
+                case SEMI_ZIGZIGLEFT_BOTTOMUP:
+                case SEMI_ZIGZIGRIGHT_BOTTOMUP:
                     if (this.zigZigBottomUp(node)) {
-                        System.out.println("zigZigBottomUp");
+                        System.out.println("semiZigZigBottomUp");
                         this.logIncrementActiveRequests();
 
                         InfraNode rfrshNode = this.getInfraNode(nodeId);
@@ -1014,10 +1014,10 @@ public abstract class NetworkController extends LoggerLayer {
 
                     break;
 
-                case ZIGZAGLEFT_BOTTOMUP:
-                case ZIGZAGRIGHT_BOTTOMUP:
+                case SEMI_ZIGZAGLEFT_BOTTOMUP:
+                case SEMI_ZIGZAGRIGHT_BOTTOMUP:
                     if (this.zigZagBottomUp(node)) {
-                        System.out.println("zigZagBottomUp");
+                        System.out.println("semiZigZagBottomUp");
                         this.logIncrementActiveRequests();
 
                     } else {
@@ -1027,9 +1027,9 @@ public abstract class NetworkController extends LoggerLayer {
 
                     break;
 
-                case ZIGZIGLEFT_TOPDOWN:
+                case SEMI_ZIGZIGLEFT_TOPDOWN:
                     if (this.zigZigLeftTopDown(node)) {
-                        System.out.println("zigZigLeftTopDown");
+                        System.out.println("semiZigZigLeftTopDown");
                         this.logIncrementActiveRequests();
 
                         InfraNode rfrshNode = this.getInfraNode(nodeId);
@@ -1044,9 +1044,9 @@ public abstract class NetworkController extends LoggerLayer {
 
                     break;
 
-                case ZIGZAGLEFT_TOPDOWN:
+                case SEMI_ZIGZAGLEFT_TOPDOWN:
                     if (this.zigZagLeftTopDown(node)) {
-                        System.out.println("zigZagLeftTopDown");
+                        System.out.println("semiZigZagLeftTopDown");
                         this.logIncrementActiveRequests();
 
                         InfraNode rfrshNode = this.getInfraNode(nodeId);
@@ -1071,9 +1071,9 @@ public abstract class NetworkController extends LoggerLayer {
 
                     break;
 
-                case ZIGZIGRIGHT_TOPDOWN:
+                case SEMI_ZIGZIGRIGHT_TOPDOWN:
                     if (this.zigZigRightTopDown(node)) {
-                        System.out.println("zigZigRightTopDown");
+                        System.out.println("semiZigZigRightTopDown");
                         this.logIncrementActiveRequests();
 
                         InfraNode rfrshNode = this.getInfraNode(nodeId);
@@ -1088,9 +1088,9 @@ public abstract class NetworkController extends LoggerLayer {
 
                     break;
 
-                case ZIGZAGRIGHT_TOPDOWN:
+                case SEMI_ZIGZAGRIGHT_TOPDOWN:
                     if (this.zigZagRightTopDown(node)) {
-                        System.out.println("zigZagRightTopDown");
+                        System.out.println("semiZigZagRightTopDown");
                         this.logIncrementActiveRequests();
 
                         InfraNode rfrshNode = this.getInfraNode(nodeId);
@@ -1207,25 +1207,25 @@ public abstract class NetworkController extends LoggerLayer {
                 this.isValidNode(y.getLeftChild()) && x == y.getLeftChild() &&
                 this.isValidNode(z.getLeftChild()) && y == z.getLeftChild()
             ) {
-                return Rotation.ZIGZIGLEFT_BOTTOMUP;
+                return Rotation.SEMI_ZIGZIGLEFT_BOTTOMUP;
 
             } else if (
                 this.isValidNode(y.getRightChild()) && x == y.getRightChild() &&
                 this.isValidNode(z.getRightChild()) && y == z.getRightChild()
             ) {
-                return Rotation.ZIGZIGRIGHT_BOTTOMUP;
+                return Rotation.SEMI_ZIGZIGRIGHT_BOTTOMUP;
 
             } else if (
                 this.isValidNode(y.getRightChild()) && x == y.getRightChild() &&
                 this.isValidNode(z.getLeftChild()) && y == z.getLeftChild()
             ) {
-                return Rotation.ZIGZAGLEFT_BOTTOMUP;
+                return Rotation.SEMI_ZIGZAGLEFT_BOTTOMUP;
 
             } else if (
                 this.isValidNode(y.getLeftChild()) && x == y.getLeftChild() &&
                 this.isValidNode(z.getRightChild()) && y == z.getRightChild()
             ) {
-                return Rotation.ZIGZAGRIGHT_BOTTOMUP;
+                return Rotation.SEMI_ZIGZAGRIGHT_BOTTOMUP;
 
             } else {
                 Tools.fatalError("Network topology for BottomUp not expected");
@@ -1238,10 +1238,10 @@ public abstract class NetworkController extends LoggerLayer {
             InfraNode z = y.getRoutingNode(dstNode);
 
             if (x.getLeftChild() == y && y.getLeftChild() == z) {
-                return Rotation.ZIGZIGLEFT_TOPDOWN;
+                return Rotation.SEMI_ZIGZIGLEFT_TOPDOWN;
 
             } else if (x.getLeftChild() == y && y.getRightChild() == z) {
-                return Rotation.ZIGZAGLEFT_TOPDOWN;
+                return Rotation.SEMI_ZIGZAGLEFT_TOPDOWN;
 
             } else {
                 Tools.fatalError("Network topology for Left TopDown not expected");
@@ -1254,10 +1254,10 @@ public abstract class NetworkController extends LoggerLayer {
             InfraNode z = y.getRoutingNode(dstNode);
 
             if (x.getRightChild() == y && y.getRightChild() == z) {
-                return Rotation.ZIGZIGRIGHT_TOPDOWN;
+                return Rotation.SEMI_ZIGZIGRIGHT_TOPDOWN;
 
             } else if (x.getRightChild() == y && y.getLeftChild() == z) {
-                return Rotation.ZIGZAGRIGHT_TOPDOWN;
+                return Rotation.SEMI_ZIGZAGRIGHT_TOPDOWN;
 
             } else {
                 Tools.fatalError("Network topology for Right TopDown not expected");
