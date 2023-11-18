@@ -805,11 +805,14 @@ public abstract class NetworkController extends LoggerLayer {
             }
             toNode.setParent(fromNode);
 
-            this.addEdges.push(downEdge);
-            this.addEdges.push(upEdge);
+            if (fromNode.getId() != this.getNumNodes()) {
+	            this.addEdges.addLast(downEdge);
+	            this.addEdges.addLast(upEdge);
+
+            }
 
         }
-    }
+    }}
 
     private void updateLinks () {
         while (!this.rmvEdges.isEmpty()) {
