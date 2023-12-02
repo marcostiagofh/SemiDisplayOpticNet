@@ -99,6 +99,21 @@ public class NetworkSwitch {
         }
     }
 
+    public boolean hasLink (int in, int out) {
+        InputNode inNode = this.inputId2Node.get(in);
+        OutputNode outNode = this.outputId2Node.get(out);
+
+        if (inNode.getOutputConnectedNodeId() != out || outNode.getInputConnectedNodeId() != in)
+            return false;
+
+        if (inNode.isActive() != outNode.isActive()) {
+            Tools.fatalError("input node and output node active status differ");
+
+        }
+
+        return inNode.isActive() && outNode.isActive();
+    }
+
     public int getConnectedInputNodeId (int out) {
         OutputNode outNode = this.outputId2Node.get(out);
 
@@ -188,24 +203,6 @@ public class NetworkSwitch {
 
         oldInNode.setLinkToOutputNode(oldOutNode, false);
         inNode.setLinkToOutputNode(outNode, true);
-    }
-
-    /**
-     * Getter for the InputNode connected to the NetworkNode with nodeId
-     * @param nodeId    the id of the network node
-     * @return          the connected InputNode
-     */
-    public InputNode getInputNode (int nodeId) {
-        return this.inputId2Node.get(nodeId);
-    }
-
-    /**
-     * Getter for the OutputNode connected to the NetworkNode with nodeId
-     * @param nodeId    the id of the network node
-     * @return          the connected OutputNode
-     */
-    public OutputNode getOutputNode (int nodeId) {
-        return this.outputId2Node.get(nodeId);
     }
 
     /**

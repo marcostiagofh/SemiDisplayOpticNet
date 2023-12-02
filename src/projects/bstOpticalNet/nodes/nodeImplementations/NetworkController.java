@@ -40,6 +40,7 @@ public abstract class NetworkController extends LoggerLayer {
     protected Stack<Edge> rmvEdges = new Stack<Edge>();
     protected Stack<Edge> swapEdges = new Stack<Edge>();
     protected Deque<Edge> addEdges = new ArrayDeque<Edge>();
+    protected ArrayList<Edge> assertAlterations = new ArrayList<Edge>();
 
     protected ArrayList<InfraNode> tree;
     protected ArrayList<NetworkNode> netNodes;
@@ -422,6 +423,16 @@ public abstract class NetworkController extends LoggerLayer {
      * @param c         old child of y
      */
     private void zigZigAlterations (InfraNode w, InfraNode z, InfraNode y, InfraNode c) {
+        /*
+                 *z                    y
+                 / \                 /   \
+                y   d     -->      *x     z
+               / \                 / \   / \
+              x   c               a   b c   d
+             / \
+            a   b
+        */
+
         this.logRotation(1);
 
         {
@@ -495,6 +506,13 @@ public abstract class NetworkController extends LoggerLayer {
         this.mapConn(z, c);
         this.mapConn(x, z);
         this.mapConn(w, x);
+
+
+        this.assertAlterations.add(new Edge(y, b, true, false));
+        this.assertAlterations.add(new Edge(x, y, true, false));
+        this.assertAlterations.add(new Edge(z, c, true, false));
+        this.assertAlterations.add(new Edge(x, z, true, false));
+        this.assertAlterations.add(new Edge(w, x, true, false));
 
     }
 
@@ -691,7 +709,18 @@ public abstract class NetworkController extends LoggerLayer {
     protected int getRoutingSwitchId (InfraNode fromNode, InfraNode toNode) {
     	int clsId = this.getClusterId(fromNode, toNode);
     	int swtOffset = fromNode.getSwtOffset(toNode);
-        return this.clusters.get(clsId).get(swtOffset).getIndex();
+        NetworkSwitch swt = this.clusters.get(clsId).get(swtOffset);
+
+        if (!swt.hasLink(fromNode.getNetId(), toNode.getNetId())) {
+        	fromNode.debugNode();
+        	toNode.debugNode();
+
+            System.out.println("Switch does not have valid link");
+            Tools.fatalError("Switch does not have valid link");
+
+        }
+
+        return swt.getIndex();
 
     }
 
@@ -813,15 +842,6 @@ public abstract class NetworkController extends LoggerLayer {
             } else if (fromNode.getId() != this.getNumNodes()) {
             	this.swapEdges.push(downEdge);
 
-            	if (left) {
-            		fromNode.setLeftChildSwitchOffset(fromNode.getParentSwitchOffset());
-            		toNode.setParentSwitchOffset(toNode.getRightChildSwitchOffset());
-
-            	} else {
-            		fromNode.setRightChildSwitchOffset(fromNode.getParentSwitchOffset());
-            		toNode.setParentSwitchOffset(toNode.getLeftChildSwitchOffset());
-
-            	}
             	fromNode.resetParent(toNode);
             	toNode.resetChild(fromNode);
 
@@ -841,12 +861,15 @@ public abstract class NetworkController extends LoggerLayer {
             this.logDecrementActivePorts(swt.getIndex());
 
             if (edge.isDownward() && edge.getFromNodeId() > edge.getToNodeId()) {
+                edge.getFromNode().setLeftChildSwitchOffset(-1);
                 this.getNetNode(edge.getFromNode()).removeLeftChild();
 
             } else if (edge.isDownward()) {
+                edge.getFromNode().setRightChildSwitchOffset(-1);
                 this.getNetNode(edge.getFromNode()).removeRightChild();
 
             } else {
+                edge.getFromNode().setParentSwitchOffset(-1);
                 this.getNetNode(edge.getFromNode()).removeParent();
 
             }
@@ -856,6 +879,22 @@ public abstract class NetworkController extends LoggerLayer {
             Edge edge = this.swapEdges.pop();
             InfraNode fromNode = edge.getFromNode();
             InfraNode toNode = edge.getToNode();
+
+            if (fromNode.getId() > toNode.getId()) {
+                fromNode.setLeftChildSwitchOffset(fromNode.getParentSwitchOffset());
+                toNode.setParentSwitchOffset(toNode.getRightChildSwitchOffset());
+
+                fromNode.setParentSwitchOffset(-1);
+                toNode.setRightChildSwitchOffset(-1);
+
+            } else {
+                fromNode.setRightChildSwitchOffset(fromNode.getParentSwitchOffset());
+                toNode.setParentSwitchOffset(toNode.getLeftChildSwitchOffset());
+
+                fromNode.setParentSwitchOffset(-1);
+                toNode.setLeftChildSwitchOffset(-1);
+
+            }
 
         	this.getNetNode(toNode).swapChild(fromNode.getNetId());
         	this.getNetNode(fromNode).swapParent();
@@ -1477,6 +1516,52 @@ public abstract class NetworkController extends LoggerLayer {
             Tools.fatalError("Invalid infra tree");
         }
 
+        for (int i = 0; i < this.assertAlterations.size(); i++) {
+            Edge edge = assertAlterations.get(i);
+            InfraNode fromNode = edge.getFromNode();
+            InfraNode toNode = edge.getToNode();
+
+            if (toNode.getId() == -1 || fromNode.getId() == this.numNodes)
+                continue;
+
+            boolean flag = toNode.getParentId() == fromNode.getId();
+
+            int clsId = this.getClusterId(toNode, fromNode);
+            int swtOffset = toNode.getParentSwitchOffset();
+            NetworkSwitch swt = this.clusters.get(clsId).get(swtOffset);
+
+            flag &= swt.hasLink(toNode.getNetId(), fromNode.getNetId());
+
+            if (fromNode.getLeftChildId() == toNode.getId()) {
+                clsId = this.getClusterId(fromNode, toNode);
+                swtOffset = fromNode.getLeftChildSwitchOffset();
+                swt = this.clusters.get(clsId).get(swtOffset);
+
+                flag &= swt.hasLink(fromNode.getNetId(), toNode.getNetId());
+
+            } else if (fromNode.getRightChildId() == toNode.getId()) {
+                clsId = this.getClusterId(fromNode, toNode);
+                swtOffset = fromNode.getRightChildSwitchOffset();
+                swt = this.clusters.get(clsId).get(swtOffset);
+
+                flag &= swt.hasLink(fromNode.getNetId(), toNode.getNetId());
+
+            } else {
+                flag = false;
+
+            }
+
+            if (!flag) {
+                fromNode.debugNode();
+                toNode.debugNode();
+
+                Tools.fatalError(
+                    "" + edge.getFromNodeId() + " not setted as parend of " + edge.getToNodeId()
+                );
+            }
+
+        }
+
         for (int i = 0; i < this.numNodes; i++)  {
             if (!this.equivalentNodes(i)) {
                 Tools.fatalError(
@@ -1485,6 +1570,8 @@ public abstract class NetworkController extends LoggerLayer {
 
             }
         }
+
+        this.assertAlterations = new ArrayList<Edge>();
     }
 
     /**
@@ -1520,24 +1607,75 @@ public abstract class NetworkController extends LoggerLayer {
         NetworkNode netNode = this.netNodes.get(nodeId);
 
         boolean flag = infraNode.getId() == netNode.getId() - 1;
-        flag &= (
-                infraNode.getLeftChildId() != -1 ?
-                infraNode.getLeftChildId() == netNode.getLeftChildId() - 1 :
-                netNode.getLeftChildId() == -1
-        );
-        flag &= (
-                infraNode.getRightChildId() != -1 ?
-                infraNode.getRightChildId() == netNode.getRightChildId() - 1 :
-                netNode.getRightChildId() == -1
-        );
-        flag &= (
-                (
-                    infraNode.getParentId() != -1 &&
-                    infraNode.getParentId() != this.numNodes
-                ) ?
-                infraNode.getParentId() == netNode.getParentId() - 1 :
-                netNode.getParentId() == -1
-        );
+
+        if (infraNode.getLeftChildId() != -1) {
+            flag &= infraNode.getLeftChildId() == netNode.getLeftChildId() - 1;
+
+            int clsId = this.getClusterId(infraNode, infraNode.getLeftChild());
+            int swtOffset = infraNode.getLeftChildSwitchOffset();
+
+            if (swtOffset == -1) {
+                infraNode.debugNode();
+                netNode.debugNode();
+                return false;
+
+            }
+
+            NetworkSwitch swt = this.clusters.get(clsId).get(swtOffset);
+
+            flag &= swt.hasLink(infraNode.getNetId(), infraNode.getLeftChild().getNetId());
+
+        } else {
+            flag &= netNode.getLeftChildId() == -1;
+            flag &= infraNode.getLeftChildSwitchOffset() == -1;
+
+        }
+
+        if (infraNode.getRightChildId() != -1) {
+            flag &= infraNode.getRightChildId() == netNode.getRightChildId() - 1;
+
+            int clsId = this.getClusterId(infraNode, infraNode.getRightChild());
+            int swtOffset = infraNode.getRightChildSwitchOffset();
+
+            if (swtOffset == -1) {
+                infraNode.debugNode();
+                netNode.debugNode();
+                return false;
+
+            }
+
+            NetworkSwitch swt = this.clusters.get(clsId).get(swtOffset);
+
+            flag &= swt.hasLink(infraNode.getNetId(), infraNode.getRightChild().getNetId());
+
+        } else {
+            flag &= netNode.getRightChildId() == -1;
+            flag &= infraNode.getRightChildSwitchOffset() == -1;
+
+        }
+
+        if (infraNode.getParentId() != -1 && infraNode.getParentId() != this.numNodes) {
+            flag &= infraNode.getParentId() == netNode.getParentId() - 1;
+
+            int clsId = this.getClusterId(infraNode, infraNode.getParent());
+            int swtOffset = infraNode.getParentSwitchOffset();
+
+            if (swtOffset == -1) {
+                infraNode.debugNode();
+                netNode.debugNode();
+                return false;
+
+            }
+
+            NetworkSwitch swt = this.clusters.get(clsId).get(swtOffset);
+
+            flag &= swt.hasLink(infraNode.getNetId(), infraNode.getParent().getNetId());
+
+        } else {
+            flag &= netNode.getParentId() == -1;
+            flag &= infraNode.getParentSwitchOffset() == -1;
+
+        }
 
         if (!flag) {
             infraNode.debugNode();
