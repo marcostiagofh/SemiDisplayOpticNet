@@ -236,7 +236,38 @@ public abstract class NetworkController extends LoggerLayer {
      * @param x         The node with the message
      * @return          True of False wether the rotation is performed
      */
-    protected boolean zigZigBottomUp (InfraNode x) {
+    protected boolean zigBottomUp (InfraNode x) {
+        /*
+               y                *x
+              / \      -->      / \
+            *x   c             a   y
+            / \                   / \
+           a   b                 b   c
+        */
+
+        InfraNode y = x.getParent();
+
+        boolean leftZig = (x == y.getLeftChild());
+        InfraNode b = (leftZigZig) ? x.getRightChild() : x.getLeftChild();
+
+        if (this.areAvailableNodes(x, y, b)) {
+            this.zigAlterations(x, y, b);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * This method selects the nodes involved in alterations over a zig-zig
+     * bottom up rotation and checks if they are available to perform this
+     * rotation. If they are it calls the zig-zig alteration related method
+     * and return true, if they arent return false.
+     * @param x         The node with the message
+     * @return          True of False wether the rotation is performed
+     */
+    protected boolean semiZigZigBottomUp (InfraNode x) {
         /*
                  z                 *y
                 / \               /   \
@@ -255,7 +286,35 @@ public abstract class NetworkController extends LoggerLayer {
         InfraNode c = (leftZigZig) ? y.getRightChild() : y.getLeftChild();
 
         if (this.areAvailableNodes(w, x, z, y, c)) {
-            this.zigZigAlterations(w, z, y, c);
+            this.semiZigZigAlterations(w, z, y, c);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    protected boolean zigZigBottomUp (InfraNode x) {
+        /*
+                 z                 *x
+                / \               /  \
+               y   d             a    y
+              / \      -->           / \
+            *x   c                  b   z
+            / \                        / \
+           a   b                      c   d
+        */
+
+        InfraNode y = x.getParent();
+        InfraNode z = y.getParent();
+        InfraNode w = z.getParent();
+
+        boolean leftZigZig = (y == z.getLeftChild());
+        InfraNode b = (leftZigZig) ? x.getRightChild() : x.getLeftChild();
+        InfraNode c = (leftZigZig) ? y.getRightChild() : y.getLeftChild();
+
+        if (this.areAvailableNodes(w, x, y, z, b, c)) {
+            this.ziZigAlterations(w, x, y, z, b, c);
 
             return true;
         }
@@ -309,7 +368,7 @@ public abstract class NetworkController extends LoggerLayer {
      * @param z         The node with the message
      * @return          True of False wether the rotation is performed
      */
-    protected boolean zigZigLeftTopDown (InfraNode z) {
+    protected boolean semiZigZigLeftTopDown (InfraNode z) {
         /*
                  *z                    y
                  / \                 /   \
@@ -325,7 +384,7 @@ public abstract class NetworkController extends LoggerLayer {
         InfraNode c = y.getRightChild();
 
         if (this.areAvailableNodes(w, x, z, y, c)) {
-            this.zigZigAlterations(w, z, y, c);
+            this.semiZigZigAlterations(w, z, y, c);
 
             return true;
         }
@@ -341,14 +400,14 @@ public abstract class NetworkController extends LoggerLayer {
      * @param z         The node with the message
      * @return          True of False wether the rotation is performed
      */
-    protected boolean zigZigRightTopDown (InfraNode z) {
+    protected boolean semiZigZigRightTopDown (InfraNode z) {
         InfraNode w = z.getParent();
         InfraNode y = z.getRightChild();
         InfraNode x = y.getRightChild();
         InfraNode c = y.getLeftChild();
 
         if (this.areAvailableNodes(w, x, z, y, c)) {
-            this.zigZigAlterations(w, z, y, c);
+            this.semiZigZigAlterations(w, z, y, c);
 
             return true;
         }
@@ -422,7 +481,7 @@ public abstract class NetworkController extends LoggerLayer {
      * @param y         old parent of node x
      * @param c         old child of y
      */
-    private void zigZigAlterations (InfraNode w, InfraNode z, InfraNode y, InfraNode c) {
+    private void semiZigZigAlterations (InfraNode w, InfraNode z, InfraNode y, InfraNode c) {
         /*
                  *z                    y
                  / \                 /   \
@@ -1119,7 +1178,7 @@ public abstract class NetworkController extends LoggerLayer {
      * and their remaining routing path. If at least one of this nodes wouldn't be able
      * to finish it's routing the simulation must be ended with an error.
      */
-    private void lockRoutingNodes () {
+    protected void lockRoutingNodes () {
         while (!this.routingNodes.isEmpty()) {
             RoutingInfoMessage routMsg = this.routingNodes.poll();
             int nodeId = routMsg.getNodeId();
@@ -1140,7 +1199,7 @@ public abstract class NetworkController extends LoggerLayer {
      * tries to rout the message 2 times. If neither step is possible, due to involved nodes being
      * locked or other issues, the node is not allowed to act in this round.
      */
-    private void updateConn () {
+    protected void updateConn () {
         this.lockRoutingNodes();
 
         while (!this.nodesWithMsg.isEmpty()) {
@@ -1159,7 +1218,7 @@ public abstract class NetworkController extends LoggerLayer {
 
                 case SEMI_ZIGZIGLEFT_BOTTOMUP:
                 case SEMI_ZIGZIGRIGHT_BOTTOMUP:
-                    if (this.zigZigBottomUp(node)) {
+                    if (this.semiZigZigBottomUp(node)) {
                         System.out.println("semiZigZigBottomUp");
                         this.logIncrementActiveRequests();
 
@@ -1178,7 +1237,7 @@ public abstract class NetworkController extends LoggerLayer {
                 case SEMI_ZIGZAGLEFT_BOTTOMUP:
                 case SEMI_ZIGZAGRIGHT_BOTTOMUP:
                     if (this.zigZagBottomUp(node)) {
-                        System.out.println("semiZigZagBottomUp");
+                        System.out.println("zigZagBottomUp");
                         this.logIncrementActiveRequests();
 
                     } else {
@@ -1189,7 +1248,7 @@ public abstract class NetworkController extends LoggerLayer {
                     break;
 
                 case SEMI_ZIGZIGLEFT_TOPDOWN:
-                    if (this.zigZigLeftTopDown(node)) {
+                    if (this.semiZigZigLeftTopDown(node)) {
                         System.out.println("semiZigZigLeftTopDown");
                         this.logIncrementActiveRequests();
 
@@ -1233,7 +1292,7 @@ public abstract class NetworkController extends LoggerLayer {
                     break;
 
                 case SEMI_ZIGZIGRIGHT_TOPDOWN:
-                    if (this.zigZigRightTopDown(node)) {
+                    if (this.semiZigZigRightTopDown(node)) {
                         System.out.println("semiZigZigRightTopDown");
                         this.logIncrementActiveRequests();
 
@@ -1290,7 +1349,7 @@ public abstract class NetworkController extends LoggerLayer {
      * @param routingTimes  number of times the message should be routed before next step
      * @return              true if message is allowed to rout and false if it isn't
      */
-    private boolean allowRouting (InfraNode node, InfraNode dstNode, int routingTimes) {
+    protected boolean allowRouting (InfraNode node, InfraNode dstNode, int routingTimes) {
         return this.allowRouting(node, dstNode, new RoutingInfoMessage(routingTimes));
     }
 
