@@ -246,12 +246,13 @@ public abstract class NetworkController extends LoggerLayer {
         */
 
         InfraNode y = x.getParent();
+        InfraNode w = y.getParent();
 
         boolean leftZig = (x == y.getLeftChild());
-        InfraNode b = (leftZigZig) ? x.getRightChild() : x.getLeftChild();
+        InfraNode b = (leftZig) ? x.getRightChild() : x.getLeftChild();
 
         if (this.areAvailableNodes(x, y, b)) {
-            this.zigAlterations(x, y, b);
+            this.zigAlterations(w, y, x, b);
 
             return true;
         }
@@ -286,7 +287,7 @@ public abstract class NetworkController extends LoggerLayer {
         InfraNode c = (leftZigZig) ? y.getRightChild() : y.getLeftChild();
 
         if (this.areAvailableNodes(w, x, z, y, c)) {
-            this.semiZigZigAlterations(w, z, y, c);
+            this.zigAlterations(w, z, y, c);
 
             return true;
         }
@@ -314,7 +315,7 @@ public abstract class NetworkController extends LoggerLayer {
         InfraNode c = (leftZigZig) ? y.getRightChild() : y.getLeftChild();
 
         if (this.areAvailableNodes(w, x, y, z, b, c)) {
-            this.ziZigAlterations(w, x, y, z, b, c);
+            this.zigZigAlterations(w, z, y, x, b, c);
 
             return true;
         }
@@ -384,7 +385,7 @@ public abstract class NetworkController extends LoggerLayer {
         InfraNode c = y.getRightChild();
 
         if (this.areAvailableNodes(w, x, z, y, c)) {
-            this.semiZigZigAlterations(w, z, y, c);
+            this.zigAlterations(w, z, y, c);
 
             return true;
         }
@@ -407,7 +408,7 @@ public abstract class NetworkController extends LoggerLayer {
         InfraNode c = y.getLeftChild();
 
         if (this.areAvailableNodes(w, x, z, y, c)) {
-            this.semiZigZigAlterations(w, z, y, c);
+            this.zigAlterations(w, z, y, c);
 
             return true;
         }
@@ -481,7 +482,7 @@ public abstract class NetworkController extends LoggerLayer {
      * @param y         old parent of node x
      * @param c         old child of y
      */
-    private void semiZigZigAlterations (InfraNode w, InfraNode z, InfraNode y, InfraNode c) {
+    private void zigAlterations (InfraNode w, InfraNode z, InfraNode y, InfraNode c) {
         /*
                  *z                    y
                  / \                 /   \
@@ -511,6 +512,49 @@ public abstract class NetworkController extends LoggerLayer {
         this.mapConn(z, c);
         this.mapConn(y, z, this.mirrored);
         this.mapConn(w, y);
+
+    }
+
+    private void zigZigAlterations (InfraNode w, InfraNode z, InfraNode y, InfraNode x, InfraNode b, InfraNode c) {
+		        /*
+		        z                 *x
+		       / \               /  \
+		      y   d             a    y
+		     / \      -->           / \
+		   *x   c                  b   z
+		   / \                        / \
+		  a   b                      c   d
+		*/
+
+        this.logRotation(1);
+
+        {
+            this.pushRmvEdge(w, z, true);
+            this.pushRmvEdge(z, w, false);
+
+            if (this.mirrored) {
+                this.pushRmvEdge(z, y, true);
+                this.pushRmvEdge(y, z, false);
+
+                this.pushRmvEdge(y, x, true);
+                this.pushRmvEdge(x, y, false);
+
+            }
+
+            this.pushRmvEdge(y, c, true);
+            this.pushRmvEdge(c, y, false);
+
+            this.pushRmvEdge(x, b, true);
+            this.pushRmvEdge(b, x, false);
+
+        }
+
+        this.mapConn(z, c);
+        this.mapConn(y, b);
+        this.mapConn(y, z, this.mirrored);
+        this.mapConn(x, y, this.mirrored);
+        this.mapConn(x, z);
+        this.mapConn(w, x);
 
     }
 
