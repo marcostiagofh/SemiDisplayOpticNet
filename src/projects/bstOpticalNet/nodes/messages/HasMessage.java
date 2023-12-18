@@ -66,6 +66,13 @@ public class HasMessage extends Message implements Comparable<HasMessage>  {
         }
     }
 
+    public void debugMsg () {
+        System.out.println(
+            "has-msg"
+            + " curId: " + this.getCurrId() + " dstId: " + this.getDst()
+        );
+    }
+
     @Override
     public Message clone () {
         return this;

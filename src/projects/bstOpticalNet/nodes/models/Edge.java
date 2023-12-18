@@ -62,6 +62,11 @@ public class Edge {
 
     }
 
+    public void setSwtOffset (int swtOffset) {
+        this.swtOffset = swtOffset;
+
+    }
+
     public void debugEdge () {
 
         System.out.println("----------------------------------------");

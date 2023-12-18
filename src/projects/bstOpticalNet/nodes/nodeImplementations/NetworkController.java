@@ -39,6 +39,7 @@ public abstract class NetworkController extends LoggerLayer {
     protected PriorityQueue<RoutingInfoMessage> routingNodes = new PriorityQueue<RoutingInfoMessage>();
     protected Stack<Edge> rmvEdges = new Stack<Edge>();
     protected Stack<Edge> swapEdges = new Stack<Edge>();
+    protected Stack<Edge> doubleSwapEdges = new Stack<Edge>();
     protected Deque<Edge> addEdges = new ArrayDeque<Edge>();
     protected ArrayList<Edge> assertAlterations = new ArrayList<Edge>();
 
@@ -305,7 +306,6 @@ public abstract class NetworkController extends LoggerLayer {
             / \                        / \
            a   b                      c   d
         */
-
         InfraNode y = x.getParent();
         InfraNode z = y.getParent();
         InfraNode w = z.getParent();
@@ -416,6 +416,103 @@ public abstract class NetworkController extends LoggerLayer {
         return false;
     }
 
+    protected boolean zigLeftTopDown (InfraNode y) {
+        /*
+              *y                 x
+              / \      -->      / \
+             x   c             a  *y
+            / \                   / \
+           a   b                 b   c
+        */
+
+    	InfraNode w = y.getParent();
+        InfraNode x = y.getLeftChild();
+        InfraNode b = x.getRightChild();
+
+        if (this.areAvailableNodes(x, y, b)) {
+            this.zigAlterations(w, y, x, b);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    protected boolean zigRightTopDown (InfraNode y) {
+    	InfraNode w = y.getParent();
+        InfraNode x = y.getRightChild();
+        InfraNode b = x.getLeftChild();
+
+        if (this.areAvailableNodes(x, y, b)) {
+            this.zigAlterations(w, y, x, b);
+
+            return true;
+        }
+
+        return false;
+    }
+
+
+    /**
+     * This method selects the nodes involved in alterations over a zig-zig
+     * left top down rotation and checks if they are available to perform this
+     * rotation. If they are it calls the zig-zig alteration related method
+     * and return true, if they arent return false.
+     * @param z         The node with the message
+     * @return          True of False wether the rotation is performed
+     */
+    protected boolean zigZigLeftTopDown (InfraNode z) {
+        /*
+                 z                 x
+                / \               /  \
+               y   d             a    y
+              / \      -->           / \
+             x   c                  b  *z
+            / \                        / \
+           a   b                      c   d
+        */
+
+        InfraNode w = z.getParent();
+        InfraNode y = z.getLeftChild();
+        InfraNode x = y.getLeftChild();
+
+        InfraNode b = x.getRightChild();
+        InfraNode c = y.getRightChild();
+
+        if (this.areAvailableNodes(w, x, y, z, b, c)) {
+            this.zigZigAlterations(w, z, y, x, b, c);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * This method selects the nodes involved in alterations over a zig-zig
+     * right top down rotation and checks if they are available to perform this
+     * rotation. If they are it calls the zig-zig alteration related method
+     * and return true, if they arent return false.
+     * @param z         The node with the message
+     * @return          True of False wether the rotation is performed
+     */
+    protected boolean zigZigRightTopDown (InfraNode z) {
+        InfraNode w = z.getParent();
+        InfraNode y = z.getRightChild();
+        InfraNode x = y.getRightChild();
+
+        InfraNode b = x.getLeftChild();
+        InfraNode c = y.getLeftChild();
+
+        if (this.areAvailableNodes(w, x, y, z, b, c)) {
+            this.zigZigAlterations(w, z, y, x, b, c);
+
+            return true;
+        }
+
+        return false;
+    }
+
     /**
      * This method selects the nodes involved in alterations over a zig-zag
      * left top down rotation and checks if they are available to perform this
@@ -510,8 +607,12 @@ public abstract class NetworkController extends LoggerLayer {
         }
 
         this.mapConn(z, c);
-        this.mapConn(y, z, this.mirrored);
+        this.mapConn(y, z, this.mirrored, false);
         this.mapConn(w, y);
+
+        this.assertAlterations.add(new Edge(z, c, true, false));
+        this.assertAlterations.add(new Edge(y, z, true, false));
+        this.assertAlterations.add(new Edge(w, y, true, false));
 
     }
 
@@ -526,7 +627,7 @@ public abstract class NetworkController extends LoggerLayer {
 		  a   b                      c   d
 		*/
 
-        this.logRotation(1);
+        this.logRotation(2);
 
         {
             this.pushRmvEdge(w, z, true);
@@ -538,7 +639,6 @@ public abstract class NetworkController extends LoggerLayer {
 
                 this.pushRmvEdge(y, x, true);
                 this.pushRmvEdge(x, y, false);
-
             }
 
             this.pushRmvEdge(y, c, true);
@@ -551,10 +651,15 @@ public abstract class NetworkController extends LoggerLayer {
 
         this.mapConn(z, c);
         this.mapConn(y, b);
-        this.mapConn(y, z, this.mirrored);
-        this.mapConn(x, y, this.mirrored);
-        this.mapConn(x, z);
+        this.mapConn(y, z, this.mirrored, true);
+        this.mapConn(x, y, this.mirrored, false);
         this.mapConn(w, x);
+
+        this.assertAlterations.add(new Edge(z, c, true, false));
+        this.assertAlterations.add(new Edge(y, b, true, false));
+        this.assertAlterations.add(new Edge(x, y, true, false));
+        this.assertAlterations.add(new Edge(y, z, true, false));
+        this.assertAlterations.add(new Edge(w, x, true, false));
 
     }
 
@@ -605,11 +710,10 @@ public abstract class NetworkController extends LoggerLayer {
         }
 
         this.mapConn(y, b);
-        this.mapConn(x, y, this.mirrored);
+        this.mapConn(x, y, this.mirrored, false);
         this.mapConn(z, c);
         this.mapConn(x, z);
         this.mapConn(w, x);
-
 
         this.assertAlterations.add(new Edge(y, b, true, false));
         this.assertAlterations.add(new Edge(x, y, true, false));
@@ -911,7 +1015,7 @@ public abstract class NetworkController extends LoggerLayer {
      * @param toNode    the child node
      */
     private void mapConn (InfraNode fromNode, InfraNode toNode) {
-        this.mapConn(fromNode, toNode, true);
+        this.mapConn(fromNode, toNode, true, true);
     }
 
     /**
@@ -920,7 +1024,7 @@ public abstract class NetworkController extends LoggerLayer {
      * @param fromNode  the parent node
      * @param toNode    the child node
      */
-    private void mapConn (InfraNode fromNode, InfraNode toNode, boolean addEdge) {
+    private void mapConn (InfraNode fromNode, InfraNode toNode, boolean addEdge, boolean doubleSwap) {
         if (
             (this.isValidNode(fromNode) || fromNode.getId() == this.getNumNodes()) &&
             this.isValidNode(toNode)
@@ -943,7 +1047,21 @@ public abstract class NetworkController extends LoggerLayer {
 	            this.addEdges.addLast(upEdge);
 
             } else if (fromNode.getId() != this.getNumNodes()) {
-            	this.swapEdges.push(downEdge);
+                downEdge.setSwtOffset(fromNode.getParentSwitchOffset());
+                upEdge.setSwtOffset(
+                    !left ? toNode.getLeftChildSwitchOffset() : toNode.getRightChildSwitchOffset()
+                );
+
+                if (doubleSwap) {
+                    Edge rmvEdg = new Edge(toNode, fromNode, true, true);
+                    this.rmvEdges.push(rmvEdg);
+                    this.doubleSwapEdges.push(downEdge);
+                    this.doubleSwapEdges.push(upEdge);
+
+                } else {
+                    this.swapEdges.push(downEdge);
+
+                }
 
             	fromNode.resetParent(toNode);
             	toNode.resetChild(fromNode);
@@ -956,12 +1074,15 @@ public abstract class NetworkController extends LoggerLayer {
         while (!this.rmvEdges.isEmpty()) {
             Edge edge = this.rmvEdges.pop();
             int clsId = this.getClusterId(edge.getFromNode(), edge.getToNode());
-            NetworkSwitch swt = this.clusters.get(clsId).get(edge.getSwtOffset());
 
-            swt.removeLink(
-                edge.getFromNode().getNetId(), edge.getToNode().getNetId()
-            );
-            this.logDecrementActivePorts(swt.getIndex());
+            if (!edge.isInitial()) {
+                NetworkSwitch swt = this.clusters.get(clsId).get(edge.getSwtOffset());
+                swt.removeLink(
+                    edge.getFromNode().getNetId(), edge.getToNode().getNetId()
+                );
+                this.logDecrementActivePorts(swt.getIndex());
+
+            }
 
             if (edge.isDownward() && edge.getFromNodeId() > edge.getToNodeId()) {
                 edge.getFromNode().setLeftChildSwitchOffset(-1);
@@ -1002,6 +1123,34 @@ public abstract class NetworkController extends LoggerLayer {
         	this.getNetNode(toNode).swapChild(fromNode.getNetId());
         	this.getNetNode(fromNode).swapParent();
 
+        }
+
+        while (!this.doubleSwapEdges.isEmpty()) {
+            Edge edge = this.doubleSwapEdges.pop();
+            InfraNode fromNode = edge.getFromNode();
+            InfraNode toNode = edge.getToNode();
+            int clsId = this.getClusterId(fromNode, toNode);
+
+            if (edge.isDownward()) {
+                if (fromNode.getId() > toNode.getId()) {
+                    fromNode.setLeftChildSwitchOffset(edge.getSwtOffset());
+
+                } else {
+                    fromNode.setRightChildSwitchOffset(edge.getSwtOffset());
+
+                }
+
+                this.clusters.get(clsId).get(edge.getSwtOffset()).updateChild(
+                    fromNode.getNetId(), toNode.getNetId()
+                );
+
+            } else {
+                fromNode.setParentSwitchOffset(edge.getSwtOffset());
+
+                this.clusters.get(clsId).get(edge.getSwtOffset()).updateParent(
+                    fromNode.getNetId(), toNode.getNetId()
+                );
+            }
         }
 
         while (!this.addEdges.isEmpty() && this.addEdges.peekFirst().getSwtOffset() == -1) {
@@ -1275,7 +1424,6 @@ public abstract class NetworkController extends LoggerLayer {
                         this.allowRouting(node, dstNode, 2);
 
                     }
-
                     break;
 
                 case SEMI_ZIGZAGLEFT_BOTTOMUP:
@@ -1288,7 +1436,6 @@ public abstract class NetworkController extends LoggerLayer {
                         this.allowRouting(node, dstNode, 2);
 
                     }
-
                     break;
 
                 case SEMI_ZIGZIGLEFT_TOPDOWN:
@@ -1305,7 +1452,6 @@ public abstract class NetworkController extends LoggerLayer {
                         this.allowRouting(node, dstNode, 2);
 
                     }
-
                     break;
 
                 case SEMI_ZIGZAGLEFT_TOPDOWN:
@@ -1332,7 +1478,6 @@ public abstract class NetworkController extends LoggerLayer {
                         this.allowRouting(node, dstNode, 2);
 
                     }
-
                     break;
 
                 case SEMI_ZIGZIGRIGHT_TOPDOWN:
@@ -1349,7 +1494,6 @@ public abstract class NetworkController extends LoggerLayer {
                         this.allowRouting(node, dstNode, 2);
 
                     }
-
                     break;
 
                 case SEMI_ZIGZAGRIGHT_TOPDOWN:
@@ -1376,12 +1520,13 @@ public abstract class NetworkController extends LoggerLayer {
                         this.allowRouting(node, dstNode, 2);
 
                     }
-
                     break;
 
                 default:
                     break;
             }
+
+            this.areAvailableNodes(node);
         }
     }
 
@@ -1541,7 +1686,7 @@ public abstract class NetworkController extends LoggerLayer {
      * @param nxtNode   next node in the message path
      * @param routMsg   the RoutingInfoMessage
      */
-    private void configureRoutingMessage (
+    protected void configureRoutingMessage (
         InfraNode node, InfraNode nxtNode, RoutingInfoMessage routMsg
     ) {
         NetworkNode netNode = this.getNetNode(node);
@@ -1631,6 +1776,14 @@ public abstract class NetworkController extends LoggerLayer {
 
             int clsId = this.getClusterId(toNode, fromNode);
             int swtOffset = toNode.getParentSwitchOffset();
+
+            if (clsId == -1 || swtOffset == -1) {
+                fromNode.debugNode();
+                toNode.debugNode();
+
+                Tools.fatalError("cluster or swt offset -1");
+            }
+
             NetworkSwitch swt = this.clusters.get(clsId).get(swtOffset);
 
             flag &= swt.hasLink(toNode.getNetId(), fromNode.getNetId());
@@ -1639,12 +1792,25 @@ public abstract class NetworkController extends LoggerLayer {
                 clsId = this.getClusterId(fromNode, toNode);
                 swtOffset = fromNode.getLeftChildSwitchOffset();
                 swt = this.clusters.get(clsId).get(swtOffset);
+                if (clsId == -1 || swtOffset == -1) {
+                    fromNode.debugNode();
+                    toNode.debugNode();
+
+                    Tools.fatalError("cluster or swt offset -1");
+                }
 
                 flag &= swt.hasLink(fromNode.getNetId(), toNode.getNetId());
 
             } else if (fromNode.getRightChildId() == toNode.getId()) {
                 clsId = this.getClusterId(fromNode, toNode);
                 swtOffset = fromNode.getRightChildSwitchOffset();
+                if (clsId == -1 || swtOffset == -1) {
+                    fromNode.debugNode();
+                    toNode.debugNode();
+
+                    Tools.fatalError("cluster or swt offset -1");
+                }
+
                 swt = this.clusters.get(clsId).get(swtOffset);
 
                 flag &= swt.hasLink(fromNode.getNetId(), toNode.getNetId());
@@ -1659,7 +1825,7 @@ public abstract class NetworkController extends LoggerLayer {
                 toNode.debugNode();
 
                 Tools.fatalError(
-                    "" + edge.getFromNodeId() + " not setted as parend of " + edge.getToNodeId()
+                    "" + edge.getFromNodeId() + " not setted as parent of " + edge.getToNodeId()
                 );
             }
 

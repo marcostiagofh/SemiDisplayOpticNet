@@ -84,6 +84,13 @@ public class OpticalNetMessage extends Message implements Comparable<OpticalNetM
         }
     }
 
+    public void debugMsg () {
+        System.out.println(
+            "opt-msg"
+            + " srcId: " + this.getSrc() + " dstId: " + this.getDst()
+        );
+    }
+
     @Override
     public Message clone () {
         return this;

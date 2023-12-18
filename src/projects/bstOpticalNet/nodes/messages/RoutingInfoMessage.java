@@ -136,6 +136,16 @@ public class RoutingInfoMessage extends Message implements Comparable<RoutingInf
         }
     }
 
+
+    public void debugMsg () {
+        System.out.println(
+            "rout-msg"
+            + " srcId: " + this.getSrc() + " dstId: " + this.getDst()
+            + " curId: " + this.getNodeId() + " nxtId: " + this.getRoutNodeId()
+            + " routingTimes: " + this.getRoutingTimes()
+        );
+    }
+
     @Override
     public Message clone () {
         return this;
