@@ -180,6 +180,7 @@ public class NetworkSwitch {
     public InputNode getInputId2NodeFromId(int id) {
     	return this.inputId2Node.get(id);
     }
+    
     /**
      * Function that sets the link between the InputNode connected to the NetworkNode in and the
      * OutputNode connected to the NetworkNode out

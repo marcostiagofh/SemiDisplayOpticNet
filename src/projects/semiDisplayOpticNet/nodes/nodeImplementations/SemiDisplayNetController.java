@@ -150,8 +150,34 @@ public class SemiDisplayNetController extends HeuristicController {
         return Rotation.NULL;
     }
 
+    private void printTree() {
+    	InfraNode actual = this.tree.get(1);
+    	//System.out.println(actual.getId());
+    	
+    	while(actual.getParentId()!=-1) {
+    		actual = this.tree.get(actual.getParentId());
+    		//System.out.println(actual.getId());
+    	}
+    	this.printNode(actual);
+    }
+    
+    private void printNode(InfraNode actual) {
+    	boolean hasLeftChild = actual.getLeftChildId() != -1;
+    	boolean hasRightChild = actual.getRightChildId()!= -1;
+    	
+    	System.out.print(actual.getId());
+    	if(hasLeftChild || hasRightChild) {
+    		System.out.print("{");
+    		if(hasLeftChild) printNode(this.tree.get(actual.getLeftChildId()));
+    		if(hasRightChild) printNode(this.tree.get(actual.getRightChildId()));
+    		System.out.print("}");
+    	}
+    }
+
+	
     @Override
     protected void updateConn () {
+    	this.printTree();
     	this.lockRoutingNodes();
 
         while (!this.nodesWithMsg.isEmpty()) {
