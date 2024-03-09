@@ -32,7 +32,7 @@ public class NetworkNode extends SynchronizerLayer {
     private InputNode leftChild = null;
     private InputNode rightChild = null;
 
-    private NetworkController controller = null;
+    private HeuristicController controller = null;
     private Random rand = Tools.getRandomNumberGenerator();
 
     public NetworkNode () { }
@@ -50,7 +50,7 @@ public class NetworkNode extends SynchronizerLayer {
      * any troubles with the nodes ID's regarding Sinalgo.
      * @param controller    NetworkController node
      */
-    public void setController (NetworkController controller) {
+    public void setController (HeuristicController controller) {
         this.controller = controller;
     }
 

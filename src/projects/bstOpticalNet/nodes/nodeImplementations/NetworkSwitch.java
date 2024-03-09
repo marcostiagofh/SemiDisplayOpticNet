@@ -126,7 +126,7 @@ public class NetworkSwitch {
         return inNode.getOutputConnectedNodeId();
     }
 
-    public AvailablePorts getAvailablePorts (int in, int out) {
+    public AvailablePorts getAvailablePorts (int in, int out) { //, boolean heuristic_link) {
         InputNode inNode = this.inputId2Node.get(in);
         if (inNode == null) {
         	if (this.outputId2Node.get(in) == null) {
@@ -189,6 +189,14 @@ public class NetworkSwitch {
 
         this.connectNodes(inNode, outNode);
         inNode.getConnectedNode().setChild(inNode);
+    }
+    
+    public void addLink (int in, int out) {
+        InputNode inNode = this.inputId2Node.get(in);
+        OutputNode outNode = this.outputId2Node.get(out);
+        
+        this.connectNodes(inNode, outNode);
+        //falar pro no do input node que o link existe
     }
 
     /**

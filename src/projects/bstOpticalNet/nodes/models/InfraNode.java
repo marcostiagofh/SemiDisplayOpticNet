@@ -1,7 +1,13 @@
 package projects.bstOpticalNet.nodes.models;
 
+import java.util.Set;
+
+import projects.bstOpticalNet.nodes.nodeImplementations.NetworkSwitch;
 import sinalgo.tools.Tools;
 
+import java.util.Map;
+import java.util.ArrayList;
+import java.util.HashMap;
 /**
  * InfraNodes are used by the NetworkController to represent the current
  * network topology. They store the left and right child and it's parent,
@@ -16,6 +22,8 @@ public class InfraNode implements Comparable<InfraNode> {
     private int lcSwtOffset = -1;
     private InfraNode rightChild = null;
     private int rcSwtOffset = -1;
+    
+    public Map<Integer, InfraNode> heuristicNeighbors = new HashMap<>();
 
     private int minId = -1;
     private int maxId = -1;
@@ -431,6 +439,12 @@ public class InfraNode implements Comparable<InfraNode> {
 
         }
     }
+    
+    public Map<Integer, InfraNode> getHeuristicNeighbors(){ 
+    	return this.heuristicNeighbors;
+    	
+    }
+    
 
     /**
      * Getter for the next node in the path between this node and the destination node.
@@ -438,8 +452,8 @@ public class InfraNode implements Comparable<InfraNode> {
      * @return          the next node in the path.
      */
     public InfraNode getRoutingNode (InfraNode toNode) {
-        return this.getRoutingNode(this.getRoutingDirection(toNode));
-
+    	return this.getRoutingNode(this.getRoutingDirection(toNode));
+    	
     }
 
     /**

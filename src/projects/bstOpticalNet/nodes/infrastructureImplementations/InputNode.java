@@ -2,6 +2,7 @@ package projects.bstOpticalNet.nodes.infrastructureImplementations;
 
 import projects.bstOpticalNet.nodes.nodeImplementations.NetworkController;
 import projects.bstOpticalNet.nodes.nodeImplementations.NetworkNode;
+import projects.bstOpticalNet.nodes.nodeImplementations.HeuristicController;
 
 import sinalgo.nodes.messages.Message;
 import sinalgo.tools.Tools;
@@ -15,6 +16,7 @@ public class InputNode {
     private NetworkNode connectedNode = null;
     private OutputNode outputNode = null;
     private boolean active = false;
+    private boolean heuristic_active;
 
     public void setIndex (int index) {
         this.index = index;
@@ -74,7 +76,7 @@ public class InputNode {
      * @param msg           Message sent
      * @param controller    Simulation NetworkController node
      */
-    public void sendToOutputNode (Message msg, NetworkController controller) {
+    public void sendToOutputNode (Message msg, HeuristicController controller) {
         if (!this.active) {
             Tools.fatalError("Sending message through inactive input node");
 
