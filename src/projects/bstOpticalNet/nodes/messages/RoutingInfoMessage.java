@@ -1,5 +1,6 @@
 package projects.bstOpticalNet.nodes.messages;
 
+import projects.bstOpticalNet.nodes.nodeImplementations.NetworkSwitch;
 import sinalgo.nodes.messages.Message;
 
 /**
@@ -12,6 +13,8 @@ public class RoutingInfoMessage extends Message implements Comparable<RoutingInf
     private int routNodeId = -1;
     private int routingTimes = 0;
     private OpticalNetMessage routedMsg = null;
+    private boolean heuristicLink = false;
+    private NetworkSwitch swt = null;
 
     /**
      * Creates a message that should be routed routingTimes.
@@ -25,6 +28,22 @@ public class RoutingInfoMessage extends Message implements Comparable<RoutingInf
      * Sets the node id from the node owner of the message
      * @param nodeId        the nodeId for the holder node.
      */
+    public void setHeuristicLink(boolean value) {
+    	this.heuristicLink = value;
+    }
+    
+    public boolean getHeuristicLink() {
+    	return this.heuristicLink;
+    }
+    
+	public void setSwt(NetworkSwitch swt) {
+		this.swt = swt;
+	}
+	
+	public NetworkSwitch getSwt() {
+		return this.swt;
+	}
+	
     public void setNodeId (int nodeId) {
         this.nodeId = nodeId;
 

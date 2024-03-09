@@ -254,9 +254,15 @@ public class NetworkNode extends SynchronizerLayer {
 
         InfraNode fromNode = this.controller.getInfraNode(this.ID);
         InfraNode toNode = this.controller.getInfraNode(routMsg.getRoutNodeId());
-        this.controller.logIncrementRouting(fromNode, toNode);
-
-        this.sendToInputNode(routMsg);
+        
+        if(routMsg.getHeuristicLink()) {
+        	InputNode in = routMsg.getSwt().getInputId2NodeFromId(fromNode.getNetId());
+        	this.controller.logIncrementRouting(fromNode, toNode, routMsg.getSwt().getIndex());
+        	this.sendToInputNode_HeuristicLink(routMsg,in);
+        } else {
+        	this.controller.logIncrementRouting(fromNode, toNode);
+            this.sendToInputNode(routMsg);
+        }
     }
 
     /**
@@ -265,6 +271,10 @@ public class NetworkNode extends SynchronizerLayer {
      */
     protected void sendToInputNode (RoutingInfoMessage routMsg) {
         this.getRoutingNode(routMsg).sendToOutputNode(routMsg, this.controller);
+    }
+    
+    protected void sendToInputNode_HeuristicLink (RoutingInfoMessage routMsg, InputNode in) {
+    	in.sendToOutputNode(routMsg, this.controller);
     }
 
     /**

@@ -1444,7 +1444,10 @@ public abstract class HeuristicController extends LoggerLayer {
             Object hl_swtOffset = heuristic_links.get(new AbstractMap.SimpleEntry<>(node.getId(),dstNode.getId()));
             if(hl_swtOffset != null) {
             	//se tiver link heuristico, use o link e processe a mensagem
-            	this.allowRoutingHeuristicLink(node, dstNode, 1);            	
+            	int clsId = this.getClusterId(node, dstNode);
+            	NetworkSwitch swt = this.clusters.get(clsId).get((Integer) hl_swtOffset);
+                this.allowRoutingHeuristicLink(node, dstNode, swt, 1);   
+            	System.out.println("allowRoutingHeuristicLink");
             } else if (
             		node.getParentId() == dstNode.getId() ||
             		node.getLeftChildId() == dstNode.getId() ||
@@ -1452,6 +1455,7 @@ public abstract class HeuristicController extends LoggerLayer {
             		) {
             	//se não, mas houver alguma aresta da arvore que conecta os 2 diretamente (a.parent/lchild/rchild = b), 
             	//use o link e processe a mensagem
+            	System.out.println("allowRouting");
             	this.allowRouting(node, dstNode, 1);
             } else {
             	//se não houver nenhum dos dois,
@@ -1524,6 +1528,7 @@ public abstract class HeuristicController extends LoggerLayer {
             	}
                 
                 if(swtOffset != -1) {
+                	System.out.println("added heuristis link allowRoutingHeuristicLink");
                 	//se as duas estiverem desocupadas, adicione o link heuristico no primeiro switch e na primeira aresta ((a,b),(b,a)) disponivel 
                 	//adiciona aresta no map de arestas heuristicas (map(pair(int1,int2),int swtOffset) ex: add((0,3),0), add((3,0),1)
                 	heuristic_links.put(new AbstractMap.SimpleEntry<>(start_node.getId(),end_node.getId()),swtOffset);
@@ -1536,9 +1541,12 @@ public abstract class HeuristicController extends LoggerLayer {
                 	swt.addLink(end_node.getNetId(),start_node.getNetId());
                 	this.logIncrementActivePorts(swt.getIndex());
                 	
-                	this.allowRoutingHeuristicLink(node, dstNode, 1);  
-                	
+                	if(start_node == node)
+                		this.allowRoutingHeuristicLink(node, dstNode, clusters.get(clsId).get(swtOffset), 1);  
+                	else
+                		this.allowRoutingHeuristicLink(node, dstNode, clusters.get(clsId).get(swtOffset+1), 1);
                 } else {
+                	System.out.println("rotation");
                 	//se uma das portas estiver ocupada nos 2 casos, verifica a estrutura da arvore, 
                 	//escolhe a rotacao e adiciona à fila de "arestas pra adicionar"
                 	Rotation op = this.getRotationToPerform(node, dstNode);
@@ -1671,8 +1679,10 @@ public abstract class HeuristicController extends LoggerLayer {
         }
     }
     
-    private boolean allowRoutingHeuristicLink(InfraNode node, InfraNode dstNode, int routingTimes) {
+    public boolean allowRoutingHeuristicLink(InfraNode node, InfraNode dstNode, NetworkSwitch swt, int routingTimes) {
     	RoutingInfoMessage routMsg = new RoutingInfoMessage(routingTimes);
+    	routMsg.setHeuristicLink(true);
+    	routMsg.setSwt(swt); 
     	ArrayList<InfraNode> routNodes = new ArrayList<>();
         InfraNode currNode = node;
 
@@ -2019,7 +2029,7 @@ public abstract class HeuristicController extends LoggerLayer {
      */
     @Override
     public void controllerStep () {
-        this.checkRoundConfiguration();
+    	this.checkRoundConfiguration();
 
         for (int i = 0; i <= this.numNodes; i++)
             this.usedNodes.set(i, false);

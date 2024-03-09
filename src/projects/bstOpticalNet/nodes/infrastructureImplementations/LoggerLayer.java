@@ -6,6 +6,7 @@ import java.util.Collections;
 import sinalgo.tools.logging.Logging;
 import sinalgo.tools.statistics.DataSeries;
 import projects.bstOpticalNet.nodes.models.InfraNode;
+import projects.bstOpticalNet.nodes.nodeImplementations.NetworkSwitch;
 
 /**
  * This abstract class is responsible to log the simulation results
@@ -167,6 +168,14 @@ public abstract class LoggerLayer extends SynchronizerLayer {
     public void logIncrementRouting (InfraNode fromNode, InfraNode toNode) {
         int swtId = this.getRoutingSwitchId(fromNode, toNode);
 
+        this.routingLog.logln(
+            this.projectName + "," + this.getCurrentRound() + "," +
+            fromNode.getId() + "," + toNode.getId() + "," + swtId
+        );
+    }
+    
+    public void logIncrementRouting (InfraNode fromNode, InfraNode toNode, int swtId) {
+    	
         this.routingLog.logln(
             this.projectName + "," + this.getCurrentRound() + "," +
             fromNode.getId() + "," + toNode.getId() + "," + swtId
