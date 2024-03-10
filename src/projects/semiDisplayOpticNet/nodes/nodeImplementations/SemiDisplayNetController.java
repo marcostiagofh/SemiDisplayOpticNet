@@ -165,7 +165,7 @@ public class SemiDisplayNetController extends HeuristicController {
     	boolean hasLeftChild = actual.getLeftChildId() != -1;
     	boolean hasRightChild = actual.getRightChildId()!= -1;
     	
-    	System.out.print(actual.getId());
+    	System.out.print(actual.getId()+1);
     	if(hasLeftChild || hasRightChild) {
     		System.out.print("{");
     		if(hasLeftChild) printNode(this.tree.get(actual.getLeftChildId()));
@@ -174,10 +174,22 @@ public class SemiDisplayNetController extends HeuristicController {
     	}
     }
 
+    public void printEdges() {
+    	//iterar sobre os clusters e os switches de cada
+    	for(int it_cls = 0; it_cls < this.clusters.size(); it_cls++) {
+    		System.out.println("cls "+it_cls);
+    		for(int it_swt = 0; it_swt < this.clusters.get(it_cls).size(); it_swt++) {
+    			System.out.println("swt "+it_swt);
+    			NetworkSwitch swt = this.clusters.get(it_cls).get(it_swt);
+    			swt.printEdgesFromInputId2Node();
+    		}
+    	}
+    }
 	
     @Override
     protected void updateConn () {
-    	this.printTree();
+    	//this.printTree();
+    	//this.printEdges();
     	this.lockRoutingNodes();
 
         while (!this.nodesWithMsg.isEmpty()) {
@@ -256,8 +268,8 @@ public class SemiDisplayNetController extends HeuristicController {
             			n1 = node;
             			n2 = dstNode;
             		} else {
-            			n2 = dstNode;
-            			n1 = node;
+            			n2 = node;
+            			n1 = dstNode;
             		}
             		
             		NetworkSwitch swt = clusters.get(clsId).get(0);                

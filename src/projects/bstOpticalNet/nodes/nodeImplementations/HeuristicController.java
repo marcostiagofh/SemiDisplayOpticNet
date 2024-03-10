@@ -1506,8 +1506,8 @@ public abstract class HeuristicController extends LoggerLayer {
             			n1 = node;
             			n2 = dstNode;
             		} else {
-            			n2 = dstNode;
-            			n1 = node;
+            			n2 = node;
+            			n1 = dstNode;
             		}
             		
             		NetworkSwitch swt = clusters.get(clsId).get(0);                

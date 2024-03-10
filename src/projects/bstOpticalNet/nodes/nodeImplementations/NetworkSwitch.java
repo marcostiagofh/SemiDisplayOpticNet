@@ -2,6 +2,7 @@ package projects.bstOpticalNet.nodes.nodeImplementations;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 import projects.bstOpticalNet.nodes.infrastructureImplementations.InputNode;
 import projects.bstOpticalNet.nodes.infrastructureImplementations.OutputNode;
@@ -180,6 +181,15 @@ public class NetworkSwitch {
     public InputNode getInputId2NodeFromId(int id) {
     	return this.inputId2Node.get(id);
     }
+    
+    public void printEdgesFromInputId2Node() {
+    	for (Map.Entry<Integer, InputNode> entry : this.inputId2Node.entrySet()) {
+            InputNode in = entry.getValue();
+            if(in.isActive())
+            	System.out.println(in.getIndex()+"-"+in.getOutputNode().getIndex());
+        }
+    }
+    
     
     /**
      * Function that sets the link between the InputNode connected to the NetworkNode in and the
