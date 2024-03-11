@@ -1,11 +1,15 @@
 package projects.semiDisplayOpticNet.nodes.nodeImplementations;
 
 import java.util.AbstractMap;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import projects.bstOpticalNet.nodes.nodeImplementations.HeuristicController;
 import projects.bstOpticalNet.nodes.nodeImplementations.NetworkNode;
 import projects.bstOpticalNet.nodes.nodeImplementations.NetworkSwitch;
+import projects.bstOpticalNet.nodes.infrastructureImplementations.InputNode;
 import projects.bstOpticalNet.nodes.messages.HasMessage;
 import projects.bstOpticalNet.nodes.messages.RoutingInfoMessage;
 import projects.bstOpticalNet.nodes.models.Rotation;
@@ -185,11 +189,20 @@ public class SemiDisplayNetController extends HeuristicController {
     		}
     	}
     }
+    
+    public void printHeuristicLinks() {
+    	for (Entry<SimpleEntry<Integer, Integer>, Integer> entry : this.heuristic_links.entrySet()) {
+    		SimpleEntry<Integer,Integer> key = entry.getKey();            
+            int swtOffset = entry.getValue();
+            System.out.println("swt "+swtOffset+" "+key.getKey()+"-"+key.getValue());
+    	}
+    }
 	
     @Override
     protected void updateConn () {
     	//this.printTree();
     	//this.printEdges();
+    	this.printHeuristicLinks();
     	this.lockRoutingNodes();
 
         while (!this.nodesWithMsg.isEmpty()) {
@@ -202,7 +215,7 @@ public class SemiDisplayNetController extends HeuristicController {
           //pega origem e destino da mensagem
             //ve se tem link heuristico entre os 2
             //e pra isso, procura a chave (node, dstNode) no map heuristic_links
-            Object hl_swtOffset = heuristic_links.get(new AbstractMap.SimpleEntry<>(node.getId(),dstNode.getId()));
+            Object hl_swtOffset = heuristic_links.get(new AbstractMap.SimpleEntry<>(node.getNetId(),dstNode.getNetId()));
             if(hl_swtOffset != null) {
             	//se tiver link heuristico, use o link e processe a mensagem
             	int clsId = this.getClusterId(node, dstNode);
@@ -293,8 +306,8 @@ public class SemiDisplayNetController extends HeuristicController {
                 	System.out.println("added heuristis link allowRoutingHeuristicLink");
                 	//se as duas estiverem desocupadas, adicione o link heuristico no primeiro switch e na primeira aresta ((a,b),(b,a)) disponivel 
                 	//adiciona aresta no map de arestas heuristicas (map(pair(int1,int2),int swtOffset) ex: add((0,3),0), add((3,0),1)
-                	heuristic_links.put(new AbstractMap.SimpleEntry<>(start_node.getId(),end_node.getId()),swtOffset);
-                	heuristic_links.put(new AbstractMap.SimpleEntry<>(end_node.getId(),start_node.getId()),swtOffset+1);
+                	heuristic_links.put(new AbstractMap.SimpleEntry<>(start_node.getNetId(),end_node.getNetId()),swtOffset);
+                	heuristic_links.put(new AbstractMap.SimpleEntry<>(end_node.getNetId(),start_node.getNetId()),swtOffset+1);
                 	
                 	NetworkSwitch swt = clusters.get(clsId).get(swtOffset);
                 	swt.addLink(start_node.getNetId(),end_node.getNetId());

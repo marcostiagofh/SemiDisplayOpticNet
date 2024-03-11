@@ -14,7 +14,9 @@ import java.util.ArrayList;
 import java.util.ArrayDeque;
 import java.util.PriorityQueue;
 
+import projects.bstOpticalNet.nodes.infrastructureImplementations.InputNode;
 import projects.bstOpticalNet.nodes.infrastructureImplementations.LoggerLayer;
+import projects.bstOpticalNet.nodes.infrastructureImplementations.OutputNode;
 import projects.bstOpticalNet.nodes.messages.HasMessage;
 import projects.bstOpticalNet.nodes.messages.NewMessage;
 import projects.bstOpticalNet.nodes.messages.OpticalNetMessage;
@@ -1170,15 +1172,100 @@ public abstract class HeuristicController extends LoggerLayer {
         Iterator iterator = this.addEdges.iterator(); 
         while (iterator.hasNext()) { 
         	Edge edge = (Edge) iterator.next(); 
-        	Object swtOffset_h = heuristic_links.get(new AbstractMap.SimpleEntry<>(edge.getFromNodeId(),edge.getToNodeId()));
-        	Object swtOffset_h1 = heuristic_links.get(new AbstractMap.SimpleEntry<>(edge.getToNodeId(),edge.getFromNodeId()));
+        	
+        	int clsId = this.getClusterId(edge.getFromNode(), edge.getToNode());
+        	NetworkSwitch swt = this.clusters.get(clsId).get(edge.getSwtOffset());
+        	
+        	boolean found = false;
+        	
+        	for(OutputNode out : swt.getOutputNodes()){
+        		Object swtOffset_h = heuristic_links.get(new AbstractMap.SimpleEntry<>(edge.getFromNode().getNetId(),out.getIndex()));
+            	
+        		if(swtOffset_h != null && (Integer)swtOffset_h == edge.getSwtOffset()) {
+        			found = true;
+        			int swtOffset_h_1 = (Integer) swtOffset_h;
+        			int swtOffset_h_2 = (swtOffset_h_1 % 2 == 0) ? swtOffset_h_1+1 : swtOffset_h_1-1;
+        			heuristic_links.remove(new AbstractMap.SimpleEntry<>(edge.getFromNode().getNetId(),out.getIndex()));
+        			heuristic_links.remove(new AbstractMap.SimpleEntry<>(out.getIndex(),edge.getFromNode().getNetId()));
+        			this.logDecrementActivePorts(swt.getIndex());
+        			swt = this.clusters.get(clsId).get(swtOffset_h_2);
+                    this.logDecrementActivePorts(swt.getIndex());
+        		}  
+        	}
+        	
+        	if(!found) {
+        		for(InputNode in : swt.getInputNodes()){
+        			Object swtOffset_h = heuristic_links.get(new AbstractMap.SimpleEntry<>(in.getIndex(),edge.getToNode().getNetId()));
+                	
+            		if(swtOffset_h != null && (Integer) swtOffset_h == edge.getSwtOffset()) {
+            			found = true;
+            			int swtOffset_h_1 = (Integer) swtOffset_h;
+            			int swtOffset_h_2 = (swtOffset_h_1 % 2 == 0) ? swtOffset_h_1+1 : swtOffset_h_1-1;
+            			heuristic_links.remove(new AbstractMap.SimpleEntry<>(in.getIndex(),edge.getToNode().getNetId()));
+            			heuristic_links.remove(new AbstractMap.SimpleEntry<>(edge.getToNode().getNetId(),in.getIndex()));
+            			this.logDecrementActivePorts(swt.getIndex());
+            			swt = this.clusters.get(clsId).get(swtOffset_h_2);
+                        this.logDecrementActivePorts(swt.getIndex());
+            		}  
+            	}
+        	}
+        	/*
+        	int fromNodeNetId = edge.getFromNode().getNetId();
+        	
+        	int clsId = this.getClusterId(edge.getFromNode(), edge.getToNode());
+        	NetworkSwitch swt = this.clusters.get(clsId).get(edge.getSwtOffset());
+        	InputNode in = swt.getInputId2NodeFromId(fromNodeNetId);
+        	if(in.isActive()) {
+        		int outputNodeNetId = in.getOutputNode().getIndex();
+        		if(	edge.getFromNode().getParent().getNetId() != outputNodeNetId &&
+        			edge.getFromNode().getLeftChild().getNetId() != outputNodeNetId &&
+        			edge.getFromNode().getRightChild().getNetId() != outputNodeNetId ) {
+        			
+        			clsId = this.getClusterId(edge.getFromNode(), this.getInfraNode(outputNodeNetId));
+
+        			Object swtOffset_h = heuristic_links.get(new AbstractMap.SimpleEntry<>(edge.getFromNode().getNetId(),outputNodeNetId));
+                	
+        			if((Integer)swtOffset_h == edge.getSwtOffset()) {
+	        			swt = this.clusters.get(clsId).get(edge.getSwtOffset());
+	                    swt.removeLink(
+	                        edge.getFromNode().getNetId(), outputNodeNetId
+	                    );
+	                    this.logDecrementActivePorts(swt.getIndex());
+        			}            
+        		}
+        	} else {
+        		OutputNode out = in.getOutputNode();
+        		if(out.isActive()) {
+        			int inputNodeNetId = out.getInputNode().getIndex();
+        			if(	edge.getToNode().getParent().getNetId() != inputNodeNetId &&
+            			edge.getToNode().getLeftChild().getNetId() != inputNodeNetId &&
+            			edge.getToNode().getRightChild().getNetId() != inputNodeNetId ) {
+            			
+        				clsId = this.getClusterId(this.getInfraNode(inputNodeNetId),edge.getToNode());
+
+            			Object swtOffset_h = heuristic_links.get(new AbstractMap.SimpleEntry<>(inputNodeNetId,edge.getToNode().getNetId()));
+                    	
+            			if((Integer)swtOffset_h == edge.getSwtOffset()) {
+    	        			swt = this.clusters.get(clsId).get(edge.getSwtOffset());
+    	                    swt.removeLink(
+    	                    		inputNodeNetId, edge.getToNode().getNetId()
+    	                    );
+    	                    this.logDecrementActivePorts(swt.getIndex());
+            			}            
+            		}
+        		}
+        	}
+        	*/
+        	/*
+        	Object swtOffset_h = heuristic_links.get(new AbstractMap.SimpleEntry<>(edge.getFromNode().getNetId(),edge.getToNode().getNetId()));
+        	Object swtOffset_h1 = heuristic_links.get(new AbstractMap.SimpleEntry<>(edge.getToNode().getNetId(),edge.getFromNode().getNetId()));
             if(swtOffset_h != null && 
             		(edge.getSwtOffset() == (Integer) swtOffset_h ||
             		 edge.getSwtOffset() == (Integer) swtOffset_h1) 
             ) {
             	//se sim, apaga link heuristico do switch e do switch espelhado
-            	heuristic_links.remove(new AbstractMap.SimpleEntry<>(edge.getFromNodeId(),edge.getToNodeId()));
-            	heuristic_links.remove(new AbstractMap.SimpleEntry<>(edge.getToNodeId(),edge.getFromNodeId()));
+            	heuristic_links.remove(new AbstractMap.SimpleEntry<>(edge.getFromNode().getNetId(),edge.getToNode().getNetId()));
+            	heuristic_links.remove(new AbstractMap.SimpleEntry<>(edge.getToNode().getNetId(),edge.getFromNode().getNetId()));
             	
             	int clsId = this.getClusterId(edge.getFromNode(), edge.getToNode());
             	NetworkSwitch swt = this.clusters.get(clsId).get((Integer) swtOffset_h);
@@ -1187,13 +1274,13 @@ public abstract class HeuristicController extends LoggerLayer {
                 );
                 this.logDecrementActivePorts(swt.getIndex());
                 
-                clsId = this.getClusterId(edge.getToNode(), edge.getFromNode());
-            	swt = this.clusters.get(clsId).get((Integer) swtOffset_h1);
+                swt = this.clusters.get(clsId).get((Integer) swtOffset_h1);
                 swt.removeLink(
                     edge.getToNode().getNetId(), edge.getFromNode().getNetId()
                 );
                 this.logDecrementActivePorts(swt.getIndex());
             }
+            */
         } 
 
         this.logEssentialLinkUpdates();
@@ -1441,7 +1528,7 @@ public abstract class HeuristicController extends LoggerLayer {
             //pega origem e destino da mensagem
             //ve se tem link heuristico entre os 2
             //e pra isso, procura a chave (node, dstNode) no map heuristic_links
-            Object hl_swtOffset = heuristic_links.get(new AbstractMap.SimpleEntry<>(node.getId(),dstNode.getId()));
+            Object hl_swtOffset = heuristic_links.get(new AbstractMap.SimpleEntry<>(node.getNetId(),dstNode.getNetId()));
             if(hl_swtOffset != null) {
             	//se tiver link heuristico, use o link e processe a mensagem
             	int clsId = this.getClusterId(node, dstNode);
@@ -1531,8 +1618,8 @@ public abstract class HeuristicController extends LoggerLayer {
                 	System.out.println("added heuristis link allowRoutingHeuristicLink");
                 	//se as duas estiverem desocupadas, adicione o link heuristico no primeiro switch e na primeira aresta ((a,b),(b,a)) disponivel 
                 	//adiciona aresta no map de arestas heuristicas (map(pair(int1,int2),int swtOffset) ex: add((0,3),0), add((3,0),1)
-                	heuristic_links.put(new AbstractMap.SimpleEntry<>(start_node.getId(),end_node.getId()),swtOffset);
-                	heuristic_links.put(new AbstractMap.SimpleEntry<>(end_node.getId(),start_node.getId()),swtOffset+1);
+                	heuristic_links.put(new AbstractMap.SimpleEntry<>(start_node.getNetId(),end_node.getNetId()),swtOffset);
+                	heuristic_links.put(new AbstractMap.SimpleEntry<>(end_node.getNetId(),start_node.getNetId()),swtOffset+1);
                 	
                 	NetworkSwitch swt = clusters.get(clsId).get(swtOffset);
                 	swt.addLink(start_node.getNetId(),end_node.getNetId());

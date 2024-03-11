@@ -182,6 +182,14 @@ public class NetworkSwitch {
     	return this.inputId2Node.get(id);
     }
     
+    public ArrayList<InputNode> getInputNodes(){
+    	return this.inputNodes;
+    }
+    
+    public ArrayList<OutputNode> getOutputNodes(){
+    	return this.outputNodes;
+    }
+    
     public void printEdgesFromInputId2Node() {
     	for (Map.Entry<Integer, InputNode> entry : this.inputId2Node.entrySet()) {
             InputNode in = entry.getValue();
