@@ -1537,113 +1537,127 @@ public abstract class HeuristicController extends LoggerLayer {
                 	//escolhe a rotacao e adiciona à fila de "arestas pra adicionar"
                 	Rotation op = this.getRotationToPerform(node, dstNode);
 
-		            switch (op) {
-		                case NULL:
-		                    this.allowRouting(node, dstNode, 1);
-		                    break;
-		
-		                case ZIG_BOTTOMUP:
-		                	if (this.zigBottomUp(node)) {
-		                		System.out.println("zigBottomUp");
-		                        this.logIncrementActiveRequests();
-		
-		                	}
-		                    break;
-		
-		                case ZIGZIGLEFT_BOTTOMUP:
-		                case ZIGZIGRIGHT_BOTTOMUP:
-		                    if (this.zigZigBottomUp(node)) {
-		                        System.out.println("semiZigZigBottomUp");
-		                        this.logIncrementActiveRequests();
-		
-		                    }
-		                    break;
-		
-		                case ZIGZAGLEFT_BOTTOMUP:
-		                case ZIGZAGRIGHT_BOTTOMUP:
-		                    if (this.zigZagBottomUp(node)) {
-		                        System.out.println("zigZagBottomUp");
-		                        this.logIncrementActiveRequests();
-		
-		                    }
-		                    break;
-		
-		                case SEMI_ZIGZIGLEFT_TOPDOWN:
-		                    if (this.semiZigZigLeftTopDown(node)) {
-		                        System.out.println("semiZigZigLeftTopDown");
-		                        this.logIncrementActiveRequests();
-		
-		                        InfraNode rfrshNode = this.getInfraNode(nodeId);
-		                        InfraNode nxtNode = rfrshNode.getRoutingNode(dstNode);
-		
-		                        this.configureRoutingMessage(rfrshNode, nxtNode, new RoutingInfoMessage(2));
-		
-		                    }
-		                    break;
-		
-		                case SEMI_ZIGZAGLEFT_TOPDOWN:
-		                    if (this.zigZagLeftTopDown(node)) {
-		                        System.out.println("semiZigZagLeftTopDown");
-		                        this.logIncrementActiveRequests();
-		
-		                        InfraNode rfrshNode = this.getInfraNode(nodeId);
-		                        InfraNode nxtNode = rfrshNode.getRoutingNode(dstNode);
-		
-		                        if (nxtNode == rfrshNode.getParent()) {
-		                            this.configureRoutingMessage(
-		                                rfrshNode, nxtNode, new RoutingInfoMessage(3)
-		                            );
-		
-		                        } else {
-		                            this.configureRoutingMessage(
-		                                rfrshNode, nxtNode, new RoutingInfoMessage(1)
-		                            );
-		
-		                        }
-		
-		                    }
-		                    break;
-		
-		                case SEMI_ZIGZIGRIGHT_TOPDOWN:
-		                    if (this.semiZigZigRightTopDown(node)) {
-		                        System.out.println("semiZigZigRightTopDown");
-		                        this.logIncrementActiveRequests();
-		
-		                        InfraNode rfrshNode = this.getInfraNode(nodeId);
-		                        InfraNode nxtNode = rfrshNode.getRoutingNode(dstNode);
-		
-		                        this.configureRoutingMessage(rfrshNode, nxtNode, new RoutingInfoMessage(2));
-		
-		                    }
-		                    break;
-		
-		                case SEMI_ZIGZAGRIGHT_TOPDOWN:
-		                    if (this.zigZagRightTopDown(node)) {
-		                        System.out.println("semiZigZagRightTopDown");
-		                        this.logIncrementActiveRequests();
-		
-		                        InfraNode rfrshNode = this.getInfraNode(nodeId);
-		                        InfraNode nxtNode = rfrshNode.getRoutingNode(dstNode);
-		
-		                        if (nxtNode == rfrshNode.getParent()) {
-		                            this.configureRoutingMessage(
-		                                rfrshNode, nxtNode, new RoutingInfoMessage(3)
-		                            );
-		
-		                        } else {
-		                            this.configureRoutingMessage(
-		                                rfrshNode, nxtNode, new RoutingInfoMessage(1)
-		                            );
-		
-		                        }
-		
-		                    }
-		                    break;
-		
-		                default:
-		                	Tools.fatalError("Rotation not treated");
-		                    break;
-		            }
+                    switch (op) {
+                        case NULL:
+                            this.allowRouting(node, dstNode, 1);
+                            break;
+
+                        case SEMI_ZIGZIGLEFT_BOTTOMUP:
+                        case SEMI_ZIGZIGRIGHT_BOTTOMUP:
+                            if (this.semiZigZigBottomUp(node)) {
+                                System.out.println("semiZigZigBottomUp");
+                                this.logIncrementActiveRequests();
+
+                                InfraNode rfrshNode = this.getInfraNode(nodeId);
+                                InfraNode nxtNode = rfrshNode.getRoutingNode(dstNode);
+
+                                this.configureRoutingMessage(rfrshNode, nxtNode, new RoutingInfoMessage(1));
+
+                            } else {
+                                this.allowRouting(node, dstNode, 2);
+
+                            }
+                            break;
+
+                        case SEMI_ZIGZAGLEFT_BOTTOMUP:
+                        case SEMI_ZIGZAGRIGHT_BOTTOMUP:
+                            if (this.zigZagBottomUp(node)) {
+                                System.out.println("zigZagBottomUp");
+                                this.logIncrementActiveRequests();
+
+                            } else {
+                                this.allowRouting(node, dstNode, 2);
+
+                            }
+                            break;
+
+                        case SEMI_ZIGZIGLEFT_TOPDOWN:
+                            if (this.semiZigZigLeftTopDown(node)) {
+                                System.out.println("semiZigZigLeftTopDown");
+                                this.logIncrementActiveRequests();
+
+                                InfraNode rfrshNode = this.getInfraNode(nodeId);
+                                InfraNode nxtNode = rfrshNode.getRoutingNode(dstNode);
+
+                                this.configureRoutingMessage(rfrshNode, nxtNode, new RoutingInfoMessage(2));
+
+                            } else {
+                                this.allowRouting(node, dstNode, 2);
+
+                            }
+                            break;
+
+                        case SEMI_ZIGZAGLEFT_TOPDOWN:
+                            if (this.zigZagLeftTopDown(node)) {
+                                System.out.println("semiZigZagLeftTopDown");
+                                this.logIncrementActiveRequests();
+
+                                InfraNode rfrshNode = this.getInfraNode(nodeId);
+                                InfraNode nxtNode = rfrshNode.getRoutingNode(dstNode);
+
+                                if (nxtNode == rfrshNode.getParent()) {
+                                    this.configureRoutingMessage(
+                                        rfrshNode, nxtNode, new RoutingInfoMessage(3)
+                                    );
+
+                                } else {
+                                    this.configureRoutingMessage(
+                                        rfrshNode, nxtNode, new RoutingInfoMessage(1)
+                                    );
+
+                                }
+
+                            } else {
+                                this.allowRouting(node, dstNode, 2);
+
+                            }
+                            break;
+
+                        case SEMI_ZIGZIGRIGHT_TOPDOWN:
+                            if (this.semiZigZigRightTopDown(node)) {
+                                System.out.println("semiZigZigRightTopDown");
+                                this.logIncrementActiveRequests();
+
+                                InfraNode rfrshNode = this.getInfraNode(nodeId);
+                                InfraNode nxtNode = rfrshNode.getRoutingNode(dstNode);
+
+                                this.configureRoutingMessage(rfrshNode, nxtNode, new RoutingInfoMessage(2));
+
+                            } else {
+                                this.allowRouting(node, dstNode, 2);
+
+                            }
+                            break;
+
+                        case SEMI_ZIGZAGRIGHT_TOPDOWN:
+                            if (this.zigZagRightTopDown(node)) {
+                                System.out.println("semiZigZagRightTopDown");
+                                this.logIncrementActiveRequests();
+
+                                InfraNode rfrshNode = this.getInfraNode(nodeId);
+                                InfraNode nxtNode = rfrshNode.getRoutingNode(dstNode);
+
+                                if (nxtNode == rfrshNode.getParent()) {
+                                    this.configureRoutingMessage(
+                                        rfrshNode, nxtNode, new RoutingInfoMessage(3)
+                                    );
+
+                                } else {
+                                    this.configureRoutingMessage(
+                                        rfrshNode, nxtNode, new RoutingInfoMessage(1)
+                                    );
+
+                                }
+
+                            } else {
+                                this.allowRouting(node, dstNode, 2);
+
+                            }
+                            break;
+
+                        default:
+                            break;
+                    }
                 }
             }
             this.areAvailableNodes(node);
