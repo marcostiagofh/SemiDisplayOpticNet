@@ -202,7 +202,7 @@ public class SemiDisplayNetController extends HeuristicController {
     protected void updateConn () {
     	//this.printTree();
     	//this.printEdges();
-    	this.printHeuristicLinks();
+    	//this.printHeuristicLinks();
     	this.lockRoutingNodes();
 
         while (!this.nodesWithMsg.isEmpty()) {
@@ -222,7 +222,7 @@ public class SemiDisplayNetController extends HeuristicController {
             	NetworkSwitch swt = this.clusters.get(clsId).get((Integer) hl_swtOffset);
 
             	this.allowRoutingHeuristicLink(node, dstNode, swt, 1);   
-            	System.out.println("allowRoutingHeuristicLink");
+            	System.out.println("allowRoutingHeuristicLink "+node.getNetId()+" "+dstNode.getNetId());
             } else if (
             		node.getParentId() == dstNode.getId() ||
             		node.getLeftChildId() == dstNode.getId() ||
@@ -230,43 +230,35 @@ public class SemiDisplayNetController extends HeuristicController {
             		) {
             	//se não, mas houver alguma aresta da arvore que conecta os 2 diretamente (a.parent/lchild/rchild = b), 
             	//use o link e processe a mensagem
-            	System.out.println("allowRouting");
+            	System.out.println("allowRouting "+node.getNetId()+" "+dstNode.getNetId());
             	this.allowRouting(node, dstNode, 1);
             } else {
             	//se não houver nenhum dos dois,
             	//verifica se e possivel criar link heuristico entre os 2
             	int clsId = this.getClusterId(node, dstNode);
             	int swtOffset = -1;
-            	InfraNode start_node=null, end_node=null;
             	
             	if(clsId < this.numClustersType1) {
             		//se o cluster é unit, verifica swtOff 0 e 2 se as portas estao desocupadas, ou seja, se podemos criar aresta (a,b) ou (b,a) 
-	            	NetworkSwitch swt = clusters.get(clsId).get(0);                
+            		NetworkSwitch swt = clusters.get(clsId).get(0);                
 	            	AvailablePorts avPorts = swt.getAvailablePorts(node.getNetId(), dstNode.getNetId());
-	                if (avPorts == AvailablePorts.BOTH) {
-	                	swtOffset = 0;
-	                	start_node = node;
-	                	end_node = dstNode;
+	            	if (avPorts == AvailablePorts.BOTH) {
+	                	swtOffset = 0;	                	
 	                } else {
-	                
-		                avPorts = swt.getAvailablePorts(dstNode.getNetId(), node.getNetId());
+	                	swt = clusters.get(clsId).get(1);
+		                avPorts = swt.getAvailablePorts(node.getNetId(), dstNode.getNetId());
 		                if (avPorts == AvailablePorts.BOTH) {
-		                	swtOffset = 0;
-		                	start_node = dstNode;
-		                	end_node = node;
+		                	swtOffset = 1;
 		                } else {
 		                	swt = clusters.get(clsId).get(2);
 			                avPorts = swt.getAvailablePorts(node.getNetId(), dstNode.getNetId());
 			                if (avPorts == AvailablePorts.BOTH) {
 			                	swtOffset = 2;
-			                	start_node = node;
-			                	end_node = dstNode;
 			                } else {
-			                	avPorts = swt.getAvailablePorts(dstNode.getNetId(), node.getNetId());
+			                	swt = clusters.get(clsId).get(3);
+			                	avPorts = swt.getAvailablePorts(node.getNetId(), dstNode.getNetId());
 				                if (avPorts == AvailablePorts.BOTH) {
-				                	swtOffset = 2;
-				                	start_node = dstNode;
-				                	end_node = node;
+				                	swtOffset = 3;
 				                }
 			                }	
 		                }	
@@ -275,51 +267,34 @@ public class SemiDisplayNetController extends HeuristicController {
             	} else {
             		//se clsid >= numClusterType1, o cluster é do tipo cross 
             		//só verificamos portas (a,b), a<b se swtOffset 1,3 
-            		//e portas (b,a), a<b se swtOffset 0,2
-            		InfraNode n1=null, n2=null;
-            		if(node.getId()<dstNode.getId()) {
-            			n1 = node;
-            			n2 = dstNode;
-            		} else {
-            			n2 = node;
-            			n1 = dstNode;
-            		}
-            		
-            		NetworkSwitch swt = clusters.get(clsId).get(0);                
-	            	AvailablePorts avPorts = swt.getAvailablePorts(n2.getNetId(), n1.getNetId());
+            		//e portas (b,a), a<b se swtOffset 0,2            		
+            		int swtOffset1 = 0 +(node.getId()<dstNode.getId() ? 1 : 0);
+            		int swtOffset2 = 3 -(node.getId()<dstNode.getId() ? 1 : 0);
+                    				
+            		NetworkSwitch swt = clusters.get(clsId).get(swtOffset1);                
+	            	AvailablePorts avPorts = swt.getAvailablePorts(node.getNetId(), dstNode.getNetId());
 	                if (avPorts == AvailablePorts.BOTH) {
-	                	swtOffset = 0;
-	                	start_node = n2;
-	                	end_node = n1;
+	                	swtOffset = swtOffset1;
 	                } else {
-	                	swt = clusters.get(clsId).get(2);                
-		            	avPorts = swt.getAvailablePorts(n1.getNetId(), n2.getNetId());
+	                	swt = clusters.get(clsId).get(swtOffset2);                
+		            	avPorts = swt.getAvailablePorts(node.getNetId(), dstNode.getNetId());
 		                if (avPorts == AvailablePorts.BOTH) {
-		                	swtOffset = 2;
-		                	start_node = n1;
-		                	end_node = n2;
+		                	swtOffset = swtOffset2;
 		                }
 	                }	   
             	}
                 
                 if(swtOffset != -1) {
-                	System.out.println("added heuristis link allowRoutingHeuristicLink");
+                	System.out.println("added heuristis link allowRoutingHeuristicLink "+node.getNetId()+" "+dstNode.getNetId());
                 	//se as duas estiverem desocupadas, adicione o link heuristico no primeiro switch e na primeira aresta ((a,b),(b,a)) disponivel 
                 	//adiciona aresta no map de arestas heuristicas (map(pair(int1,int2),int swtOffset) ex: add((0,3),0), add((3,0),1)
-                	heuristic_links.put(new AbstractMap.SimpleEntry<>(start_node.getNetId(),end_node.getNetId()),swtOffset);
-                	heuristic_links.put(new AbstractMap.SimpleEntry<>(end_node.getNetId(),start_node.getNetId()),swtOffset+1);
+                	heuristic_links.put(new AbstractMap.SimpleEntry<>(node.getNetId(),dstNode.getNetId()),swtOffset);
                 	
                 	NetworkSwitch swt = clusters.get(clsId).get(swtOffset);
-                	swt.addLink(start_node.getNetId(),end_node.getNetId());
-                	this.logIncrementActivePorts(swt.getIndex());
-                	swt = clusters.get(clsId).get(swtOffset+1);
-                	swt.addLink(end_node.getNetId(),start_node.getNetId());
-                	this.logIncrementActivePorts(swt.getIndex());
+                	swt.addLink(node.getNetId(),dstNode.getNetId());
+                	this.logIncrementActivePorts(swt.getIndex());                	
                 	
-                	if(start_node == node)
-                		this.allowRoutingHeuristicLink(node, dstNode, clusters.get(clsId).get(swtOffset), 1);  
-                	else
-                		this.allowRoutingHeuristicLink(node, dstNode, clusters.get(clsId).get(swtOffset+1), 1);
+                	this.allowRoutingHeuristicLink(node, dstNode, clusters.get(clsId).get(swtOffset), 1);
                 	
                 } else {
                 	System.out.println("rotation");

@@ -1184,103 +1184,22 @@ public abstract class HeuristicController extends LoggerLayer {
         		if(swtOffset_h != null && (Integer)swtOffset_h == edge.getSwtOffset()) {
         			found = true;
         			int swtOffset_h_1 = (Integer) swtOffset_h;
-        			int swtOffset_h_2 = (swtOffset_h_1 % 2 == 0) ? swtOffset_h_1+1 : swtOffset_h_1-1;
         			heuristic_links.remove(new AbstractMap.SimpleEntry<>(edge.getFromNode().getNetId(),out.getIndex()));
-        			heuristic_links.remove(new AbstractMap.SimpleEntry<>(out.getIndex(),edge.getFromNode().getNetId()));
         			this.logDecrementActivePorts(swt.getIndex());
-        			swt = this.clusters.get(clsId).get(swtOffset_h_2);
-                    this.logDecrementActivePorts(swt.getIndex());
+        			
+        		}  
+        	}        	
+        	
+    		for(InputNode in : swt.getInputNodes()){
+    			Object swtOffset_h = heuristic_links.get(new AbstractMap.SimpleEntry<>(in.getIndex(),edge.getToNode().getNetId()));
+            	
+        		if(swtOffset_h != null && (Integer) swtOffset_h == edge.getSwtOffset()) {
+        			int swtOffset_h_1 = (Integer) swtOffset_h;
+        			heuristic_links.remove(new AbstractMap.SimpleEntry<>(in.getIndex(),edge.getToNode().getNetId()));
+        			this.logDecrementActivePorts(swt.getIndex());            			
         		}  
         	}
         	
-        	if(!found) {
-        		for(InputNode in : swt.getInputNodes()){
-        			Object swtOffset_h = heuristic_links.get(new AbstractMap.SimpleEntry<>(in.getIndex(),edge.getToNode().getNetId()));
-                	
-            		if(swtOffset_h != null && (Integer) swtOffset_h == edge.getSwtOffset()) {
-            			found = true;
-            			int swtOffset_h_1 = (Integer) swtOffset_h;
-            			int swtOffset_h_2 = (swtOffset_h_1 % 2 == 0) ? swtOffset_h_1+1 : swtOffset_h_1-1;
-            			heuristic_links.remove(new AbstractMap.SimpleEntry<>(in.getIndex(),edge.getToNode().getNetId()));
-            			heuristic_links.remove(new AbstractMap.SimpleEntry<>(edge.getToNode().getNetId(),in.getIndex()));
-            			this.logDecrementActivePorts(swt.getIndex());
-            			swt = this.clusters.get(clsId).get(swtOffset_h_2);
-                        this.logDecrementActivePorts(swt.getIndex());
-            		}  
-            	}
-        	}
-        	/*
-        	int fromNodeNetId = edge.getFromNode().getNetId();
-        	
-        	int clsId = this.getClusterId(edge.getFromNode(), edge.getToNode());
-        	NetworkSwitch swt = this.clusters.get(clsId).get(edge.getSwtOffset());
-        	InputNode in = swt.getInputId2NodeFromId(fromNodeNetId);
-        	if(in.isActive()) {
-        		int outputNodeNetId = in.getOutputNode().getIndex();
-        		if(	edge.getFromNode().getParent().getNetId() != outputNodeNetId &&
-        			edge.getFromNode().getLeftChild().getNetId() != outputNodeNetId &&
-        			edge.getFromNode().getRightChild().getNetId() != outputNodeNetId ) {
-        			
-        			clsId = this.getClusterId(edge.getFromNode(), this.getInfraNode(outputNodeNetId));
-
-        			Object swtOffset_h = heuristic_links.get(new AbstractMap.SimpleEntry<>(edge.getFromNode().getNetId(),outputNodeNetId));
-                	
-        			if((Integer)swtOffset_h == edge.getSwtOffset()) {
-	        			swt = this.clusters.get(clsId).get(edge.getSwtOffset());
-	                    swt.removeLink(
-	                        edge.getFromNode().getNetId(), outputNodeNetId
-	                    );
-	                    this.logDecrementActivePorts(swt.getIndex());
-        			}            
-        		}
-        	} else {
-        		OutputNode out = in.getOutputNode();
-        		if(out.isActive()) {
-        			int inputNodeNetId = out.getInputNode().getIndex();
-        			if(	edge.getToNode().getParent().getNetId() != inputNodeNetId &&
-            			edge.getToNode().getLeftChild().getNetId() != inputNodeNetId &&
-            			edge.getToNode().getRightChild().getNetId() != inputNodeNetId ) {
-            			
-        				clsId = this.getClusterId(this.getInfraNode(inputNodeNetId),edge.getToNode());
-
-            			Object swtOffset_h = heuristic_links.get(new AbstractMap.SimpleEntry<>(inputNodeNetId,edge.getToNode().getNetId()));
-                    	
-            			if((Integer)swtOffset_h == edge.getSwtOffset()) {
-    	        			swt = this.clusters.get(clsId).get(edge.getSwtOffset());
-    	                    swt.removeLink(
-    	                    		inputNodeNetId, edge.getToNode().getNetId()
-    	                    );
-    	                    this.logDecrementActivePorts(swt.getIndex());
-            			}            
-            		}
-        		}
-        	}
-        	*/
-        	/*
-        	Object swtOffset_h = heuristic_links.get(new AbstractMap.SimpleEntry<>(edge.getFromNode().getNetId(),edge.getToNode().getNetId()));
-        	Object swtOffset_h1 = heuristic_links.get(new AbstractMap.SimpleEntry<>(edge.getToNode().getNetId(),edge.getFromNode().getNetId()));
-            if(swtOffset_h != null && 
-            		(edge.getSwtOffset() == (Integer) swtOffset_h ||
-            		 edge.getSwtOffset() == (Integer) swtOffset_h1) 
-            ) {
-            	//se sim, apaga link heuristico do switch e do switch espelhado
-            	heuristic_links.remove(new AbstractMap.SimpleEntry<>(edge.getFromNode().getNetId(),edge.getToNode().getNetId()));
-            	heuristic_links.remove(new AbstractMap.SimpleEntry<>(edge.getToNode().getNetId(),edge.getFromNode().getNetId()));
-            	
-            	int clsId = this.getClusterId(edge.getFromNode(), edge.getToNode());
-            	NetworkSwitch swt = this.clusters.get(clsId).get((Integer) swtOffset_h);
-                swt.removeLink(
-                    edge.getFromNode().getNetId(), edge.getToNode().getNetId()
-                );
-                this.logDecrementActivePorts(swt.getIndex());
-                
-                swt = this.clusters.get(clsId).get((Integer) swtOffset_h1);
-                swt.removeLink(
-                    edge.getToNode().getNetId(), edge.getFromNode().getNetId()
-                );
-                this.logDecrementActivePorts(swt.getIndex());
-            }
-            */
         } 
 
         this.logEssentialLinkUpdates();
@@ -1516,7 +1435,10 @@ public abstract class HeuristicController extends LoggerLayer {
      * locked or other issues, the node is not allowed to act in this round.
      */
     protected void updateConn () {
-        this.lockRoutingNodes();
+    	//this.printTree();
+    	//this.printEdges();
+    	//this.printHeuristicLinks();
+    	this.lockRoutingNodes();
 
         while (!this.nodesWithMsg.isEmpty()) {
             HasMessage hasmsg = this.nodesWithMsg.poll();
@@ -1524,8 +1446,8 @@ public abstract class HeuristicController extends LoggerLayer {
 
             InfraNode node = this.getInfraNode(nodeId);
             InfraNode dstNode = this.getInfraNode(hasmsg.getDst());
-            
-            //pega origem e destino da mensagem
+
+          //pega origem e destino da mensagem
             //ve se tem link heuristico entre os 2
             //e pra isso, procura a chave (node, dstNode) no map heuristic_links
             Object hl_swtOffset = heuristic_links.get(new AbstractMap.SimpleEntry<>(node.getNetId(),dstNode.getNetId()));
@@ -1533,8 +1455,9 @@ public abstract class HeuristicController extends LoggerLayer {
             	//se tiver link heuristico, use o link e processe a mensagem
             	int clsId = this.getClusterId(node, dstNode);
             	NetworkSwitch swt = this.clusters.get(clsId).get((Integer) hl_swtOffset);
-                this.allowRoutingHeuristicLink(node, dstNode, swt, 1);   
-            	System.out.println("allowRoutingHeuristicLink");
+
+            	this.allowRoutingHeuristicLink(node, dstNode, swt, 1);   
+            	System.out.println("allowRoutingHeuristicLink "+node.getNetId()+" "+dstNode.getNetId());
             } else if (
             		node.getParentId() == dstNode.getId() ||
             		node.getLeftChildId() == dstNode.getId() ||
@@ -1542,43 +1465,35 @@ public abstract class HeuristicController extends LoggerLayer {
             		) {
             	//se não, mas houver alguma aresta da arvore que conecta os 2 diretamente (a.parent/lchild/rchild = b), 
             	//use o link e processe a mensagem
-            	System.out.println("allowRouting");
+            	System.out.println("allowRouting "+node.getNetId()+" "+dstNode.getNetId());
             	this.allowRouting(node, dstNode, 1);
             } else {
             	//se não houver nenhum dos dois,
             	//verifica se e possivel criar link heuristico entre os 2
             	int clsId = this.getClusterId(node, dstNode);
             	int swtOffset = -1;
-            	InfraNode start_node=null, end_node=null;
             	
             	if(clsId < this.numClustersType1) {
             		//se o cluster é unit, verifica swtOff 0 e 2 se as portas estao desocupadas, ou seja, se podemos criar aresta (a,b) ou (b,a) 
-	            	NetworkSwitch swt = clusters.get(clsId).get(0);                
+            		NetworkSwitch swt = clusters.get(clsId).get(0);                
 	            	AvailablePorts avPorts = swt.getAvailablePorts(node.getNetId(), dstNode.getNetId());
-	                if (avPorts == AvailablePorts.BOTH) {
-	                	swtOffset = 0;
-	                	start_node = node;
-	                	end_node = dstNode;
+	            	if (avPorts == AvailablePorts.BOTH) {
+	                	swtOffset = 0;	                	
 	                } else {
-	                
-		                avPorts = swt.getAvailablePorts(dstNode.getNetId(), node.getNetId());
+	                	swt = clusters.get(clsId).get(1);
+		                avPorts = swt.getAvailablePorts(node.getNetId(), dstNode.getNetId());
 		                if (avPorts == AvailablePorts.BOTH) {
-		                	swtOffset = 0;
-		                	start_node = dstNode;
-		                	end_node = node;
+		                	swtOffset = 1;
 		                } else {
 		                	swt = clusters.get(clsId).get(2);
 			                avPorts = swt.getAvailablePorts(node.getNetId(), dstNode.getNetId());
 			                if (avPorts == AvailablePorts.BOTH) {
 			                	swtOffset = 2;
-			                	start_node = node;
-			                	end_node = dstNode;
 			                } else {
-			                	avPorts = swt.getAvailablePorts(dstNode.getNetId(), node.getNetId());
+			                	swt = clusters.get(clsId).get(3);
+			                	avPorts = swt.getAvailablePorts(node.getNetId(), dstNode.getNetId());
 				                if (avPorts == AvailablePorts.BOTH) {
-				                	swtOffset = 2;
-				                	start_node = dstNode;
-				                	end_node = node;
+				                	swtOffset = 3;
 				                }
 			                }	
 		                }	
@@ -1587,181 +1502,150 @@ public abstract class HeuristicController extends LoggerLayer {
             	} else {
             		//se clsid >= numClusterType1, o cluster é do tipo cross 
             		//só verificamos portas (a,b), a<b se swtOffset 1,3 
-            		//e portas (b,a), a<b se swtOffset 0,2
-            		InfraNode n1=null, n2=null;
-            		if(node.getId()<dstNode.getId()) {
-            			n1 = node;
-            			n2 = dstNode;
-            		} else {
-            			n2 = node;
-            			n1 = dstNode;
-            		}
-            		
-            		NetworkSwitch swt = clusters.get(clsId).get(0);                
-	            	AvailablePorts avPorts = swt.getAvailablePorts(n2.getNetId(), n1.getNetId());
+            		//e portas (b,a), a<b se swtOffset 0,2            		
+            		int swtOffset1 = 0 +(node.getId()<dstNode.getId() ? 1 : 0);
+            		int swtOffset2 = 3 -(node.getId()<dstNode.getId() ? 1 : 0);
+                    				
+            		NetworkSwitch swt = clusters.get(clsId).get(swtOffset1);                
+	            	AvailablePorts avPorts = swt.getAvailablePorts(node.getNetId(), dstNode.getNetId());
 	                if (avPorts == AvailablePorts.BOTH) {
-	                	swtOffset = 0;
-	                	start_node = n2;
-	                	end_node = n1;
+	                	swtOffset = swtOffset1;
 	                } else {
-	                	swt = clusters.get(clsId).get(2);                
-		            	avPorts = swt.getAvailablePorts(n1.getNetId(), n2.getNetId());
+	                	swt = clusters.get(clsId).get(swtOffset2);                
+		            	avPorts = swt.getAvailablePorts(node.getNetId(), dstNode.getNetId());
 		                if (avPorts == AvailablePorts.BOTH) {
-		                	swtOffset = 2;
-		                	start_node = n1;
-		                	end_node = n2;
+		                	swtOffset = swtOffset2;
 		                }
 	                }	   
             	}
                 
                 if(swtOffset != -1) {
-                	System.out.println("added heuristis link allowRoutingHeuristicLink");
+                	System.out.println("added heuristis link allowRoutingHeuristicLink "+node.getNetId()+" "+dstNode.getNetId());
                 	//se as duas estiverem desocupadas, adicione o link heuristico no primeiro switch e na primeira aresta ((a,b),(b,a)) disponivel 
                 	//adiciona aresta no map de arestas heuristicas (map(pair(int1,int2),int swtOffset) ex: add((0,3),0), add((3,0),1)
-                	heuristic_links.put(new AbstractMap.SimpleEntry<>(start_node.getNetId(),end_node.getNetId()),swtOffset);
-                	heuristic_links.put(new AbstractMap.SimpleEntry<>(end_node.getNetId(),start_node.getNetId()),swtOffset+1);
+                	heuristic_links.put(new AbstractMap.SimpleEntry<>(node.getNetId(),dstNode.getNetId()),swtOffset);
                 	
                 	NetworkSwitch swt = clusters.get(clsId).get(swtOffset);
-                	swt.addLink(start_node.getNetId(),end_node.getNetId());
-                	this.logIncrementActivePorts(swt.getIndex());
-                	swt = clusters.get(clsId).get(swtOffset+1);
-                	swt.addLink(end_node.getNetId(),start_node.getNetId());
-                	this.logIncrementActivePorts(swt.getIndex());
+                	swt.addLink(node.getNetId(),dstNode.getNetId());
+                	this.logIncrementActivePorts(swt.getIndex());                	
                 	
-                	if(start_node == node)
-                		this.allowRoutingHeuristicLink(node, dstNode, clusters.get(clsId).get(swtOffset), 1);  
-                	else
-                		this.allowRoutingHeuristicLink(node, dstNode, clusters.get(clsId).get(swtOffset+1), 1);
+                	this.allowRoutingHeuristicLink(node, dstNode, clusters.get(clsId).get(swtOffset), 1);
+                	
                 } else {
                 	System.out.println("rotation");
                 	//se uma das portas estiver ocupada nos 2 casos, verifica a estrutura da arvore, 
                 	//escolhe a rotacao e adiciona à fila de "arestas pra adicionar"
                 	Rotation op = this.getRotationToPerform(node, dstNode);
 
-                    switch (op) {
-                        case NULL:
-                            this.allowRouting(node, dstNode, 1);
-                            break;
-
-                        case SEMI_ZIGZIGLEFT_BOTTOMUP:
-                        case SEMI_ZIGZIGRIGHT_BOTTOMUP:
-                            if (this.semiZigZigBottomUp(node)) {
-                                System.out.println("semiZigZigBottomUp");
-                                this.logIncrementActiveRequests();
-
-                                InfraNode rfrshNode = this.getInfraNode(nodeId);
-                                InfraNode nxtNode = rfrshNode.getRoutingNode(dstNode);
-
-                                this.configureRoutingMessage(rfrshNode, nxtNode, new RoutingInfoMessage(1));
-
-                            } else {
-                                this.allowRouting(node, dstNode, 2);
-
-                            }
-                            break;
-
-                        case SEMI_ZIGZAGLEFT_BOTTOMUP:
-                        case SEMI_ZIGZAGRIGHT_BOTTOMUP:
-                            if (this.zigZagBottomUp(node)) {
-                                System.out.println("zigZagBottomUp");
-                                this.logIncrementActiveRequests();
-
-                            } else {
-                                this.allowRouting(node, dstNode, 2);
-
-                            }
-                            break;
-
-                        case SEMI_ZIGZIGLEFT_TOPDOWN:
-                            if (this.semiZigZigLeftTopDown(node)) {
-                                System.out.println("semiZigZigLeftTopDown");
-                                this.logIncrementActiveRequests();
-
-                                InfraNode rfrshNode = this.getInfraNode(nodeId);
-                                InfraNode nxtNode = rfrshNode.getRoutingNode(dstNode);
-
-                                this.configureRoutingMessage(rfrshNode, nxtNode, new RoutingInfoMessage(2));
-
-                            } else {
-                                this.allowRouting(node, dstNode, 2);
-
-                            }
-                            break;
-
-                        case SEMI_ZIGZAGLEFT_TOPDOWN:
-                            if (this.zigZagLeftTopDown(node)) {
-                                System.out.println("semiZigZagLeftTopDown");
-                                this.logIncrementActiveRequests();
-
-                                InfraNode rfrshNode = this.getInfraNode(nodeId);
-                                InfraNode nxtNode = rfrshNode.getRoutingNode(dstNode);
-
-                                if (nxtNode == rfrshNode.getParent()) {
-                                    this.configureRoutingMessage(
-                                        rfrshNode, nxtNode, new RoutingInfoMessage(3)
-                                    );
-
-                                } else {
-                                    this.configureRoutingMessage(
-                                        rfrshNode, nxtNode, new RoutingInfoMessage(1)
-                                    );
-
-                                }
-
-                            } else {
-                                this.allowRouting(node, dstNode, 2);
-
-                            }
-                            break;
-
-                        case SEMI_ZIGZIGRIGHT_TOPDOWN:
-                            if (this.semiZigZigRightTopDown(node)) {
-                                System.out.println("semiZigZigRightTopDown");
-                                this.logIncrementActiveRequests();
-
-                                InfraNode rfrshNode = this.getInfraNode(nodeId);
-                                InfraNode nxtNode = rfrshNode.getRoutingNode(dstNode);
-
-                                this.configureRoutingMessage(rfrshNode, nxtNode, new RoutingInfoMessage(2));
-
-                            } else {
-                                this.allowRouting(node, dstNode, 2);
-
-                            }
-                            break;
-
-                        case SEMI_ZIGZAGRIGHT_TOPDOWN:
-                            if (this.zigZagRightTopDown(node)) {
-                                System.out.println("semiZigZagRightTopDown");
-                                this.logIncrementActiveRequests();
-
-                                InfraNode rfrshNode = this.getInfraNode(nodeId);
-                                InfraNode nxtNode = rfrshNode.getRoutingNode(dstNode);
-
-                                if (nxtNode == rfrshNode.getParent()) {
-                                    this.configureRoutingMessage(
-                                        rfrshNode, nxtNode, new RoutingInfoMessage(3)
-                                    );
-
-                                } else {
-                                    this.configureRoutingMessage(
-                                        rfrshNode, nxtNode, new RoutingInfoMessage(1)
-                                    );
-
-                                }
-
-                            } else {
-                                this.allowRouting(node, dstNode, 2);
-
-                            }
-                            break;
-
-                        default:
-                            break;
-                    }
+		            switch (op) {
+		                case NULL:
+		                    this.allowRouting(node, dstNode, 1);
+		                    break;
+		
+		                case ZIG_BOTTOMUP:
+		                	if (this.zigBottomUp(node)) {
+		                		System.out.println("zigBottomUp");
+		                        this.logIncrementActiveRequests();
+		
+		                	}
+		                    break;
+		
+		                case ZIGZIGLEFT_BOTTOMUP:
+		                case ZIGZIGRIGHT_BOTTOMUP:
+		                    if (this.zigZigBottomUp(node)) {
+		                        System.out.println("semiZigZigBottomUp");
+		                        this.logIncrementActiveRequests();
+		
+		                    }
+		                    break;
+		
+		                case ZIGZAGLEFT_BOTTOMUP:
+		                case ZIGZAGRIGHT_BOTTOMUP:
+		                    if (this.zigZagBottomUp(node)) {
+		                        System.out.println("zigZagBottomUp");
+		                        this.logIncrementActiveRequests();
+		
+		                    }
+		                    break;
+		
+		                case SEMI_ZIGZIGLEFT_TOPDOWN:
+		                    if (this.semiZigZigLeftTopDown(node)) {
+		                        System.out.println("semiZigZigLeftTopDown");
+		                        this.logIncrementActiveRequests();
+		
+		                        InfraNode rfrshNode = this.getInfraNode(nodeId);
+		                        InfraNode nxtNode = rfrshNode.getRoutingNode(dstNode);
+		
+		                        this.configureRoutingMessage(rfrshNode, nxtNode, new RoutingInfoMessage(2));
+		
+		                    }
+		                    break;
+		
+		                case SEMI_ZIGZAGLEFT_TOPDOWN:
+		                    if (this.zigZagLeftTopDown(node)) {
+		                        System.out.println("semiZigZagLeftTopDown");
+		                        this.logIncrementActiveRequests();
+		
+		                        InfraNode rfrshNode = this.getInfraNode(nodeId);
+		                        InfraNode nxtNode = rfrshNode.getRoutingNode(dstNode);
+		
+		                        if (nxtNode == rfrshNode.getParent()) {
+		                            this.configureRoutingMessage(
+		                                rfrshNode, nxtNode, new RoutingInfoMessage(3)
+		                            );
+		
+		                        } else {
+		                            this.configureRoutingMessage(
+		                                rfrshNode, nxtNode, new RoutingInfoMessage(1)
+		                            );
+		
+		                        }
+		
+		                    }
+		                    break;
+		
+		                case SEMI_ZIGZIGRIGHT_TOPDOWN:
+		                    if (this.semiZigZigRightTopDown(node)) {
+		                        System.out.println("semiZigZigRightTopDown");
+		                        this.logIncrementActiveRequests();
+		
+		                        InfraNode rfrshNode = this.getInfraNode(nodeId);
+		                        InfraNode nxtNode = rfrshNode.getRoutingNode(dstNode);
+		
+		                        this.configureRoutingMessage(rfrshNode, nxtNode, new RoutingInfoMessage(2));
+		
+		                    }
+		                    break;
+		
+		                case SEMI_ZIGZAGRIGHT_TOPDOWN:
+		                    if (this.zigZagRightTopDown(node)) {
+		                        System.out.println("semiZigZagRightTopDown");
+		                        this.logIncrementActiveRequests();
+		
+		                        InfraNode rfrshNode = this.getInfraNode(nodeId);
+		                        InfraNode nxtNode = rfrshNode.getRoutingNode(dstNode);
+		
+		                        if (nxtNode == rfrshNode.getParent()) {
+		                            this.configureRoutingMessage(
+		                                rfrshNode, nxtNode, new RoutingInfoMessage(3)
+		                            );
+		
+		                        } else {
+		                            this.configureRoutingMessage(
+		                                rfrshNode, nxtNode, new RoutingInfoMessage(1)
+		                            );
+		
+		                        }
+		
+		                    }
+		                    break;
+		
+		                default:
+		                	Tools.fatalError("Rotation not treated");
+		                    break;
+		            }
                 }
-            }     
-
+            }
             this.areAvailableNodes(node);
         }
     }

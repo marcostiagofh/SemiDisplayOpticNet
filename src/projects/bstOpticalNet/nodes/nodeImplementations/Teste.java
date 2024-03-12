@@ -17,14 +17,13 @@ public class Teste {
 		
 		Map<AbstractMap.SimpleEntry<Integer,Integer>,Integer> heuristic_links = new HashMap<>();
 		heuristic_links.put(new AbstractMap.SimpleEntry<>(1,2),0);
-		heuristic_links.put(new AbstractMap.SimpleEntry<>(2,1),1);
 		Object swtOffset = heuristic_links.get(new AbstractMap.SimpleEntry<>(2,1));
 		if(swtOffset == null)
 			swtOffset = -1;
 		else
 			swtOffset = (Integer) swtOffset;
 		System.out.println(swtOffset);
-		
+		/*
 		Deque<ArrayList<Integer>> addEdges = new ArrayDeque<>();
 		ArrayList<Integer> arr = new ArrayList<Integer>();
 		arr.add(1);
@@ -44,7 +43,7 @@ public class Teste {
             	heuristic_links.remove(new AbstractMap.SimpleEntry<>(edge.get(1),edge.get(0)));
             	System.out.println("Removing"+edge.get(0).toString()+edge.get(1));
             }
-        } 
+        }*/ 
 	}
 
 }

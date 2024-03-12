@@ -23,8 +23,8 @@ reload(Plotter)
 
 # In[3]:
 
-projects = [ "semiDisplayOpticNet", "cbOptNet"]
-switch_sizes = [ 16, 32 ]
+projects = [ "semiDisplayOpticNet"]
+switch_sizes = [ 256 ]
 num_simulations = 30
 datasets = [ "tor" ]
 num_nodes = [ 128 ]
