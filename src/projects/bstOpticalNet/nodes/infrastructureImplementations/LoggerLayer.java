@@ -17,12 +17,14 @@ public abstract class LoggerLayer extends SynchronizerLayer {
     private DataSeries rotationCounter = new DataSeries();
     private DataSeries alterationCounter = new DataSeries();
     private DataSeries messageRoutingCounter = new DataSeries();
+    private DataSeries heuristicLinksCounter = new DataSeries();
     private DataSeries activeRequestsCounter = new DataSeries();
 
     private ArrayList<Long> activePortsPerSwitchRound;
 
     private long activeRequests = 0;
     private long currentRoundRotations = 0;
+    private long currentRoundHeuristicLinks = 0;
     private long roundCompletedRequests = 0;
 
     private long completedRequests = 0;
@@ -90,6 +92,7 @@ public abstract class LoggerLayer extends SynchronizerLayer {
     public void logEndOfSimulation () {
         this.operationsLog.logln("name,sum,mean,std_dvt,min,max");
         this.printRotationCounter();
+        this.printHeuristicLinkCounter();
         this.printAlterationCounter();
         this.printMessageRoutingCounter();
         this.printActiveRequestsCounter();
@@ -202,6 +205,11 @@ public abstract class LoggerLayer extends SynchronizerLayer {
         this.rotationCounter.addSample(num);
         this.currentRoundRotations += num;
     }
+    
+    public void logHeuristicLinks (long num) {
+        this.heuristicLinksCounter.addSample(num);
+        this.currentRoundHeuristicLinks += num;
+    }
 
     /**
      * Increment the number of active requests for the round
@@ -274,6 +282,10 @@ public abstract class LoggerLayer extends SynchronizerLayer {
     public void printRotationCounter () {
         this.printCounter(this.rotationCounter, "rotation");
 
+    }
+    
+    public void printHeuristicLinkCounter() {
+    	this.printCounter(this.heuristicLinksCounter, "heuristic link creation");
     }
 
     /**
