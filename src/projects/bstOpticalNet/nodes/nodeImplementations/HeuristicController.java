@@ -1533,6 +1533,7 @@ public abstract class HeuristicController extends LoggerLayer {
                 	
                 } else {
                 	System.out.println("rotation");
+                	this.logHeuristicLinksRefused(1);
                 	//se uma das portas estiver ocupada nos 2 casos, verifica a estrutura da arvore, 
                 	//escolhe a rotacao e adiciona à fila de "arestas pra adicionar"
                 	Rotation op = this.getRotationToPerform(node, dstNode);
@@ -1673,7 +1674,7 @@ public abstract class HeuristicController extends LoggerLayer {
 
         routNodes.add(currNode);
         for (int i = 1; i <= routMsg.getRoutingTimes(); i++) {
-            InfraNode nxtNode = dstNode;
+            InfraNode nxtNode = currNode.getRoutingNode(dstNode);
             if (nxtNode.getId() == -1 || nxtNode.getId() == currNode.getId()) {
                 break;
 

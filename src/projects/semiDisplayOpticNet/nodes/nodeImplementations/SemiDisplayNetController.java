@@ -212,7 +212,7 @@ public class SemiDisplayNetController extends HeuristicController {
             InfraNode node = this.getInfraNode(nodeId);
             InfraNode dstNode = this.getInfraNode(hasmsg.getDst());
 
-          //pega origem e destino da mensagem
+            //pega origem e destino da mensagem
             //ve se tem link heuristico entre os 2
             //e pra isso, procura a chave (node, dstNode) no map heuristic_links
             Object hl_swtOffset = heuristic_links.get(new AbstractMap.SimpleEntry<>(node.getNetId(),dstNode.getNetId()));
@@ -221,6 +221,7 @@ public class SemiDisplayNetController extends HeuristicController {
             	int clsId = this.getClusterId(node, dstNode);
             	NetworkSwitch swt = this.clusters.get(clsId).get((Integer) hl_swtOffset);
 
+            	this.logHeuristicLinks(1);
             	this.allowRoutingHeuristicLink(node, dstNode, swt, 1);   
             	System.out.println("allowRoutingHeuristicLink "+node.getNetId()+" "+dstNode.getNetId());
             } else if (
@@ -298,6 +299,7 @@ public class SemiDisplayNetController extends HeuristicController {
                 	
                 } else {
                 	System.out.println("rotation");
+                	this.logHeuristicLinksRefused(1);
                 	//se uma das portas estiver ocupada nos 2 casos, verifica a estrutura da arvore, 
                 	//escolhe a rotacao e adiciona à fila de "arestas pra adicionar"
                 	Rotation op = this.getRotationToPerform(node, dstNode);

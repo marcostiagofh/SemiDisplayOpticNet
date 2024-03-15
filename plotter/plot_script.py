@@ -4,7 +4,7 @@
 # In[1]:
 import os
 import sys
-
+import scienceplots
 import matplotlib.pyplot as plt
 import numpy as np
 

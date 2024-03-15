@@ -19,18 +19,22 @@ public abstract class LoggerLayer extends SynchronizerLayer {
     private DataSeries messageRoutingCounter = new DataSeries();
     private DataSeries heuristicLinksCounter = new DataSeries();
     private DataSeries activeRequestsCounter = new DataSeries();
-
+    private DataSeries heuristicLinksRefusedCounter = new DataSeries();
+    
     private ArrayList<Long> activePortsPerSwitchRound;
 
     private long activeRequests = 0;
     private long currentRoundRotations = 0;
     private long currentRoundHeuristicLinks = 0;
+    private long currentRoundHeuristicLinksRefused = 0;    
     private long roundCompletedRequests = 0;
 
     private long completedRequests = 0;
 
     // LOGS
     private Logging rotationLog;
+    private Logging heuristicLinksLog;
+    private Logging heuristicLinksRefusedLog;
     private Logging routingLog;
     private Logging alterationLog;
     private Logging activeRequestsPerRound;
@@ -69,7 +73,7 @@ public abstract class LoggerLayer extends SynchronizerLayer {
      */
     @Override
     public void logRoundResults () {
-        this.rotationLog.logln(this.projectName + "," + this.currentRoundRotations);
+    	this.rotationLog.logln(this.projectName + "," + this.currentRoundRotations);
         this.activeRequestsPerRound.logln(this.projectName + "," + this.activeRequests);
         this.activeRequestsCounter.addSample(this.activeRequests);
 
@@ -93,6 +97,7 @@ public abstract class LoggerLayer extends SynchronizerLayer {
         this.operationsLog.logln("name,sum,mean,std_dvt,min,max");
         this.printRotationCounter();
         this.printHeuristicLinkCounter();
+        this.printHeuristicLinkRefusedCounter();
         this.printAlterationCounter();
         this.printMessageRoutingCounter();
         this.printActiveRequestsCounter();
@@ -209,8 +214,14 @@ public abstract class LoggerLayer extends SynchronizerLayer {
     public void logHeuristicLinks (long num) {
         this.heuristicLinksCounter.addSample(num);
         this.currentRoundHeuristicLinks += num;
+        this.heuristicLinksLog.logln(this.projectName + "," + this.getCurrentRound() + "," + this.currentRoundHeuristicLinks);      
     }
 
+    public void logHeuristicLinksRefused(long num) {
+        this.heuristicLinksRefusedCounter.addSample(num);
+        this.currentRoundHeuristicLinksRefused += num;
+        this.heuristicLinksRefusedLog.logln(this.projectName + "," + this.getCurrentRound() + "," + this.currentRoundHeuristicLinksRefused);
+    }
     /**
      * Increment the number of active requests for the round
      */
@@ -287,6 +298,10 @@ public abstract class LoggerLayer extends SynchronizerLayer {
     public void printHeuristicLinkCounter() {
     	this.printCounter(this.heuristicLinksCounter, "heuristic link creation");
     }
+    
+    public void printHeuristicLinkRefusedCounter() {
+    	this.printCounter(this.heuristicLinksRefusedCounter, "heuristic link refused");
+    }
 
     /**
      * Print MessageRouting counter informations.
@@ -349,6 +364,8 @@ public abstract class LoggerLayer extends SynchronizerLayer {
      */
     public void setLogPath (String path) {
         this.rotationLog = Logging.getLogger(path + "/rotations.csv");
+        this.heuristicLinksLog = Logging.getLogger(path + "/heuristicLinks.csv");
+        this.heuristicLinksRefusedLog = Logging.getLogger(path + "/heuristicLinksRefused.csv");
         this.routingLog = Logging.getLogger(path + "/routings.csv");
         this.alterationLog = Logging.getLogger(path + "/alterations.csv");
         this.activeRequestsPerRound = Logging.getLogger(path + "/active_requests_per_round.csv");
@@ -372,6 +389,8 @@ public abstract class LoggerLayer extends SynchronizerLayer {
     public void initSimulationLog () {
         this.rotationLog.logln("project,rotation");
 
+        this.heuristicLinksLog.logln("project,round,heuristic links");
+        this.heuristicLinksRefusedLog.logln("project,round,heuristic links refused");
         this.routingLog.logln("project,round,from_node,to_node,switch");
         this.alterationLog.logln("project,round,node,switch");
 
@@ -396,7 +415,8 @@ public abstract class LoggerLayer extends SynchronizerLayer {
         this.activeRequests = 0;
         this.currentRoundRotations = 0;
         this.roundCompletedRequests = 0;
-
+        this.currentRoundHeuristicLinks = 0;
+        this.currentRoundHeuristicLinksRefused = 0;
     }
     /* End of Reset counter Functions */
 }
