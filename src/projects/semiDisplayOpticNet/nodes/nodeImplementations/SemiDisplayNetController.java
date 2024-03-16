@@ -221,7 +221,6 @@ public class SemiDisplayNetController extends HeuristicController {
             	int clsId = this.getClusterId(node, dstNode);
             	NetworkSwitch swt = this.clusters.get(clsId).get((Integer) hl_swtOffset);
 
-            	this.logHeuristicLinks(1);
             	this.allowRoutingHeuristicLink(node, dstNode, swt, 1);   
             	System.out.println("allowRoutingHeuristicLink "+node.getNetId()+" "+dstNode.getNetId());
             } else if (
@@ -295,6 +294,7 @@ public class SemiDisplayNetController extends HeuristicController {
                 	swt.addLink(node.getNetId(),dstNode.getNetId());
                 	this.logIncrementActivePorts(swt.getIndex());                	
                 	this.logHeuristicLinks(1);
+                	this.logIncrementAlterations(swt.getIndex(), node);
                 	this.allowRoutingHeuristicLink(node, dstNode, clusters.get(clsId).get(swtOffset), 1);
                 	
                 } else {
