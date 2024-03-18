@@ -285,17 +285,19 @@ public class SemiDisplayNetController extends HeuristicController {
             	}
                 
                 if(swtOffset != -1) {
-                	System.out.println("added heuristis link allowRoutingHeuristicLink "+node.getNetId()+" "+dstNode.getNetId());
-                	//se as duas estiverem desocupadas, adicione o link heuristico no primeiro switch e na primeira aresta ((a,b),(b,a)) disponivel 
-                	//adiciona aresta no map de arestas heuristicas (map(pair(int1,int2),int swtOffset) ex: add((0,3),0), add((3,0),1)
-                	heuristic_links.put(new AbstractMap.SimpleEntry<>(node.getNetId(),dstNode.getNetId()),swtOffset);
-                	
-                	NetworkSwitch swt = clusters.get(clsId).get(swtOffset);
-                	swt.addLink(node.getNetId(),dstNode.getNetId());
-                	this.logIncrementActivePorts(swt.getIndex());                	
-                	this.logHeuristicLinks(1);
-                	this.logIncrementAlterations(swt.getIndex(), node);
-                	this.allowRoutingHeuristicLink(node, dstNode, clusters.get(clsId).get(swtOffset), 1);
+                	if(areAvailableNodes(node,dstNode)) {
+	                	System.out.println("added heuristis link allowRoutingHeuristicLink "+node.getNetId()+" "+dstNode.getNetId());
+	                	//se as duas estiverem desocupadas, adicione o link heuristico no primeiro switch e na primeira aresta ((a,b),(b,a)) disponivel 
+	                	//adiciona aresta no map de arestas heuristicas (map(pair(int1,int2),int swtOffset) ex: add((0,3),0), add((3,0),1)
+	                	heuristic_links.put(new AbstractMap.SimpleEntry<>(node.getNetId(),dstNode.getNetId()),swtOffset);
+	                	
+	                	NetworkSwitch swt = clusters.get(clsId).get(swtOffset);
+	                	swt.addLink(node.getNetId(),dstNode.getNetId());
+	                	this.logIncrementActivePorts(swt.getIndex());                	
+	                	this.logHeuristicLinks(1);
+	                	this.logIncrementAlterations(swt.getIndex(), node);
+	                	this.allowRoutingHeuristicLink(node, dstNode, clusters.get(clsId).get(swtOffset), 1);
+                	}
                 	
                 } else {
                 	System.out.println("rotation");

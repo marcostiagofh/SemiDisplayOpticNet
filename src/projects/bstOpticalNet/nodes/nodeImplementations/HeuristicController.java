@@ -1176,13 +1176,10 @@ public abstract class HeuristicController extends LoggerLayer {
         	int clsId = this.getClusterId(edge.getFromNode(), edge.getToNode());
         	NetworkSwitch swt = this.clusters.get(clsId).get(edge.getSwtOffset());
         	
-        	boolean found = false;
-        	
         	for(OutputNode out : swt.getOutputNodes()){
         		Object swtOffset_h = heuristic_links.get(new AbstractMap.SimpleEntry<>(edge.getFromNode().getNetId(),out.getIndex()));
             	
         		if(swtOffset_h != null && (Integer)swtOffset_h == edge.getSwtOffset()) {
-        			found = true;
         			int swtOffset_h_1 = (Integer) swtOffset_h;
         			heuristic_links.remove(new AbstractMap.SimpleEntry<>(edge.getFromNode().getNetId(),out.getIndex()));
         			this.logDecrementActivePorts(swt.getIndex());
@@ -1528,7 +1525,8 @@ public abstract class HeuristicController extends LoggerLayer {
                 	NetworkSwitch swt = clusters.get(clsId).get(swtOffset);
                 	swt.addLink(node.getNetId(),dstNode.getNetId());
                 	this.logIncrementActivePorts(swt.getIndex());                	
-                	
+                	this.logHeuristicLinks(1);
+                	this.logIncrementAlterations(swt.getIndex(), node);
                 	this.allowRoutingHeuristicLink(node, dstNode, clusters.get(clsId).get(swtOffset), 1);
                 	
                 } else {

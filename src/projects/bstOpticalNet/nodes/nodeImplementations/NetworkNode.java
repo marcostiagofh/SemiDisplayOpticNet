@@ -32,6 +32,7 @@ public class NetworkNode extends SynchronizerLayer {
     private InputNode leftChild = null;
     private InputNode rightChild = null;
 
+    private InputNode heuristicConnectedNode = null;
     private HeuristicController controller = null;
     private Random rand = Tools.getRandomNumberGenerator();
 
@@ -43,6 +44,14 @@ public class NetworkNode extends SynchronizerLayer {
      */
     public void setParent (InputNode node) {
         this.parent = node;
+    }
+    
+    public void setHeuristicConnectedNode (InputNode node) {
+        this.heuristicConnectedNode = node;
+    }
+    
+    public InputNode getHeuristicConnectedNode () {
+        return this.heuristicConnectedNode;
     }
 
     /**
