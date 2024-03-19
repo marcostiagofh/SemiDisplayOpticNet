@@ -30,8 +30,17 @@ datasets = [ "bursty-0.4-1" ]
 num_nodes = [ 128 ]
 mus = [ 4 ]
 
+num_nodes = [ 367 ]
+datasets = [ "facebookDS" ]
+switch_sizes = [ 16, 734 ]
+num_simulations = 1
 
-
+num_nodes = [ 1024 ] # Fixed number of nodes
+datasets = [
+    "exact_boxlib_cns_nospec_large"
+]
+switch_sizes = [ 256, 2048 ]
+num_simulations = 1
 
 if not os.path.exists(f"output/{sys.argv[1]}"):
     os.makedirs(f"output/{sys.argv[1]}")

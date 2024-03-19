@@ -1,12 +1,8 @@
 package projects.bstOpticalNet.nodes.models;
 
-import java.util.Set;
-
-import projects.bstOpticalNet.nodes.nodeImplementations.NetworkSwitch;
 import sinalgo.tools.Tools;
 
 import java.util.Map;
-import java.util.ArrayList;
 import java.util.HashMap;
 /**
  * InfraNodes are used by the NetworkController to represent the current

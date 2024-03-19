@@ -1,6 +1,5 @@
 package projects.bstOpticalNet.nodes.infrastructureImplementations;
 
-import projects.bstOpticalNet.nodes.nodeImplementations.NetworkController;
 import projects.bstOpticalNet.nodes.nodeImplementations.NetworkNode;
 import projects.bstOpticalNet.nodes.nodeImplementations.HeuristicController;
 
@@ -16,8 +15,7 @@ public class InputNode {
     private NetworkNode connectedNode = null;
     private OutputNode outputNode = null;
     private boolean active = false;
-    private boolean heuristic_active;
-
+    
     public void setIndex (int index) {
         this.index = index;
     }

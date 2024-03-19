@@ -1172,7 +1172,7 @@ public abstract class HeuristicController extends LoggerLayer {
 
         }
         //processar e esvazia fila de arestas adcionadas no turno atual, verifica se sobrescreve algum link heuristico
-        Iterator iterator = this.addEdges.iterator(); 
+        Iterator<Edge> iterator = this.addEdges.iterator(); 
         while (iterator.hasNext()) { 
         	Edge edge = (Edge) iterator.next(); 
         	
@@ -1183,7 +1183,6 @@ public abstract class HeuristicController extends LoggerLayer {
         		Object swtOffset_h = heuristic_links.get(new AbstractMap.SimpleEntry<>(edge.getFromNode().getNetId(),out.getIndex()));
             	
         		if(swtOffset_h != null && (Integer)swtOffset_h == edge.getSwtOffset()) {
-        			int swtOffset_h_1 = (Integer) swtOffset_h;
         			heuristic_links.remove(new AbstractMap.SimpleEntry<>(edge.getFromNode().getNetId(),out.getIndex()));
         			this.logDecrementActivePorts(swt.getIndex());
         			
@@ -1194,7 +1193,6 @@ public abstract class HeuristicController extends LoggerLayer {
     			Object swtOffset_h = heuristic_links.get(new AbstractMap.SimpleEntry<>(in.getIndex(),edge.getToNode().getNetId()));
             	
         		if(swtOffset_h != null && (Integer) swtOffset_h == edge.getSwtOffset()) {
-        			int swtOffset_h_1 = (Integer) swtOffset_h;
         			heuristic_links.remove(new AbstractMap.SimpleEntry<>(in.getIndex(),edge.getToNode().getNetId()));
         			this.logDecrementActivePorts(swt.getIndex());            			
         		}  

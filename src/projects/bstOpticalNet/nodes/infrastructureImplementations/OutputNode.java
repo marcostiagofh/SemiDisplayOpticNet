@@ -1,6 +1,5 @@
 package projects.bstOpticalNet.nodes.infrastructureImplementations;
 
-import projects.bstOpticalNet.nodes.nodeImplementations.NetworkController;
 import projects.bstOpticalNet.nodes.nodeImplementations.NetworkNode;
 import projects.bstOpticalNet.nodes.nodeImplementations.HeuristicController;
 

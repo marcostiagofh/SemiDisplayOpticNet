@@ -220,7 +220,6 @@ public class NetworkSwitch {
         
         this.connectNodes(inNode, outNode);
         //falar pro no do input node que o link existe
-        inNode.getConnectedNode().setHeuristicConnectedNode(inNode);
     }
 
     /**

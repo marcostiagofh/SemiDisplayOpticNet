@@ -6,7 +6,6 @@ import java.util.Collections;
 import sinalgo.tools.logging.Logging;
 import sinalgo.tools.statistics.DataSeries;
 import projects.bstOpticalNet.nodes.models.InfraNode;
-import projects.bstOpticalNet.nodes.nodeImplementations.NetworkSwitch;
 
 /**
  * This abstract class is responsible to log the simulation results
