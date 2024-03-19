@@ -30,11 +30,7 @@ datasets = [ "bursty-0.4-1" ]
 num_nodes = [ 128 ]
 mus = [ 4 ]
 
-# parameters of simulation
-num_nodes = [ 367 ]
-datasets = [ "facebookDS" ]
-switch_sizes = [ 16, 734 ]
-num_simulations = 1
+
 
 
 if not os.path.exists(f"output/{sys.argv[1]}"):

@@ -261,7 +261,7 @@ public abstract class HeuristicController extends LoggerLayer {
         boolean leftZig = (x == y.getLeftChild());
         InfraNode b = (leftZig) ? x.getRightChild() : x.getLeftChild();
 
-        if (this.areAvailableNodes(x, y, b)) {
+        if (this.areAvailableNodes(w, x, y, b)) {
             this.zigAlterations(w, y, x, b);
 
             return true;
@@ -743,20 +743,20 @@ public abstract class HeuristicController extends LoggerLayer {
     protected boolean areAvailableNodes (InfraNode... nodes) {
         for (InfraNode infNode: nodes) {
             if (infNode.getId() != -1 && this.usedNodes.get(infNode.getId())) {
-                System.out.println("used "+infNode.getNetId());
+                //System.out.println("used "+infNode.getNetId());
             	return false;
 
             }
         }
-        System.out.print("available ");
+        //System.out.print("available ");
         for (InfraNode infNode: nodes) {
             if (infNode.getId() != -1) {
-            	System.out.print(infNode.getNetId()+" ");
+            	//System.out.print(infNode.getNetId()+" ");
                 this.usedNodes.set(infNode.getId(), true);
 
             }
         }
-        System.out.println();
+        //System.out.println();
 
         return true;
     }
@@ -1441,13 +1441,13 @@ public abstract class HeuristicController extends LoggerLayer {
     	this.lockRoutingNodes();
 
         while (!this.nodesWithMsg.isEmpty()) {
-            HasMessage hasmsg = this.nodesWithMsg.poll();
+        	HasMessage hasmsg = this.nodesWithMsg.poll();
             int nodeId = hasmsg.getCurrId();
 
             InfraNode node = this.getInfraNode(nodeId);
             InfraNode dstNode = this.getInfraNode(hasmsg.getDst());
 
-          //pega origem e destino da mensagem
+            //pega origem e destino da mensagem
             //ve se tem link heuristico entre os 2
             //e pra isso, procura a chave (node, dstNode) no map heuristic_links
             Object hl_swtOffset = heuristic_links.get(new AbstractMap.SimpleEntry<>(node.getNetId(),dstNode.getNetId()));
@@ -1520,7 +1520,7 @@ public abstract class HeuristicController extends LoggerLayer {
             	}
                 
                 if(swtOffset != -1) {
-                	System.out.println("added heuristis link allowRoutingHeuristicLink "+node.getNetId()+" "+dstNode.getNetId());
+                	System.out.println("added heuristic link "+node.getNetId()+" "+dstNode.getNetId());
                 	//se as duas estiverem desocupadas, adicione o link heuristico no primeiro switch e na primeira aresta ((a,b),(b,a)) disponivel 
                 	//adiciona aresta no map de arestas heuristicas (map(pair(int1,int2),int swtOffset) ex: add((0,3),0), add((3,0),1)
                 	heuristic_links.put(new AbstractMap.SimpleEntry<>(node.getNetId(),dstNode.getNetId()),swtOffset);
@@ -1530,8 +1530,8 @@ public abstract class HeuristicController extends LoggerLayer {
                 	this.logIncrementActivePorts(swt.getIndex());                	
                 	this.logHeuristicLinks(1);
                 	this.logIncrementAlterations(swt.getIndex(), node);
-                	this.allowRoutingHeuristicLink(node, dstNode, clusters.get(clsId).get(swtOffset), 1);
-                	
+                	this.areAvailableNodes(node,dstNode);
+                	//this.allowRoutingHeuristicLink(node, dstNode, clusters.get(clsId).get(swtOffset), 1);                	
                 } else {
                 	System.out.println("rotation");
                 	this.logHeuristicLinksRefused(1);

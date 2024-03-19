@@ -118,8 +118,8 @@ for project in projects:
                                     f"isSequential={sequentiality} AutoStart=true > {sim_stream}"
                                 )
 
-                            print(cmd)
-                            commands.append(cmd)
+                                #print(cmd)
+                                commands.append(cmd)
 
     num_commands = len(commands)
 
