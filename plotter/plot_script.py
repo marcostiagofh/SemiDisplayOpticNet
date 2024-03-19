@@ -24,9 +24,9 @@ reload(Plotter)
 # In[3]:
 
 projects = [ "semiDisplayOpticNet"]
-switch_sizes = [ 256 ]
+switch_sizes = [ 16 ]
 num_simulations = 30
-datasets = [ "tor" ]
+datasets = [ "bursty-0.4-1" ]
 num_nodes = [ 128 ]
 mus = [ 4 ]
 

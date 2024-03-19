@@ -743,17 +743,20 @@ public abstract class HeuristicController extends LoggerLayer {
     protected boolean areAvailableNodes (InfraNode... nodes) {
         for (InfraNode infNode: nodes) {
             if (infNode.getId() != -1 && this.usedNodes.get(infNode.getId())) {
-                return false;
+                System.out.println("used "+infNode.getNetId());
+            	return false;
 
             }
         }
-
+        System.out.print("available ");
         for (InfraNode infNode: nodes) {
             if (infNode.getId() != -1) {
+            	System.out.print(infNode.getNetId()+" ");
                 this.usedNodes.set(infNode.getId(), true);
 
             }
         }
+        System.out.println();
 
         return true;
     }
@@ -1673,13 +1676,11 @@ public abstract class HeuristicController extends LoggerLayer {
         InfraNode currNode = node;
 
         routNodes.add(currNode);
-        for (int i = 1; i <= routMsg.getRoutingTimes(); i++) {
-            InfraNode nxtNode = currNode.getRoutingNode(dstNode);
-            if (nxtNode.getId() == -1 || nxtNode.getId() == currNode.getId()) {
-                break;
+        InfraNode nxtNode = dstNode;
+        if (nxtNode.getId() == -1 || nxtNode.getId() == currNode.getId()) {
+            
 
-            }
-
+        } else {
             routNodes.add(nxtNode);
             currNode = nxtNode;
         }

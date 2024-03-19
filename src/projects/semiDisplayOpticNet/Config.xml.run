@@ -237,14 +237,14 @@
         <!--*****************************************************-->
         <!--  DiSplayNet's Input Parameter                       -->
         <!--*****************************************************-->
-        <input value = "input/tor_128.txt" />
-        <output value = "test" />
-        <switchSize value = "256" />
-        <isSequential value = "true" />
+        <input value = "input\facebookDS\datasetC_pairs.txt" />
+        <output value = "output" />
+        <switchSize value = "16" />
+        <isSequential value = "false" />
         <seedId value = "10" />
-        <mu value = "20" />
+        <mu value = "4" />
 
         <ExitAfter value="false" rounds="10000000"/>
-        <AutoStart value="false"/>													</Custom>
+        <AutoStart value="true"/>													</Custom>
 </Document>
 
