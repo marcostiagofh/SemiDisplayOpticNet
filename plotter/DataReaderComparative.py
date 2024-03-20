@@ -51,7 +51,7 @@ class DataReader:
     def file_path (self) -> Path:
         return Path(
             Path(__file__).parent.parent /
-            f"logs/output/{self.dataset}/{self.project}_{self.num_nodes}/{self.switch_size}/{self.mu}/"
+            f"../SemiDisplayOpticNet-master/logs/output/{self.dataset}/{self.project}_{self.num_nodes}/{self.switch_size}/{self.mu}/"
         )
 
     def cdf_active_switches (self) -> np.ndarray:

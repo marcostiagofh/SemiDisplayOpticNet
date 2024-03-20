@@ -222,7 +222,7 @@ public class SemiDisplayNetController extends HeuristicController {
             	NetworkSwitch swt = this.clusters.get(clsId).get((Integer) hl_swtOffset);
 
             	this.allowRoutingHeuristicLink(node, dstNode, swt, 1);   
-            	System.out.println("allowRoutingHeuristicLink "+node.getNetId()+" "+dstNode.getNetId());
+            	//System.out.println("allowRoutingHeuristicLink "+node.getNetId()+" "+dstNode.getNetId());
             } else if (
             		node.getParentId() == dstNode.getId() ||
             		node.getLeftChildId() == dstNode.getId() ||
@@ -230,7 +230,7 @@ public class SemiDisplayNetController extends HeuristicController {
             		) {
             	//se não, mas houver alguma aresta da arvore que conecta os 2 diretamente (a.parent/lchild/rchild = b), 
             	//use o link e processe a mensagem
-            	System.out.println("allowRouting "+node.getNetId()+" "+dstNode.getNetId());
+            	//System.out.println("allowRouting "+node.getNetId()+" "+dstNode.getNetId());
             	this.allowRouting(node, dstNode, 1);
             } else {
             	//se não houver nenhum dos dois,
@@ -285,7 +285,7 @@ public class SemiDisplayNetController extends HeuristicController {
             	}
                 
                 if(swtOffset != -1) {
-                	System.out.println("added heuristic link "+node.getNetId()+" "+dstNode.getNetId());
+                	//System.out.println("added heuristic link "+node.getNetId()+" "+dstNode.getNetId());
                 	//se as duas estiverem desocupadas, adicione o link heuristico no primeiro switch e na primeira aresta ((a,b),(b,a)) disponivel 
                 	//adiciona aresta no map de arestas heuristicas (map(pair(int1,int2),int swtOffset) ex: add((0,3),0), add((3,0),1)
                 	heuristic_links.put(new AbstractMap.SimpleEntry<>(node.getNetId(),dstNode.getNetId()),swtOffset);
@@ -299,7 +299,7 @@ public class SemiDisplayNetController extends HeuristicController {
                 	//this.allowRoutingHeuristicLink(node, dstNode, swt, 1);
                 	
                 } else {
-                	System.out.println("rotation");
+                	//System.out.println("rotation");
                 	this.logHeuristicLinksRefused(1);
                 	//se uma das portas estiver ocupada nos 2 casos, verifica a estrutura da arvore, 
                 	//escolhe a rotacao e adiciona à fila de "arestas pra adicionar"

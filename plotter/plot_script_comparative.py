@@ -1,0 +1,249 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+# In[1]:
+import os
+import sys
+import scienceplots
+import matplotlib.pyplot as plt
+import numpy as np
+
+from importlib import reload
+import DataReader as DataReader
+import DataReaderComparative as DataReader2
+import Plotter as Plotter
+
+
+# In[2]:
+
+
+reload(DataReader2)
+reload(Plotter)
+
+
+# In[3]:
+
+projects = [ "semiDisplayOpticNet"]
+switch_sizes = [ 16 ]
+num_simulations = 30
+datasets = [ "bursty-0.4-1" ]
+num_nodes = [ 128 ]
+mus = [ 4 ]
+
+
+if not os.path.exists(f"output/{sys.argv[1]}"):
+    os.makedirs(f"output/{sys.argv[1]}")
+
+
+# In[4]:
+
+
+tor_data = []
+
+
+# In[5]:
+for project in projects:
+    for dataset in datasets:
+        for num_node in num_nodes:
+            for switch_size in switch_sizes:
+                for mu in mus:
+                    tor_data.append(
+                        DataReader.DataReader(
+                            dataset, project, num_node, switch_size, num_simulations, mu
+                        )
+                    )
+
+tor_data = np.array(tor_data)
+
+tor_data_comparative = []
+for project in projects:
+    for dataset in datasets:
+        for num_node in num_nodes:
+            for switch_size in switch_sizes:
+                for mu in mus:
+                    tor_data_comparative.append(
+                        DataReader2.DataReader(
+                            dataset, project, num_node, switch_size, num_simulations, mu
+                        )
+                    )
+
+tor_data_comparative = np.array(tor_data_comparative)
+
+# In[7]:
+
+
+slc = [ i for i in range(len(tor_data)) ]
+slc_comparative = [ i for i in range(len(tor_data)) ]
+
+# In[8]:
+
+
+print(tor_data[slc])
+
+
+# In[9]:
+
+
+import matplotlib.pyplot as plt
+
+fig, ax = plt.subplots(figsize=(8, 4))
+ax.set_title("CDF Active switches per round")
+ax.set_xlabel("Rounds")
+ax.set_ylabel("Switches Percentage")
+
+# Plotting and collecting handles and labels for the first set of curves
+handles_1 = []
+labels_1 = []
+for data in tor_data[slc]:
+    Plotter.Plotter.cdf_active_switches(data.cdf_active_switches(), ax)
+    handles_1.append(ax.lines[-1])  # Get the handle of the last plotted line
+    labels_1.append(f"heuristic links {data.project}--{data.dataset}--{data.num_nodes}--{data.num_switches}")
+
+# Plotting and collecting handles and labels for the second set of curves
+handles_2 = []
+labels_2 = []
+for data in tor_data_comparative[slc_comparative]:
+    Plotter.Plotter.cdf_active_switches(data.cdf_active_switches(), ax)
+    handles_2.append(ax.lines[-1])  # Get the handle of the last plotted line
+    labels_2.append(f"{data.project}--{data.dataset}--{data.num_nodes}--{data.num_switches}")
+
+# Adding legends for both sets of curves
+ax.legend(handles_1 + handles_2, labels_1 + labels_2, loc="best", frameon=False)
+
+# Set the x-axis ticks to be incremental starting from 1
+
+#ax.set_xticks(range(1, len(tor_data_comparative[slc_comparative])))
+#plt.tight_layout()
+# Set x-axis ticks to integer format
+plt.tight_layout()
+ax.plot()
+fig.savefig(f"output/{sys.argv[1]}/active_switches.png", dpi=300, transparent=False)
+plt.close(fig)
+
+print("finish")
+
+# In[10]:
+
+
+fig, ax = plt.subplots(figsize=(8, 4))
+ax.set_title("CDF \% of active ports for switches")
+ax.set_xlabel("Ports Percentage")
+ax.set_ylabel("Switch Percentage")
+
+for data in tor_data[slc]:
+    Plotter.Plotter.cdf_switches_active_ports(data.cdf_switch_active_ports(), ax)
+
+ax.legend([
+    f"{data.project}--{data.dataset}--{data.num_nodes}--{data.num_switches}"
+    for data in tor_data[slc]
+], loc="best", frameon=False)
+
+ax.plot()
+fig.savefig(f"output/{sys.argv[1]}/switches_active_ports.png", dpi=300, transparent=False)
+plt.close(fig)
+print("finish")
+
+# In[11]:
+
+
+fig, ax = plt.subplots(figsize=(8, 4))
+ax.set_title("CDF Active Ports per Round")
+ax.set_xlabel("Rounds")
+ax.set_ylabel("Ports Percentage")
+
+for data in tor_data[slc]:
+    Plotter.Plotter.cdf_active_ports(data.cdf_active_ports(), ax)
+
+ax.legend([
+    f"{data.project}--{data.dataset}--{data.num_nodes}--{data.num_switches}"
+    for data in tor_data[slc]
+], loc="best", frameon=False)
+
+ax.plot()
+fig.savefig(f"output/{sys.argv[1]}/active_ports.png", dpi=300, transparent=False)
+plt.close(fig)
+print("finish")
+
+# In[ ]:
+
+
+fig, ax = plt.subplots(figsize=(8, 4))
+ax.set_title("CDF Routings per Node")
+ax.set_xlabel("Routing")
+ax.set_ylabel("Node Percentage")
+
+for data in tor_data[slc]:
+    Plotter.Plotter.cdf_routings(data.cdf_node_routings(), ax)
+
+ax.legend([
+    f"{data.project}--{data.dataset}--{data.num_nodes}--{data.num_switches}"
+    for data in tor_data[slc]
+], loc="best", frameon=False)
+
+ax.plot()
+fig.savefig(f"output/{sys.argv[1]}/node_routings.png", dpi=300, transparent=False)
+plt.close(fig)
+print("finish")
+
+# In[ ]:
+
+
+fig, ax = plt.subplots(figsize=(8, 4))
+ax.set_title("CDF Alterations per Node")
+ax.set_xlabel("Alterations")
+ax.set_ylabel("Node Percentage")
+
+for data in tor_data[slc]:
+    Plotter.Plotter.cdf_alterations(data.cdf_node_alterations(), ax)
+
+ax.legend([
+    f"{data.project}--{data.dataset}--{data.num_nodes}--{data.num_switches}"
+    for data in tor_data[slc]
+], loc="best", frameon=False)
+
+ax.plot()
+fig.savefig(f"output/{sys.argv[1]}/node_alterations.png", dpi=300, transparent=False)
+plt.close(fig)
+print("finish")
+
+# In[ ]:
+
+
+fig, ax = plt.subplots(figsize=(8, 4))
+ax.set_title("CDF Routings per Switch")
+ax.set_xlabel("Routing")
+ax.set_ylabel("Switches Percentage")
+
+for data in tor_data[slc]:
+    Plotter.Plotter.cdf_routings(data.cdf_switch_routings(), ax)
+
+ax.legend([
+    f"{data.project}--{data.dataset}--{data.num_nodes}--{data.num_switches}"
+    for data in tor_data[slc]
+], loc="best", frameon=False)
+
+ax.plot()
+fig.savefig(f"output/{sys.argv[1]}/switch_routings.png", dpi=300, transparent=False)
+plt.close(fig)
+print("finish")
+
+# In[ ]:
+
+
+fig, ax = plt.subplots(figsize=(8, 4))
+ax.set_title("CDF Alterations per Switch")
+ax.set_xlabel("Alterations")
+ax.set_ylabel("Switches Percentage")
+
+for data in tor_data[slc]:
+    Plotter.Plotter.cdf_alterations(data.cdf_switch_alterations(), ax)
+
+ax.legend([
+    f"{data.project}--{data.dataset}--{data.num_nodes}--{data.num_switches}"
+    for data in tor_data[slc]
+], loc="best", frameon=False)
+
+ax.plot()
+fig.savefig(f"output/{sys.argv[1]}/switch_alterations.png", dpi=300, transparent=False)
+plt.close(fig)
+print("finish")

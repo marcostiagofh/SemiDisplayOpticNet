@@ -25,11 +25,11 @@ projects = [ "semiDisplayOpticNet" ]
 # parameters of simulation
 num_nodes = [ 1024 ] # Fixed number of nodes
 datasets = [
-    "exact_boxlib_cns_nospec_large",
-    "exact_boxlib_multigrid_c_large"
+    "exact_boxlib_cns_nospec_large" 
+    #,"exact_boxlib_multigrid_c_large"
 ]
 switch_sizes = [ 256, -1 ]
-sequential = [ "true", "false" ]
+sequential = [ "false" ]
 mus = [ 4 ]
 
 #number of threads to simulation
@@ -94,7 +94,7 @@ for project in projects:
                             f"isSequential={sequentiality} AutoStart=true > {sim_stream}"
                         )
 
-                        print(cmd)
+                        #print(cmd)
                         commands.append(cmd)
 
     num_commands = len(commands)

@@ -29,7 +29,7 @@ datasets = [
     "exact_boxlib_multigrid_c_large"
 ]
 switch_sizes = [ 256, -1 ]
-sequential = [ "true", "false" ]
+sequential = [ "false" ]
 mus = [ 4 ]
 
 #number of threads to simulation
