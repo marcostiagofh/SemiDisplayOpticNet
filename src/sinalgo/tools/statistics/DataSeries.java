@@ -51,9 +51,9 @@ import java.io.ObjectOutput;
 public class DataSeries implements Externalizable {
 	private static final long serialVersionUID = 2822762510760348852L;
 	
-	private double sum = 0; // The sum of all samples
-	private double squared_sum = 0; // the sum of the square of all samples
-	private int num_samples = 0; // The number of samples added so far
+	private long sum = 0; // The sum of all samples
+	private long squared_sum = 0; // the sum of the square of all samples
+	private long num_samples = 0; // The number of samples added so far
 	private double min = Double.MAX_VALUE, max = Double.MIN_VALUE; // the min. and max. values added 
 	
 
@@ -79,7 +79,7 @@ public class DataSeries implements Externalizable {
 	 * Adds a new sample to this series.  
 	 * @param value The new value to be added to this series. 
 	 */
-	public void addSample(double value) {
+	public void addSample(long value) {
 		if(value < min) {
 			min = value;
 		}
@@ -142,7 +142,7 @@ public class DataSeries implements Externalizable {
 	 * Returns the number of samples added to this data series.
 	 * @return the number of samples added to this data series.
 	 */
-	public int getNumberOfSamples() {
+	public long getNumberOfSamples() {
 		return num_samples;
 	}
 	
@@ -150,7 +150,7 @@ public class DataSeries implements Externalizable {
 	 * Returns the sum of all samples added to this data series.
 	 * @return The sum of all samples added to this data series.
 	 */
-	public double getSum() {
+	public long getSum() {
 		return sum;
 	}
 	
@@ -172,8 +172,8 @@ public class DataSeries implements Externalizable {
 	 * @see java.io.Externalizable#readExternal(java.io.ObjectInput)
 	 */
 	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-		sum = in.readDouble();
-		squared_sum = in.readDouble();
+		sum = (long) in.readDouble();
+		squared_sum = (long) in.readDouble();
 		num_samples = in.readInt();
 		min = in.readDouble();
 		max = in.readDouble();
@@ -183,9 +183,9 @@ public class DataSeries implements Externalizable {
 	 * @see java.io.Externalizable#writeExternal(java.io.ObjectOutput)
 	 */
 	public void writeExternal(ObjectOutput out) throws IOException {
-		out.writeDouble(sum);
+		out.writeLong(sum);
 		out.writeDouble(squared_sum);
-		out.writeInt(num_samples);
+		out.writeLong(num_samples);
 		out.writeDouble(min);
 		out.writeDouble(max);
 	}

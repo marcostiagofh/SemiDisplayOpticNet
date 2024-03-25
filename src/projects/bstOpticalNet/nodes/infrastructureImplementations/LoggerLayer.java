@@ -25,15 +25,15 @@ public abstract class LoggerLayer extends SynchronizerLayer {
     private long activeRequests = 0;
     private long currentRoundRotations = 0;
     private long currentRoundHeuristicLinks = 0;
-    //private long currentRoundHeuristicLinksRefused = 0;    
+    private long currentRoundHeuristicLinksRefused = 0;    
     private long roundCompletedRequests = 0;
 
     private long completedRequests = 0;
-
+    
     // LOGS
     private Logging rotationLog;
     private Logging heuristicLinksLog;
-    //private Logging heuristicLinksRefusedLog;
+    private Logging heuristicLinksRefusedLog;
     private Logging routingLog;
     private Logging alterationLog;
     private Logging activeRequestsPerRound;
@@ -83,7 +83,8 @@ public abstract class LoggerLayer extends SynchronizerLayer {
                 this.projectName + "," + this.getCurrentRound() + "," + this.roundCompletedRequests
             );
         }
-
+        this.heuristicLinksRefusedLog.logln(this.projectName + "," + this.getCurrentRound() + "," + this.currentRoundHeuristicLinksRefused);
+        this.heuristicLinksRefusedCounter.addSample(this.currentRoundHeuristicLinksRefused);
         this.resetRoundInfo();
 
     }
@@ -217,8 +218,8 @@ public abstract class LoggerLayer extends SynchronizerLayer {
     }
 
     public void logHeuristicLinksRefused(long num) {
-        this.heuristicLinksRefusedCounter.addSample(num);
-        //this.currentRoundHeuristicLinksRefused += num;
+    	this.currentRoundHeuristicLinksRefused += num;
+        //this.heuristicLinksRefusedCounter.addSample(num);
         //this.heuristicLinksRefusedLog.logln(this.projectName + "," + this.getCurrentRound() + "," + this.currentRoundHeuristicLinksRefused);
     }
     /**
@@ -299,7 +300,8 @@ public abstract class LoggerLayer extends SynchronizerLayer {
     }
     
     public void printHeuristicLinkRefusedCounter() {
-    	this.printCounter(this.heuristicLinksRefusedCounter, "heuristic link refused");
+    	//System.out.println("heuristicLinksRefusedCounter "+this.heuristicLinksRefused);
+        this.printCounter(this.heuristicLinksRefusedCounter, "heuristic link refused");
     }
 
     /**
@@ -364,7 +366,7 @@ public abstract class LoggerLayer extends SynchronizerLayer {
     public void setLogPath (String path) {
         this.rotationLog = Logging.getLogger(path + "/rotations.csv");
         this.heuristicLinksLog = Logging.getLogger(path + "/heuristicLinks.csv");
-        //this.heuristicLinksRefusedLog = Logging.getLogger(path + "/heuristicLinksRefused.csv");
+        this.heuristicLinksRefusedLog = Logging.getLogger(path + "/heuristicLinksRefused.csv");
         this.routingLog = Logging.getLogger(path + "/routings.csv");
         this.alterationLog = Logging.getLogger(path + "/alterations.csv");
         this.activeRequestsPerRound = Logging.getLogger(path + "/active_requests_per_round.csv");
@@ -389,7 +391,7 @@ public abstract class LoggerLayer extends SynchronizerLayer {
         this.rotationLog.logln("project,rotation");
 
         this.heuristicLinksLog.logln("project,round,heuristic links");
-        //this.heuristicLinksRefusedLog.logln("project,round,heuristic links refused");
+        this.heuristicLinksRefusedLog.logln("project,round,heuristic links refused");
         this.routingLog.logln("project,round,from_node,to_node,switch");
         this.alterationLog.logln("project,round,node,switch");
 
@@ -415,7 +417,7 @@ public abstract class LoggerLayer extends SynchronizerLayer {
         this.currentRoundRotations = 0;
         this.roundCompletedRequests = 0;
         this.currentRoundHeuristicLinks = 0;
-        //this.currentRoundHeuristicLinksRefused = 0;
+        this.currentRoundHeuristicLinksRefused = 0;
     }
     /* End of Reset counter Functions */
 }
