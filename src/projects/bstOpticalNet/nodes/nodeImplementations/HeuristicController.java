@@ -1184,6 +1184,7 @@ public abstract class HeuristicController extends LoggerLayer {
             	
         		if(swtOffset_h != null && (Integer)swtOffset_h == edge.getSwtOffset()) {
         			heuristic_links.remove(new AbstractMap.SimpleEntry<>(edge.getFromNode().getNetId(),out.getIndex()));
+        			this.logRemoveHeuristicLink(1);
         			this.logDecrementActivePorts(swt.getIndex());
         			
         		}  
@@ -1194,6 +1195,7 @@ public abstract class HeuristicController extends LoggerLayer {
             	
         		if(swtOffset_h != null && (Integer) swtOffset_h == edge.getSwtOffset()) {
         			heuristic_links.remove(new AbstractMap.SimpleEntry<>(in.getIndex(),edge.getToNode().getNetId()));
+        			this.logRemoveHeuristicLink(1);
         			this.logDecrementActivePorts(swt.getIndex());            			
         		}  
         	}

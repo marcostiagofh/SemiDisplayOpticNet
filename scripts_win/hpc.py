@@ -25,10 +25,10 @@ projects = [ "semiDisplayOpticNet" ]
 # parameters of simulation
 num_nodes = [ 1024 ] # Fixed number of nodes
 datasets = [
-    "exact_boxlib_cns_nospec_large",
-    "exact_boxlib_multigrid_c_large"
+    "exact_boxlib_cns_nospec_large"#,
+    #"exact_boxlib_multigrid_c_large"
 ]
-switch_sizes = [ 256, -1 ]
+switch_sizes = [ 114,128,256,456,2048 ]
 sequential = [ "false" ]
 mus = [ 4 ]
 
