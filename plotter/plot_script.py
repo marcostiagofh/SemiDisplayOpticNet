@@ -24,12 +24,13 @@ reload(Plotter)
 # In[3]:
 
 projects = [ "semiDisplayOpticNet"]
-switch_sizes = [ 16 ]
+switch_sizes = [ 16, 32, 64, 128, 256 ]
 num_simulations = 30
 datasets = [ "bursty-0.4-1" ]
 num_nodes = [ 128 ]
 mus = [ 4 ]
 
+'''
 num_nodes = [ 367 ]
 datasets = [ "facebookDS" ]
 switch_sizes = [ 16, 734 ]
@@ -41,6 +42,7 @@ datasets = [
 ]
 switch_sizes = [ 256, 2048 ]
 num_simulations = 1
+'''
 
 if not os.path.exists(f"output/{sys.argv[1]}"):
     os.makedirs(f"output/{sys.argv[1]}")
@@ -80,6 +82,28 @@ print(tor_data[slc])
 
 
 # In[9]:
+
+
+fig, ax = plt.subplots(figsize=(8, 4))
+ax.set_title("Total Active Switches vs Switch Size")
+ax.set_xlabel("Switch Size")
+ax.set_ylabel("Total Active Switches")
+
+colors = plt.cm.tab10(np.linspace(0, 1, len(tor_data[slc])))
+
+for idx, data in enumerate(tor_data[slc]):
+    switch_size = data.switch_size
+    total_active_switches = np.sum(data.active_switches()) # Total active switches
+    ax.scatter(switch_size, total_active_switches, label=f"{data.project}--{data.dataset}--{data.num_nodes}--{switch_size}", color=colors[idx])
+
+ax.legend(loc="best", frameon=False)
+#ax.grid(True)
+ax.plot()
+fig.savefig(f"output/{sys.argv[1]}/active_switches_x_switch_size.png", dpi=300, transparent=False)
+plt.close(fig)
+
+print("finish")
+
 
 
 fig, ax = plt.subplots(figsize=(8, 4))
