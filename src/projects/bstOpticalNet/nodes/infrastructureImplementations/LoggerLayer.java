@@ -306,16 +306,16 @@ public abstract class LoggerLayer extends SynchronizerLayer {
     }
     
     public void printHeuristicLinkCounter() {
-    	this.printCounter(this.heuristicLinksCounter, "heuristic link creation");
+    	this.printCounter(this.heuristicLinksCounter, "heuristic-link-creation");
     }
     
     public void printHeuristicLinkRefusedCounter() {
     	//System.out.println("heuristicLinksRefusedCounter "+this.heuristicLinksRefused);
-        this.printCounter(this.heuristicLinksRefusedCounter, "heuristic link refused");
+        this.printCounter(this.heuristicLinksRefusedCounter, "heuristic-link-refused");
     }
 
     public void printHeuristicLinkRemovedCounter() {
-    	this.printCounter(this.heuristicLinksRemovedCounter, "heuristic link removed");
+    	this.printCounter(this.heuristicLinksRemovedCounter, "heuristic-link-removed");
     }
     /**
      * Print MessageRouting counter informations.

@@ -1858,6 +1858,7 @@ public abstract class HeuristicController extends LoggerLayer {
         routMsg.setRoutNodeId(nxtNode.getNetId());
 
         this.sendDirect(routMsg, netNode);
+    	//System.out.println("routing msg from "+netNode.getId()+" to "+nxtNode.getNetId());
     }
 
     /**

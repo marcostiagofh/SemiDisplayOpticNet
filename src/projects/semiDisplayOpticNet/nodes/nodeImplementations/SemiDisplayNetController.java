@@ -211,6 +211,8 @@ public class SemiDisplayNetController extends HeuristicController {
 
             InfraNode node = this.getInfraNode(nodeId);
             InfraNode dstNode = this.getInfraNode(hasmsg.getDst());
+            
+            //System.out.println("msg from "+node.getNetId()+" to "+dstNode.getNetId());
 
             //pega origem e destino da mensagem
             //ve se tem link heuristico entre os 2
@@ -297,6 +299,7 @@ public class SemiDisplayNetController extends HeuristicController {
                 	this.logIncrementAlterations(swt.getIndex(), node);
                 	this.areAvailableNodes(node,dstNode);
                 	//this.allowRoutingHeuristicLink(node, dstNode, swt, 1);
+                	//System.out.println("allowRoutingHeuristicLink "+node.getNetId()+" "+dstNode.getNetId());
                 	
                 } else {
                 	//System.out.println("rotation");
@@ -308,6 +311,7 @@ public class SemiDisplayNetController extends HeuristicController {
 		            switch (op) {
 		                case NULL:
 		                    this.allowRouting(node, dstNode, 1);
+		                	//System.out.println("allowRouting "+node.getNetId()+" "+dstNode.getNetId());
 		                    break;
 		
 		                case ZIG_BOTTOMUP:
