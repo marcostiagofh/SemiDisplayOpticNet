@@ -24,7 +24,7 @@ reload(Plotter)
 # In[3]:
 
 projects = [ "semiDisplayOpticNet"]
-switch_sizes = [ 16, 32, 64, 128, 256 ]
+switch_sizes = [ 16, 64, 256 ]
 num_simulations = 30
 datasets = [ "bursty-0.4-1" ]
 num_nodes = [ 128 ]
@@ -104,7 +104,16 @@ plt.close(fig)
 
 print("finish")
 
+fig, ax = plt.subplots(figsize=(7, 4))
+ax.set_ylabel("Work 10**4")
 
+Plotter.Plotter.total_work_link_updates(tor_data[slc], normalize=1e4, ax=ax)
+
+ax.plot()
+fig.savefig(f"output/{sys.argv[1]}/total_work.png", dpi=300, transparent=False)
+plt.close(fig)
+
+print("finish")
 
 fig, ax = plt.subplots(figsize=(8, 4))
 ax.set_title("CDF Active switches per round")

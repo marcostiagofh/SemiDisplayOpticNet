@@ -6,8 +6,58 @@ import statsmodels.api as sm
 
 plt.style.use(["science","ieee"])
 
+abbr: dict[str, str] = {
+    "cbOptNet": "CBN",
+    "displayOpticNet": "ODSN",
+    "semiDisplayOpticNet": "DSN"
+}
+
 @dc.dataclass()
 class Plotter:
+    @classmethod
+    def get_project_name (cls, data) -> str:
+        project = abbr[data.project]
+        return f"OpticNet({project})"
+
+    @classmethod
+    def total_work_link_updates (
+        cls, plot_data: list, normalize: int = 1, ax: plt.axes = None
+    ) -> None:
+        project_names = []
+        routing_means = []
+        alteration_means = []
+        heuristic_creation_means = []
+        work_stds = []
+
+        for data in plot_data:
+            project_name = cls.get_project_name(data)
+
+            total_routing, total_link_updates, total_heuristic_creation, total_work = data.read_operations()            
+
+            project_names.append(project_name)
+            routing_means.append(total_routing.mean() / normalize)
+            alteration_means.append(total_link_updates.mean() / normalize)
+            heuristic_creation_means.append(total_heuristic_creation.mean() / normalize)
+            work_stds.append((total_work / normalize).std())
+
+        if ax is None:
+            fig, ax = plt.subplots(figsize=(8, 4))
+            ax.legend(loc="right")
+            ax.set_title("Total Work Link Updates")
+            ax.set_xlabel("Project")
+            ax.set_ylabel("Work * 10 ^ 4")
+
+        ax.bar(project_names, routing_means, label="Service Cost", color=["silver"])
+        ax.bar(
+            project_names, alteration_means, 
+            bottom=routing_means, label="Link Updates",  color=["grey"]
+        )
+        ax.bar(
+            project_names, heuristic_creation_means, yerr=work_stds,
+            bottom=routing_means, label="Heuristic Links",  color=["red"]
+        )
+        ax.legend(loc="best")
+        
     def cdf_active_switches (cdf_array: np.ndarray, ax: plt.axes = None) -> None:
         ecdf = sm.distributions.empirical_distribution.ECDF(cdf_array)
 
