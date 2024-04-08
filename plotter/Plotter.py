@@ -9,7 +9,9 @@ plt.style.use(["science","ieee"])
 abbr: dict[str, str] = {
     "cbOptNet": "CBN",
     "displayOpticNet": "ODSN",
-    "semiDisplayOpticNet": "DSN"
+    "semiDisplayOpticNet": "DSN",
+    "HLsemiDisplayOpticNet": "HLDSN",
+    "HLSplayOpticNet": "HLSON"
 }
 
 @dc.dataclass()
@@ -27,6 +29,7 @@ class Plotter:
         routing_means = []
         alteration_means = []
         heuristic_creation_means = []
+        switch_sizes = []
         work_stds = []
 
         for data in plot_data:
@@ -39,6 +42,7 @@ class Plotter:
             alteration_means.append(total_link_updates.mean() / normalize)
             heuristic_creation_means.append(total_heuristic_creation.mean() / normalize)
             work_stds.append((total_work / normalize).std())
+            switch_sizes.append(data.switch_size)
 
         if ax is None:
             fig, ax = plt.subplots(figsize=(8, 4))
@@ -47,13 +51,13 @@ class Plotter:
             ax.set_xlabel("Project")
             ax.set_ylabel("Work * 10 ^ 4")
 
-        ax.bar(project_names, routing_means, label="Service Cost", color=["silver"])
+        ax.bar(switch_sizes, routing_means, label="Service Cost", color=["silver"])
         ax.bar(
-            project_names, alteration_means, 
+            switch_sizes, alteration_means, 
             bottom=routing_means, label="Link Updates",  color=["grey"]
         )
         ax.bar(
-            project_names, heuristic_creation_means, yerr=work_stds,
+            switch_sizes, heuristic_creation_means, yerr=work_stds,
             bottom=routing_means, label="Heuristic Links",  color=["red"]
         )
         ax.legend(loc="best")

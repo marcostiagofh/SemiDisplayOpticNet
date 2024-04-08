@@ -24,7 +24,7 @@ projects = [ "semiDisplayOpticNet" ]
 
 # parameters of simulation
 num_nodes = [ 128 ]
-switch_sizes = [ 16, 32, 64, 128, 256 ]
+switch_sizes = [ 16, 32, 64, 128, -1 ]
 sequential = [ "false", "true" ]
 mus = [ 4 ]
 num_simulations = 30
@@ -96,12 +96,12 @@ for project in projects:
                                 if sequentiality == "true":
                                     output_path = (
                                         "output/bursty-" +
-                                        f"{dataset}/SplayOpticNet_{num_node}/{switch_size}/{mu}/{sim_id}/"
+                                        f"{dataset}/HLSplayOpticNet_{num_node}/{switch_size}/{mu}/{sim_id}/"
                                     )
                                 else:
                                     output_path = (
                                         "output/bursty-" +
-                                        f"{dataset}/{project}_{num_node}/{switch_size}/{mu}/{sim_id}/"
+                                        f"{dataset}/HL{project}_{num_node}/{switch_size}/{mu}/{sim_id}/"
                                     )
 
                                 input_file = (
