@@ -55,21 +55,6 @@ class DataReader:
         )
 
 
-    def cdf_active_switches (self) -> np.ndarray:
-        cdf = np.zeros(self.num_switches, dtype=np.float64)
-
-        rout_df = pd.read_csv(self.file_path / "1/routings.csv")
-        alt_df = pd.read_csv(self.file_path / "1/alterations.csv")
-
-        active_df = pd.concat(
-            [rout_df[["round", "switch"]], alt_df[["round", "switch"]]]
-        ).drop_duplicates().reset_index(drop=True)
-
-        for _, row in active_df.iterrows():
-            cdf[row["switch"]] += 1
-
-        return cdf / 10**3
-
     def cdf_active_ports (self) -> np.ndarray:
         cdf = np.zeros((self.num_switches, self.switch_ports), dtype=np.float64)
 
@@ -144,19 +129,17 @@ class DataReader:
     def read_operations (self) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         total_routing = np.empty(self.num_sims)
         total_alterations = np.empty(self.num_sims)
-        total_heuristic_creation = np.empty(self.num_sims)
-
+        
         for sim_id in range(1, self.num_sims + 1):
             file_df = pd.read_csv(self.file_path / f"{sim_id}/operations.csv")
 
             total_routing[sim_id - 1] = file_df.loc[file_df.name=="message-routing", "sum"].item()
-            total_heuristic_creation[sim_id - 1] = file_df.loc[file_df.name=="heuristic-link-creation", "sum"].item()
             total_alterations[sim_id - 1] = file_df.loc[file_df.name=="alteration", "sum"].item()
 
-        total_work = total_routing + total_alterations + total_heuristic_creation
+        total_work = total_routing + total_alterations
 
         print(f"finish reading {self.num_nodes}|{self.switch_size}")
-        return total_routing, total_alterations, total_heuristic_creation, total_work
+        return total_routing, total_alterations, total_work
 
     def read_throughput (self) -> np.ndarray:
         raw = np.zeros((self.num_sims, self.max_rounds), dtype=np.ndarray)

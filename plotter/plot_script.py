@@ -23,12 +23,12 @@ reload(Plotter)
 
 # In[3]:
 
-projects = [ "HLsemiDisplayOpticNet"
-#,"semiDisplayOpticNet"
-#,"HLSplayOpticNet"
+projects = [ "semiDisplayOpticNet"
+,"semiDisplayOpticNetHL"
+#,"SplayOpticNet"
 ]
 switch_sizes = [ 16, 32, 64, 128, 256 ]
-num_simulations = 30
+num_simulations = 1
 datasets = [ "bursty-0.4-1" ]
 num_nodes = [ 128 ]
 mus = [ 4 ]
@@ -93,25 +93,6 @@ Plotter.Plotter.total_work_link_updates(tor_data[slc], normalize=1e4, ax=ax)
 
 ax.plot()
 fig.savefig(f"output/{sys.argv[1]}/total_work.png", dpi=300, transparent=False)
-plt.close(fig)
-
-print("finish")
-
-fig, ax = plt.subplots(figsize=(8, 4))
-ax.set_title("CDF Active switches per round")
-ax.set_xlabel("Rounds")
-ax.set_ylabel("Switches Percentage")
-
-for data in tor_data[slc]:
-    Plotter.Plotter.cdf_active_switches(data.cdf_active_switches(), ax)
-
-ax.legend([
-    f"{data.project}--{data.dataset}--{data.num_nodes}--{data.num_switches}"
-    for data in tor_data[slc]
-], loc="best", frameon=False)
-
-ax.plot()
-fig.savefig(f"output/{sys.argv[1]}/active_switches.png", dpi=300, transparent=False)
 plt.close(fig)
 
 print("finish")
