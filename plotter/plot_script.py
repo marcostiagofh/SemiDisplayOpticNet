@@ -27,214 +27,211 @@ projects = [ #"semiDisplayOpticNet"
 "semiDisplayOpticNetHL"
 #,"SplayOpticNet"
 ]
-switch_sizes = [ 16,32,64,128,256 ]
-num_simulations = 30
-datasets = [ "bursty-0.4-1" ]
-num_nodes = [ 128 ]
-mus = [ 4 ]
 
-
-'''
-num_nodes = [ 367 ]
-datasets = [ "facebookDS" ]
-switch_sizes = [ 16, 734 ]
-num_simulations = 1
-
-num_nodes = [ 1024 ] # Fixed number of nodes
-datasets = [
-    "exact_boxlib_cns_nospec_large"
+num_datasets = 7
+switch_sizes = [ [16,32,64,128,256],[16,32,92,162,734],[114,128,256,456,2048],[128,256,2048],[16,32,64,288],[16,32,256],[16,32,256] ]
+num_simulations = [ 30,1,1,1,1,1,30 ]
+datasets = [ 
+["bursty-0.4-1"], 
+["facebookDS"], 
+["hpcDS-exact_boxlib_cns_nospec_large"], 
+["normalDS-0.2","normalDS-0.8","normalDS-1.6","normalDS-3.2","normalDS-6.4"],
+["pfabDS-trace_0_5", "pfabDS-trace_0_8"],
+["skewed-1-0.4"],
+["tor"] 
 ]
-switch_sizes = [ 256, 2048 ]
-num_simulations = 1
-'''
+num_nodes = [ [128],[367],[1024],[1024],[144],[128],[128]]
+mus = [ [4],[4],[4],[4],[4],[4],[4] ]
 
-if not os.path.exists(f"output/{sys.argv[1]}"):
-    os.makedirs(f"output/{sys.argv[1]}")
-
-
-# In[4]:
-
-
-tor_data = []
-
+output_folder = [ 
+"bursty-0.4-1", 
+"facebookDS", 
+"hpcDS-exact_boxlib_cns_nospec_large", 
+"normalDS",
+"pfabDS-trace",
+"skewed-1-0.4",
+"tor"
+]
 
 # In[5]:
+for i in range(num_datasets):
+    if not os.path.exists(f"output/{output_folder[i]}"):
+        os.makedirs(f"output/{output_folder[i]}")
 
-for project in projects:
-    for dataset in datasets:
-        for num_node in num_nodes:
-            for switch_size in switch_sizes:
-                for mu in mus:
-                    tor_data.append(
-                        DataReader.DataReader(
-                            dataset, project, num_node, switch_size, num_simulations, mu
+    tor_data = []
+
+    for project in projects:
+        for dataset in datasets[i]:
+            for num_node in num_nodes[i]:
+                for switch_size in switch_sizes[i]:
+                    for mu in mus[i]:
+                        tor_data.append(
+                            DataReader.DataReader(
+                                dataset, project, num_node, switch_size, num_simulations[i], mu
+                            )
                         )
-                    )
 
-tor_data = np.array(tor_data)
+    tor_data = np.array(tor_data)
 
-# In[7]:
+    # In[7]:
 
+    slc = [ i for i in range(len(tor_data)) ]
 
-slc = [ i for i in range(len(tor_data)) ]
+    # In[8]:
 
+    print(tor_data[slc])
 
-# In[8]:
+    # Collect unique values of data.switch_size
+    unique_switch_sizes = set(data.switch_size for data in tor_data[slc])
 
+    # Define a list of unique colors
+    colors = plt.cm.tab10.colors[:len(unique_switch_sizes)]  # Using a predefined colormap for colors
 
-print(tor_data[slc])
+    # Create a dictionary mapping each unique switch_size to a unique color
+    color_dict = dict(zip(unique_switch_sizes, colors))
 
-# Collect unique values of data.switch_size
-unique_switch_sizes = set(data.switch_size for data in tor_data[slc])
+    # In[9]:
 
-# Define a list of unique colors
-colors = plt.cm.tab10.colors[:len(unique_switch_sizes)]  # Using a predefined colormap for colors
+    fig, ax = plt.subplots(figsize=(7, 4))
+    ax.set_ylabel("Work 10**4")
+    ax.set_xlabel("Project")
 
-# Create a dictionary mapping each unique switch_size to a unique color
-color_dict = dict(zip(unique_switch_sizes, colors))
+    Plotter.Plotter.total_work_link_updates(tor_data[slc], normalize=1e4, ax=ax)
 
-# In[9]:
+    ax.plot()
+    fig.savefig(f"output/{output_folder[i]}/total_work.png", dpi=300, transparent=False)
+    plt.close(fig)
 
-fig, ax = plt.subplots(figsize=(7, 4))
-ax.set_ylabel("Work 10**4")
-ax.set_xlabel("Project")
+    print("finish")
 
-Plotter.Plotter.total_work_link_updates(tor_data[slc], normalize=1e4, ax=ax)
-
-ax.plot()
-fig.savefig(f"output/{sys.argv[1]}/total_work.png", dpi=300, transparent=False)
-plt.close(fig)
-
-print("finish")
-
-# In[10]:
+    # In[10]:
 
 
-fig, ax = plt.subplots(figsize=(8, 4))
-ax.set_title("CDF \% of active ports for switches")
-ax.set_xlabel("Ports Percentage")
-ax.set_ylabel("Switch Percentage")
+    fig, ax = plt.subplots(figsize=(8, 4))
+    ax.set_title("CDF \% of active ports for switches")
+    ax.set_xlabel("Ports Percentage")
+    ax.set_ylabel("Switch Percentage")
 
-for data in tor_data[slc]:
-    color = color_dict[data.switch_size]  # Get color based on switch_size
-    Plotter.Plotter.cdf_switches_active_ports(data.cdf_switch_active_ports(), ax, color=color)
+    for data in tor_data[slc]:
+        color = color_dict[data.switch_size]  # Get color based on switch_size
+        Plotter.Plotter.cdf_switches_active_ports(data.cdf_switch_active_ports(), ax, color=color)
 
-ax.legend([
-    f"{data.project}--{data.dataset}--{data.num_nodes}--{data.num_switches}--{data.switch_size}"
-    for data in tor_data[slc]
-], loc="best", frameon=False)
+    ax.legend([
+        f"{Plotter.Plotter.get_project_name(data)}--{data.dataset}--{data.num_nodes}--{data.num_switches}--{data.switch_size}"
+        for data in tor_data[slc]
+    ], loc="best", frameon=False)
 
-ax.plot()
-fig.savefig(f"output/{sys.argv[1]}/switches_active_ports.png", dpi=300, transparent=False)
-plt.close(fig)
-print("finish")
+    ax.plot()
+    fig.savefig(f"output/{output_folder[i]}/switches_active_ports.png", dpi=300, transparent=False)
+    plt.close(fig)
+    print("finish")
 
-# In[11]:
-
-
-fig, ax = plt.subplots(figsize=(8, 4))
-ax.set_title("CDF Active Ports per Round")
-ax.set_xlabel("Rounds")
-ax.set_ylabel("Ports Percentage")
-
-for data in tor_data[slc]:
-    color = color_dict[data.switch_size]  # Get color based on switch_size
-    Plotter.Plotter.cdf_active_ports(data.cdf_active_ports(), ax, color=color)
-
-ax.legend([
-    f"{data.project}--{data.dataset}--{data.num_nodes}--{data.num_switches}--{data.switch_size}"
-    for data in tor_data[slc]
-], loc="best", frameon=False)
-
-ax.plot()
-fig.savefig(f"output/{sys.argv[1]}/active_ports.png", dpi=300, transparent=False)
-plt.close(fig)
-print("finish")
-
-# In[ ]:
+    # In[11]:
 
 
-fig, ax = plt.subplots(figsize=(8, 4))
-ax.set_title("CDF Routings per Node")
-ax.set_xlabel("Routing")
-ax.set_ylabel("Node Percentage")
+    fig, ax = plt.subplots(figsize=(8, 4))
+    ax.set_title("CDF Active Ports per Round")
+    ax.set_xlabel("Rounds")
+    ax.set_ylabel("Ports Percentage")
 
-for data in tor_data[slc]:
-    color = color_dict[data.switch_size]  # Get color based on switch_size
-    Plotter.Plotter.cdf_routings(data.cdf_node_routings(), ax, color=color)
+    for data in tor_data[slc]:
+        color = color_dict[data.switch_size]  # Get color based on switch_size
+        Plotter.Plotter.cdf_active_ports(data.cdf_active_ports(), ax, color=color)
 
-ax.legend([
-    f"{data.project}--{data.dataset}--{data.num_nodes}--{data.num_switches}--{data.switch_size}"
-    for data in tor_data[slc]
-], loc="best", frameon=False)
+    ax.legend([
+        f"{Plotter.Plotter.get_project_name(data)}--{data.dataset}--{data.num_nodes}--{data.num_switches}--{data.switch_size}"
+        for data in tor_data[slc]
+    ], loc="best", frameon=False)
 
-ax.plot()
-fig.savefig(f"output/{sys.argv[1]}/node_routings.png", dpi=300, transparent=False)
-plt.close(fig)
-print("finish")
+    ax.plot()
+    fig.savefig(f"output/{output_folder[i]}/active_ports.png", dpi=300, transparent=False)
+    plt.close(fig)
+    print("finish")
 
-# In[ ]:
-
-
-fig, ax = plt.subplots(figsize=(8, 4))
-ax.set_title("CDF Alterations per Node")
-ax.set_xlabel("Alterations")
-ax.set_ylabel("Node Percentage")
-
-for data in tor_data[slc]:
-    color = color_dict[data.switch_size]  # Get color based on switch_size
-    Plotter.Plotter.cdf_alterations(data.cdf_node_alterations(), ax, color=color)
-
-ax.legend([
-    f"{data.project}--{data.dataset}--{data.num_nodes}--{data.num_switches}--{data.switch_size}"
-    for data in tor_data[slc]
-], loc="best", frameon=False)
-
-ax.plot()
-fig.savefig(f"output/{sys.argv[1]}/node_alterations.png", dpi=300, transparent=False)
-plt.close(fig)
-print("finish")
-
-# In[ ]:
+    # In[ ]:
 
 
-fig, ax = plt.subplots(figsize=(8, 4))
-ax.set_title("CDF Routings per Switch")
-ax.set_xlabel("Routing")
-ax.set_ylabel("Switches Percentage")
+    fig, ax = plt.subplots(figsize=(8, 4))
+    ax.set_title("CDF Routings per Node")
+    ax.set_xlabel("Routing")
+    ax.set_ylabel("Node Percentage")
 
-for data in tor_data[slc]:
-    color = color_dict[data.switch_size]  # Get color based on switch_size
-    Plotter.Plotter.cdf_routings(data.cdf_switch_routings(), ax, color=color)
+    for data in tor_data[slc]:
+        color = color_dict[data.switch_size]  # Get color based on switch_size
+        Plotter.Plotter.cdf_routings(data.cdf_node_routings(), ax, color=color)
 
-ax.legend([
-    f"{data.project}--{data.dataset}--{data.num_nodes}--{data.num_switches}--{data.switch_size}"
-    for data in tor_data[slc]
-], loc="best", frameon=False)
+    ax.legend([
+        f"{Plotter.Plotter.get_project_name(data)}--{data.dataset}--{data.num_nodes}--{data.num_switches}--{data.switch_size}"
+        for data in tor_data[slc]
+    ], loc="best", frameon=False)
 
-ax.plot()
-fig.savefig(f"output/{sys.argv[1]}/switch_routings.png", dpi=300, transparent=False)
-plt.close(fig)
-print("finish")
+    ax.plot()
+    fig.savefig(f"output/{output_folder[i]}/node_routings.png", dpi=300, transparent=False)
+    plt.close(fig)
+    print("finish")
 
-# In[ ]:
+    # In[ ]:
 
 
-fig, ax = plt.subplots(figsize=(8, 4))
-ax.set_title("CDF Alterations per Switch")
-ax.set_xlabel("Alterations")
-ax.set_ylabel("Switches Percentage")
+    fig, ax = plt.subplots(figsize=(8, 4))
+    ax.set_title("CDF Alterations per Node")
+    ax.set_xlabel("Alterations")
+    ax.set_ylabel("Node Percentage")
 
-for data in tor_data[slc]:
-    color = color_dict[data.switch_size]  # Get color based on switch_size
-    Plotter.Plotter.cdf_alterations(data.cdf_switch_alterations(), ax, color=color)
+    for data in tor_data[slc]:
+        color = color_dict[data.switch_size]  # Get color based on switch_size
+        Plotter.Plotter.cdf_alterations(data.cdf_node_alterations(), ax, color=color)
 
-ax.legend([
-    f"{data.project}--{data.dataset}--{data.num_nodes}--{data.num_switches}--{data.switch_size}"
-    for data in tor_data[slc]
-], loc="best", frameon=False)
+    ax.legend([
+        f"{Plotter.Plotter.get_project_name(data)}--{data.dataset}--{data.num_nodes}--{data.num_switches}--{data.switch_size}"
+        for data in tor_data[slc]
+    ], loc="best", frameon=False)
 
-ax.plot()
-fig.savefig(f"output/{sys.argv[1]}/switch_alterations.png", dpi=300, transparent=False)
-plt.close(fig)
-print("finish")
+    ax.plot()
+    fig.savefig(f"output/{output_folder[i]}/node_alterations.png", dpi=300, transparent=False)
+    plt.close(fig)
+    print("finish")
+
+    # In[ ]:
+
+
+    fig, ax = plt.subplots(figsize=(8, 4))
+    ax.set_title("CDF Routings per Switch")
+    ax.set_xlabel("Routing")
+    ax.set_ylabel("Switches Percentage")
+
+    for data in tor_data[slc]:
+        color = color_dict[data.switch_size]  # Get color based on switch_size
+        Plotter.Plotter.cdf_routings(data.cdf_switch_routings(), ax, color=color)
+
+    ax.legend([
+        f"{Plotter.Plotter.get_project_name(data)}--{data.dataset}--{data.num_nodes}--{data.num_switches}--{data.switch_size}"
+        for data in tor_data[slc]
+    ], loc="best", frameon=False)
+
+    ax.plot()
+    fig.savefig(f"output/{output_folder[i]}/switch_routings.png", dpi=300, transparent=False)
+    plt.close(fig)
+    print("finish")
+
+    # In[ ]:
+
+
+    fig, ax = plt.subplots(figsize=(8, 4))
+    ax.set_title("CDF Alterations per Switch")
+    ax.set_xlabel("Alterations")
+    ax.set_ylabel("Switches Percentage")
+
+    for data in tor_data[slc]:
+        color = color_dict[data.switch_size]  # Get color based on switch_size
+        Plotter.Plotter.cdf_alterations(data.cdf_switch_alterations(), ax, color=color)
+
+    ax.legend([
+        f"{Plotter.Plotter.get_project_name(data)}--{data.dataset}--{data.num_nodes}--{data.num_switches}--{data.switch_size}"
+        for data in tor_data[slc]
+    ], loc="best", frameon=False)
+
+    ax.plot()
+    fig.savefig(f"output/{output_folder[i]}/switch_alterations.png", dpi=300, transparent=False)
+    plt.close(fig)
+    print("finish")

@@ -10,7 +10,7 @@ abbr: dict[str, str] = {
     "cbOptNet": "CBN",
     "displayOpticNet": "ODSN",
     "semiDisplayOpticNet": "DSN",
-    "semiDisplayOpticNetHL" : "OP",
+    "semiDisplayOpticNetHL" : "DSN",
     "SplayOpticNet": "SN"
 }
 
@@ -19,7 +19,7 @@ class Plotter:
     @classmethod
     def get_project_name (cls, data) -> str:
         project = abbr[data.project]
-        if project == "OP":
+        if data.project == "semiDisplayOpticNetHL":
             return "OpticNet$^{OP}$" + f"({project})"
         else:
             return f"OpticNet({project})"
