@@ -10,7 +10,7 @@ abbr: dict[str, str] = {
     "cbOptNet": "CBN",
     "displayOpticNet": "ODSN",
     "semiDisplayOpticNet": "DSN",
-    "semiDisplayOpticNetHL" : "DSNHL",
+    "semiDisplayOpticNetHL" : "OP",
     "SplayOpticNet": "SN"
 }
 
@@ -19,7 +19,10 @@ class Plotter:
     @classmethod
     def get_project_name (cls, data) -> str:
         project = abbr[data.project]
-        return f"OpticNet({project})"
+        if project == "OP":
+            return "OpticNet$^{OP}$" + f"({project})"
+        else:
+            return f"OpticNet({project})"
 
     @classmethod
     def total_work_link_updates (
@@ -35,29 +38,29 @@ class Plotter:
         for data in plot_data:
             project_name = cls.get_project_name(data)
 
-            total_routing, total_link_updates, total_work = data.read_operations()            
+            total_routing, total_alterations, total_work = data.read_operations()            
 
             project_names.append(project_name)
             routing_means.append(total_routing.mean() / normalize)
-            alteration_means.append(total_link_updates.mean() / normalize)
+            alteration_means.append(total_alterations.mean() / normalize)
             work_stds.append((total_work / normalize).std())
             switch_sizes.append(data.switch_size)
 
         if ax is None:
             fig, ax = plt.subplots(figsize=(8, 4))
             ax.legend(loc="right")
-            ax.set_title("Total Work Link Updates")
+            ax.set_title("Total Work")
             ax.set_xlabel("Project")
             ax.set_ylabel("Work * 10 ^ 4")
 
         ax.bar(project_names, routing_means, label="Service Cost", color=["silver"])
         ax.bar(
             project_names, alteration_means, 
-            bottom=routing_means, label="Link Adjustments",  color=["grey"]
+            bottom=routing_means, label="Link Updates",  color=["grey"]
         )
         ax.legend(loc="best")
         
-    def cdf_active_switches (cdf_array: np.ndarray, ax: plt.axes = None) -> None:
+    def cdf_active_switches (cdf_array: np.ndarray, ax: plt.axes = None, color: tuple = None) -> None:
         ecdf = sm.distributions.empirical_distribution.ECDF(cdf_array)
 
         if ax is None:
@@ -71,9 +74,12 @@ class Plotter:
         x = np.linspace(min_indx, max(cdf_array))
         y = ecdf(x)
 
-        return ax.step(x, y)
+        if color is None:
+            return ax.step(x, y)
+        else:
+            return ax.step(x, y, color=color)
 
-    def cdf_active_ports (cdf_array: np.ndarray, ax: plt.axes = None) -> None:
+    def cdf_active_ports (cdf_array: np.ndarray, ax: plt.axes = None, color: tuple = None) -> None:
         ecdf = sm.distributions.empirical_distribution.ECDF(cdf_array)
 
         if ax is None:
@@ -86,9 +92,12 @@ class Plotter:
         x = np.linspace(0, max(cdf_array) + 100)
         y = ecdf(x)
 
-        return ax.step(x, y)
+        if color is None:
+            return ax.step(x, y)
+        else:
+            return ax.step(x, y, color=color)
 
-    def cdf_switches_active_ports (cdf_array: np.ndarray, ax: plt.axes = None) -> None:
+    def cdf_switches_active_ports (cdf_array: np.ndarray, ax: plt.axes = None, color: tuple = None) -> None:
         ecdf = sm.distributions.empirical_distribution.ECDF(cdf_array)
 
         if ax is None:
@@ -102,10 +111,14 @@ class Plotter:
         max_indx = max(cdf_array + 0.1)
         x = np.linspace(min_indx, max_indx)
         y = ecdf(x)
+        
+        if color is None:
+            return ax.step(x, y)
+        else:
+            return ax.step(x, y, color=color)
 
-        return ax.step(x, y)
 
-    def cdf_routings (cdf_array: np.ndarray, ax: plt.axes = None) -> None:
+    def cdf_routings (cdf_array: np.ndarray, ax: plt.axes = None, color: tuple = None) -> None:
         ecdf = sm.distributions.empirical_distribution.ECDF(cdf_array)
 
         if ax is None:
@@ -120,9 +133,12 @@ class Plotter:
         x = np.linspace(min_indx, max_indx)
         y = ecdf(x)
 
-        return ax.step(x, y)
+        if color is None:
+            return ax.step(x, y)
+        else:
+            return ax.step(x, y, color=color)
 
-    def cdf_alterations (cdf_array: np.ndarray, ax: plt.axes = None) -> None:
+    def cdf_alterations (cdf_array: np.ndarray, ax: plt.axes = None, color: tuple = None) -> None:
         ecdf = sm.distributions.empirical_distribution.ECDF(cdf_array)
 
         if ax is None:
@@ -137,4 +153,7 @@ class Plotter:
         x = np.linspace(min_indx, max_indx)
         y = ecdf(x)
 
-        return ax.step(x, y)
+        if color is None:
+            return ax.step(x, y)
+        else:
+            return ax.step(x, y, color=color)

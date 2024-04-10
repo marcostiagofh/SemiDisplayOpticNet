@@ -86,10 +86,10 @@ for project in projects:
                             continue
 
                         if sequentiality == "true":
-                            output_path = f"output/normalDS-{dataset}/SplayOpticNet_{num_node}/{switch_size}/1/"
+                            output_path = f"output/normalDS-{dataset}/SplayOpticNet_{num_node}/{switch_size}/{mu}/1/"
 
                         else:
-                            output_path = f"output/normalDS-{dataset}/{project}_{num_node}/{switch_size}/1/"
+                            output_path = f"output/normalDS-{dataset}/{project}_{num_node}/{switch_size}/{mu}/1/"
 
                         input_file = f"input/normalDS/{num_node}/{num_node}-{dataset}-std.txt"
                         sim_stream = f"logs/{output_path}sim.txt"
