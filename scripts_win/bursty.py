@@ -96,12 +96,12 @@ for project in projects:
                                 if sequentiality == "true":
                                     output_path = (
                                         "output/bursty-" +
-                                        f"{dataset}/HLSplayOpticNet_{num_node}/{switch_size}/{mu}/{sim_id}/"
+                                        f"{dataset}/SplayOpticNetHL_{num_node}/{switch_size}/{mu}/{sim_id}/"
                                     )
                                 else:
                                     output_path = (
                                         "output/bursty-" +
-                                        f"{dataset}/HL{project}_{num_node}/{switch_size}/{mu}/{sim_id}/"
+                                        f"{dataset}/{project}HL_{num_node}/{switch_size}/{mu}/{sim_id}/"
                                     )
 
                                 input_file = (

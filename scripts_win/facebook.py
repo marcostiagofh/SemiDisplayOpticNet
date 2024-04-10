@@ -78,10 +78,10 @@ for project in projects:
                             switch_size = 2 * num_node
 
                         if sequentiality == "true":
-                            output_path = f"output/facebookDS/SplayOpticNet_{num_node}/{switch_size}/{mu}/1/"
+                            output_path = f"output/facebookDS/SplayOpticNetHL_{num_node}/{switch_size}/{mu}/1/"
 
                         else:
-                            output_path = f"output/facebookDS/{project}_{num_node}/{switch_size}/{mu}/1/"
+                            output_path = f"output/facebookDS/{project}HL_{num_node}/{switch_size}/{mu}/1/"
 
 
                         input_file = f"input/facebookDS/{dataset}.txt"

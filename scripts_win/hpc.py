@@ -77,10 +77,10 @@ for project in projects:
                             switch_size = 2 * num_node
 
                         if sequentiality == "true":
-                            output_path = (f"output/hpcDS-{dataset}/SplayOpticNet_{num_node}/{switch_size}/{mu}/1/")
+                            output_path = (f"output/hpcDS-{dataset}/SplayOpticNetHL_{num_node}/{switch_size}/{mu}/1/")
 
                         else:
-                            output_path = (f"output/hpcDS-{dataset}/{project}_{num_node}/{switch_size}/{mu}/1/")
+                            output_path = (f"output/hpcDS-{dataset}/{project}HL_{num_node}/{switch_size}/{mu}/1/")
 
                         input_file = (f"input/hpcDS/{dataset}.txt")
                         sim_stream = f"logs/{output_path}sim.txt"
