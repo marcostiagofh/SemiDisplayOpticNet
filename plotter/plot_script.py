@@ -23,7 +23,7 @@ reload(Plotter)
 
 # In[3]:
 
-projects = [ #"semiDisplayOpticNet"
+projects = [ #"semiDisplayOpticNet",
 "semiDisplayOpticNetHL"
 #,"SplayOpticNet"
 ]
@@ -106,7 +106,7 @@ for i in range(num_datasets):
 
     # In[10]:
 
-
+    
     fig, ax = plt.subplots(figsize=(8, 4))
     ax.set_title("CDF \% of active ports for switches")
     ax.set_xlabel("Ports Percentage")
@@ -235,3 +235,4 @@ for i in range(num_datasets):
     fig.savefig(f"output/{output_folder[i]}/switch_alterations.png", dpi=300, transparent=False)
     plt.close(fig)
     print("finish")
+    

@@ -53,11 +53,11 @@ class Plotter:
             ax.set_xlabel("Project")
             ax.set_ylabel("Work * 10 ^ 4")
 
-        ax.bar(project_names, routing_means, label="Service Cost", color=["silver"])
         ax.bar(
             project_names, alteration_means, 
             bottom=routing_means, label="Link Updates",  color=["grey"]
         )
+        ax.bar(project_names, routing_means, label="Service Cost", color=["silver"])
         ax.legend(loc="best")
         
     def cdf_active_switches (cdf_array: np.ndarray, ax: plt.axes = None, color: tuple = None) -> None:
