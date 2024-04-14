@@ -24,7 +24,8 @@ reload(Plotter)
 # In[3]:
 
 projects = [ #"semiDisplayOpticNet",
-"semiDisplayOpticNetHL"
+"semiDisplayOpticNetHL",
+#"semiDisplayOpticNetHLAP",
 #,"SplayOpticNet"
 ]
 
@@ -105,8 +106,26 @@ for i in range(num_datasets):
     print("finish")
 
     # In[10]:
-
     
+    fig, ax = plt.subplots(figsize=(8, 4))
+    ax.set_title("CDF Active switches per round")
+    ax.set_xlabel("Rounds")
+    ax.set_ylabel("Switches Percentage")
+
+    for data in tor_data[slc]:
+        Plotter.Plotter.cdf_active_switches(data.cdf_active_switches(), ax)
+
+    ax.legend([
+        f"{data.project}--{data.dataset}--{data.num_nodes}--{data.num_switches}"
+        for data in tor_data[slc]
+    ], loc="best", frameon=False)
+
+    ax.plot()
+    fig.savefig(f"output/{sys.argv[1]}/active_switches.png", dpi=300, transparent=False)
+    plt.close(fig)
+
+    print("finish")
+
     fig, ax = plt.subplots(figsize=(8, 4))
     ax.set_title("CDF \% of active ports for switches")
     ax.set_xlabel("Ports Percentage")

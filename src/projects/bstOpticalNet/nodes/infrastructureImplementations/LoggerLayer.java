@@ -294,7 +294,7 @@ public abstract class LoggerLayer extends SynchronizerLayer {
      * Print Alteration counter informations.
      */
     public void printAlterationCounter () {
-        this.printCounter(this.alterationCounter, "alteration");
+        this.printCounter(this.alterationCounter, "link-alteration");
     }
 
     /**
