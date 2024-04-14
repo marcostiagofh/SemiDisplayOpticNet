@@ -108,10 +108,10 @@ for i in range(num_datasets):
     print("finish")
 
     fig, ax = plt.subplots(figsize=(7, 4))
-    ax.set_ylabel("Rounds")
+    ax.set_ylabel("Rounds 10**3")
     ax.set_xlabel("Project")
 
-    Plotter.Plotter.total_rounds(tor_data[slc], normalize=1e4, ax=ax)
+    Plotter.Plotter.total_rounds(tor_data[slc], normalize=1e3, ax=ax)
 
     ax.plot()
     fig.savefig(f"output/{output_folder[i]}/rounds.png", dpi=300, transparent=False)

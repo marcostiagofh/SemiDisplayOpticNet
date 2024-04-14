@@ -43,7 +43,7 @@ class Plotter:
             rounds = data.read_rounds()            
 
             project_names.append(project_name)
-            all_datasets_rounds.append(rounds.mean())
+            all_datasets_rounds.append(rounds.mean()/normalize)
 
         if ax is None:
             fig, ax = plt.subplots(figsize=(8, 4))
@@ -94,10 +94,12 @@ class Plotter:
             ax.set_title("Total Work")
             ax.set_xlabel("Project")
             ax.set_ylabel("Work * 10 ^ 4")
-        print(len((routing_means + heuristic_link_creation)))
+            
+        
+        bottom1 = [x + y for x, y in zip(heuristic_link_creation, routing_means)]
         ax.bar(
             project_names, alteration_means, 
-            bottom=heuristic_link_creation, label="Link Updates",  color=["grey"]
+            bottom=bottom1, label="Link Updates",  color=["grey"]
         )
         ax.bar(
             project_names, heuristic_link_creation, 
