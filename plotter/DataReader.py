@@ -162,6 +162,24 @@ class DataReader:
         print(f"finish reading {self.num_nodes}|{self.switch_size}")
         return total_routing, total_alterations, total_work
 
+    def read_operations_HL (self) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+        total_routing = np.empty(self.num_sims)
+        total_alterations = np.empty(self.num_sims)
+        total_heuristic_link = np.empty(self.num_sims)
+        
+        for sim_id in range(1, self.num_sims + 1):
+            file_df = pd.read_csv(self.file_path / f"{sim_id}/operations.csv")
+
+            total_routing[sim_id - 1] = file_df.loc[file_df.name=="message-routing", "sum"].item()
+            total_alterations[sim_id - 1] = file_df.loc[file_df.name=="link-alteration", "sum"].item()
+            total_heuristic_link[sim_id - 1] = file_df.loc[file_df.name=="heuristic-link-creation", "sum"].item()
+            total_alterations[sim_id - 1] -= total_heuristic_link[sim_id - 1]
+                        
+        total_work = total_routing + total_alterations        
+
+        print(f"finish reading {self.num_nodes}|{self.switch_size}")
+        return total_routing, total_alterations, total_heuristic_link, total_work
+
     def read_rounds (self) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         total_rounds = np.empty(self.num_sims)
         

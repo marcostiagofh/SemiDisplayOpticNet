@@ -68,16 +68,24 @@ class Plotter:
         heuristic_creation_means = []
         switch_sizes = []
         work_stds = []
+        heuristic_link_creation = []
 
         for data in plot_data:
             project_name = cls.get_project_name(data)
-
-            total_routing, total_alterations, total_work = data.read_operations()            
-
+            
+            avg_total_heuristic_link = 0
+            if "HL" in data.project:
+                total_routing, total_alterations, total_heuristic_link, total_work = data.read_operations_HL()
+                avg_total_heuristic_link = total_heuristic_link.mean()/normalize           
+            else:
+                total_routing, total_alterations, total_work = data.read_operations()
+                avg_total_heuristic_link = 0
+                
             project_names.append(project_name)
             routing_means.append(total_routing.mean() / normalize)
             alteration_means.append(total_alterations.mean() / normalize)
             work_stds.append((total_work / normalize).std())
+            heuristic_link_creation.append(avg_total_heuristic_link)
             switch_sizes.append(data.switch_size)
 
         if ax is None:
@@ -86,10 +94,14 @@ class Plotter:
             ax.set_title("Total Work")
             ax.set_xlabel("Project")
             ax.set_ylabel("Work * 10 ^ 4")
-
+        print(len((routing_means + heuristic_link_creation)))
         ax.bar(
             project_names, alteration_means, 
-            bottom=routing_means, label="Link Updates",  color=["grey"]
+            bottom=heuristic_link_creation, label="Link Updates",  color=["grey"]
+        )
+        ax.bar(
+            project_names, heuristic_link_creation, 
+            bottom=routing_means, label="Heuristic Link Creation",  color=["red"]
         )
         ax.bar(project_names, routing_means, label="Service Cost", color=["silver"])
         ax.legend(loc="best")
