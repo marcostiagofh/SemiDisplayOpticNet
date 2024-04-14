@@ -59,6 +59,16 @@ class DataReader:
                 Path(__file__).parent.parent /
                 f"../SemiDisplayOpticNet-AP/logs/output/{self.dataset}/{self.project}_{self.num_nodes}/{self.switch_size}/{self.mu}/"
             )
+        elif self.project == "cbOptNet":
+            return Path(
+                Path(__file__).parent.parent /
+                f"../CBOpticalNet-master/logs/output/{self.dataset}/{self.project}_{self.num_nodes}/{self.switch_size}/mirrored/{self.mu}/"
+            )
+        elif self.project == "cbOptNetHL":
+            return Path(
+                Path(__file__).parent.parent /
+                f"../CBOpticalNet/logs/output/{self.dataset}/cbOptNet_{self.num_nodes}/{self.switch_size}/mirrored/{self.mu}/"
+            )
         else:
             return Path(
                 Path(__file__).parent.parent /
@@ -151,6 +161,22 @@ class DataReader:
 
         print(f"finish reading {self.num_nodes}|{self.switch_size}")
         return total_routing, total_alterations, total_work
+
+    def read_rounds (self) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+        total_rounds = np.empty(self.num_sims)
+        
+        for sim_id in range(1, self.num_sims + 1):
+            with open(self.file_path / f"{sim_id}/simulation_info.txt", 'r') as file:
+                for line in file:
+                    if line.startswith("num-rounds,"):
+                        # Split the line by comma and get the second part
+                        num_rounds = line.split(",")[1]
+                        print(int(num_rounds))
+                        total_rounds[sim_id - 1] = int(num_rounds)
+                        break
+
+        #print(f"finish reading {self.num_nodes}|{self.switch_size}")
+        return total_rounds
 
     def read_throughput (self) -> np.ndarray:
         raw = np.zeros((self.num_sims, self.max_rounds), dtype=np.ndarray)

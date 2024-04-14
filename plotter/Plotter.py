@@ -8,6 +8,7 @@ plt.style.use(["science","ieee"])
 
 abbr: dict[str, str] = {
     "cbOptNet": "CBN",
+    "cbOptNetHL": "CBN",
     "displayOpticNet": "ODSN",
     "semiDisplayOpticNet": "DSN",
     "semiDisplayOpticNetHL" : "DSN",
@@ -24,8 +25,38 @@ class Plotter:
             return "OpticNet$^{OP}$" + f"({project})"
         elif data.project == "semiDisplayOpticNetHLAP":
             return "OpticNet$^{OP AP}$" + f"({project})"
+        elif data.project == "cbOptNetHL":
+            return "OpticNet$^{OP}$" + f"({project})"
         else:
             return f"OpticNet({project})"
+            
+    @classmethod
+    def total_rounds (
+        cls, plot_data: list, normalize: int = 1, ax: plt.axes = None
+    ) -> None:
+        project_names = []
+        all_datasets_rounds = []
+
+        for data in plot_data:
+            project_name = cls.get_project_name(data)
+
+            rounds = data.read_rounds()            
+
+            project_names.append(project_name)
+            all_datasets_rounds.append(rounds.mean())
+
+        if ax is None:
+            fig, ax = plt.subplots(figsize=(8, 4))
+            ax.legend(loc="right")
+            ax.set_title("Total Work")
+            ax.set_xlabel("Project")
+            ax.set_ylabel("Work * 10 ^ 4")
+
+        ax.bar(
+            project_names, all_datasets_rounds,
+            color=["grey"]
+        )
+        ax.legend(loc="best")
 
     @classmethod
     def total_work_link_updates (

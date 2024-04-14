@@ -24,10 +24,6 @@ public class RoutingInfoMessage extends Message implements Comparable<RoutingInf
         this.routingTimes = routingTimes;
     }
 
-    /**
-     * Sets the node id from the node owner of the message
-     * @param nodeId        the nodeId for the holder node.
-     */
     public void setHeuristicLink(boolean value) {
     	this.heuristicLink = value;
     }
@@ -44,6 +40,10 @@ public class RoutingInfoMessage extends Message implements Comparable<RoutingInf
 		return this.swt;
 	}
 	
+	/**
+     * Sets the node id from the node owner of the message
+     * @param nodeId        the nodeId for the holder node.
+     */
     public void setNodeId (int nodeId) {
         this.nodeId = nodeId;
 

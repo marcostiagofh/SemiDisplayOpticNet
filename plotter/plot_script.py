@@ -23,9 +23,11 @@ reload(Plotter)
 
 # In[3]:
 
-projects = [ #"semiDisplayOpticNet",
+projects = [ "semiDisplayOpticNet",
 "semiDisplayOpticNetHL",
-#"semiDisplayOpticNetHLAP",
+"semiDisplayOpticNetHLAP",
+#"cbOptNet",
+#"cbOptNetHL",
 #,"SplayOpticNet"
 ]
 
@@ -92,7 +94,7 @@ for i in range(num_datasets):
     color_dict = dict(zip(unique_switch_sizes, colors))
 
     # In[9]:
-
+    
     fig, ax = plt.subplots(figsize=(7, 4))
     ax.set_ylabel("Work 10**4")
     ax.set_xlabel("Project")
@@ -105,8 +107,20 @@ for i in range(num_datasets):
 
     print("finish")
 
+    fig, ax = plt.subplots(figsize=(7, 4))
+    ax.set_ylabel("Rounds")
+    ax.set_xlabel("Project")
+
+    Plotter.Plotter.total_rounds(tor_data[slc], normalize=1e4, ax=ax)
+
+    ax.plot()
+    fig.savefig(f"output/{output_folder[i]}/rounds.png", dpi=300, transparent=False)
+    plt.close(fig)
+
+    print("finish")
+
     # In[10]:
-    
+    '''
     fig, ax = plt.subplots(figsize=(8, 4))
     ax.set_title("CDF Active switches per round")
     ax.set_xlabel("Rounds")
@@ -254,4 +268,4 @@ for i in range(num_datasets):
     fig.savefig(f"output/{output_folder[i]}/switch_alterations.png", dpi=300, transparent=False)
     plt.close(fig)
     print("finish")
-    
+    '''

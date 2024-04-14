@@ -16,8 +16,8 @@ public abstract class LoggerLayer extends SynchronizerLayer {
     private DataSeries rotationCounter = new DataSeries();
     private DataSeries alterationCounter = new DataSeries();
     private DataSeries messageRoutingCounter = new DataSeries();
-    private DataSeries heuristicLinksCounter = new DataSeries();
     private DataSeries activeRequestsCounter = new DataSeries();
+    private DataSeries heuristicLinksCounter = new DataSeries();
     private DataSeries heuristicLinksRefusedCounter = new DataSeries();
     private DataSeries heuristicLinksRemovedCounter = new DataSeries();
     
