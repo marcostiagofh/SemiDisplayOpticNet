@@ -26,7 +26,7 @@ projects = [ "semiDisplayOpticNet" ]
 num_nodes = [ 367 ]
 datasets = [ "datasetC_pairs" ]
 switch_sizes = [ 16, 32, 92, 162, 734 ]
-sequential = [ "false", "true" ]
+sequential = [ "false" ]
 mus = [ 4 ]
 
 #number of threads to simulation

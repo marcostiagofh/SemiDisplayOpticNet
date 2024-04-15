@@ -25,7 +25,7 @@ projects = [ "semiDisplayOpticNet" ]
 # parameters of simulation
 num_nodes = [ 128 ]
 switch_sizes = [ 16,32,256 ]
-sequential = [ "true", "false" ]
+sequential = [ "false" ]
 mus = [ 4 ]
 num_simulations = 30
 

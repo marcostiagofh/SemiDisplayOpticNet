@@ -38,8 +38,8 @@ datasets = [
 ["bursty-0.4-1"], 
 ["facebookDS"], 
 ["hpcDS-exact_boxlib_cns_nospec_large"], 
-["normalDS-0.2","normalDS-0.8","normalDS-1.6","normalDS-3.2","normalDS-6.4"],
-["pfabDS-trace_0_5", "pfabDS-trace_0_8"],
+["normalDS-0.2"],
+["pfabDS-trace_0_5"],
 ["skewed-1-0.4"],
 ["tor"] 
 ]

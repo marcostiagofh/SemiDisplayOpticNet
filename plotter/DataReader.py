@@ -57,7 +57,7 @@ class DataReader:
         elif self.project == "semiDisplayOpticNetHLAP":
             return Path(
                 Path(__file__).parent.parent /
-                f"../SemiDisplayOpticNet-AP/logs/output/{self.dataset}/{self.project}_{self.num_nodes}/{self.switch_size}/{self.mu}/"
+                f"../SemiDisplayOpticNet-AP/logs/output/{self.dataset}/semiDisplayOpticNet_{self.num_nodes}/{self.switch_size}/{self.mu}/"
             )
         elif self.project == "cbOptNet":
             return Path(
@@ -153,9 +153,10 @@ class DataReader:
         
         for sim_id in range(1, self.num_sims + 1):
             file_df = pd.read_csv(self.file_path / f"{sim_id}/operations.csv")
-
             total_routing[sim_id - 1] = file_df.loc[file_df.name=="message-routing", "sum"].item()
-            total_alterations[sim_id - 1] = file_df.loc[file_df.name=="link-alteration", "sum"].item()
+            #print(self.file_path / f"{sim_id}/operations.csv")
+            
+            total_alterations[sim_id - 1] = int(file_df.loc[file_df.name=="alteration", "sum"].item())
 
         total_work = total_routing + total_alterations
 
@@ -171,7 +172,9 @@ class DataReader:
             file_df = pd.read_csv(self.file_path / f"{sim_id}/operations.csv")
 
             total_routing[sim_id - 1] = file_df.loc[file_df.name=="message-routing", "sum"].item()
-            total_alterations[sim_id - 1] = file_df.loc[file_df.name=="link-alteration", "sum"].item()
+            #print(self.file_path / f"{sim_id}/operations.csv")
+            
+            total_alterations[sim_id - 1] = float(file_df.loc[file_df.name=="link-alteration", "sum"].item())
             total_heuristic_link[sim_id - 1] = file_df.loc[file_df.name=="heuristic-link-creation", "sum"].item()
             total_alterations[sim_id - 1] -= total_heuristic_link[sim_id - 1]
                         

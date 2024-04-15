@@ -24,9 +24,9 @@ file_lock = threading.Lock()
 projects = [ "semiDisplayOpticNet" ]
 
 # parameters of simulation
-num_nodes = [ 128, 1024 ]
-std = [ 0.2, 0.8, 1.6, 3.2, 6.4 ]
-switch_sizes = [ 16, 32, 64, 128, 256, -1 ]
+num_nodes = [  1024 ]
+std = [ 0.2 ]
+switch_sizes = [ 128,256,2048 ]
 sequential = [ "false" ]
 mus = [ 4 ]
 
