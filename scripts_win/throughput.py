@@ -56,9 +56,7 @@ for idx_1 in x:
                 
                 for line in content[1:]:
                     num_round = int(line.split(',')[1])
-                    requests_by_round[num_round] = int(line.split(',')[2])
-                    #print(num_round)
-                for i in range(1,num_rounds+1):
-                    pr_file.write("{},{},{},{},{}\n".format(project, idx_1, idx_2, n, requests_by_round[i]))
+                    for _ in range(int(line.split(',')[2])):
+                        pr_file.write("{},{},{},{},{}\n".format(abbr[project], idx_1, idx_2, n,     num_round))
         
 pr_file.close()
