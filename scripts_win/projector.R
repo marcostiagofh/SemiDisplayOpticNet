@@ -1,4 +1,5 @@
 setwd("C:\\Users\\marco\\Downloads\\SemiDisplayOpticNet")
+library(extrafont)
 
 ################################## Libraries ###################################
 
@@ -78,7 +79,7 @@ throughput.plot <- ggplot(throughput.table, aes(x = value, fill = abb)) +
   geom_density(aes(y = ..count..), alpha = 0.67) 
 
 # Modify theme components -------------------------------------------
-throughput.plot <- throughput.plot + theme(text = element_text(size = text_size),
+throughput.plot <- throughput.plot + theme(text = element_text(family="LM Roman 10", size = text_size),
                                            plot.title = element_blank(),
                                            plot.subtitle = element_blank(),
                                            plot.caption = element_blank(),

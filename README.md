@@ -48,3 +48,8 @@ To use them the user must only update the number of nodes, switches, simulations
 ### Requirements
 This project uses Java and Sinalgo to run the simulations. In order to use the scripts available it is needed to have `numpy` installed as well as 
 `python>=3.9.7`. The plot scripts use `numpy`, `pandas`, `statsmodels` and [SciencePlots](https://github.com/garrettj403/SciencePlots) for stylization.
+
+###Useful Links
+https://stackoverflow.com/questions/58121461/runtimeerror-failed-to-process-string-with-tex-because-latex-could-not-be-found
+https://stackoverflow.com/questions/50875637/matplotlib-how-do-i-have-to-provide-font-metrics-files-for-rendering-text-by-te
+https://tex.stackexchange.com/questions/283472/using-latex-font-in-r-computer-modern
