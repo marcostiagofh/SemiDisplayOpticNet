@@ -26,8 +26,8 @@ reload(Plotter)
 projects = [ "semiDisplayOpticNet",
 "semiDisplayOpticNetHL",
 "semiDisplayOpticNetHLAP",
-#"cbOptNet",
-#"cbOptNetHL",
+"cbOptNet",
+"cbOptNetHL",
 #,"SplayOpticNet"
 ]
 
@@ -95,6 +95,10 @@ for i in range(num_datasets):
 
     # In[9]:
     
+    '''fig, ax = plt.subplots(figsize=(7, 4))
+    ax.set_ylabel("Work 10**4")
+    ax.set_xlabel("Project")
+    '''
     fig, ax = plt.subplots(figsize=(7, 4))
     ax.set_ylabel("Work 10**4")
     ax.set_xlabel("Project")

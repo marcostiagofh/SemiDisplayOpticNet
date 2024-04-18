@@ -19,6 +19,7 @@ class DataReader:
 
     def __post_init__ (self) -> None:
         self.max_rounds = -1
+        print(self.file_path)
         for sim_id in range(1, self.num_sims + 1):
             with open(self.file_path / f"{sim_id}/simulation_info.txt") as sim_file:
                 self.max_rounds = max(
@@ -156,7 +157,7 @@ class DataReader:
             total_routing[sim_id - 1] = file_df.loc[file_df.name=="message-routing", "sum"].item()
             #print(self.file_path / f"{sim_id}/operations.csv")
             
-            total_alterations[sim_id - 1] = int(file_df.loc[file_df.name=="alteration", "sum"].item())
+            total_alterations[sim_id - 1] = int(file_df.loc[file_df.name=="link-alteration", "sum"].item())
 
         total_work = total_routing + total_alterations
 
@@ -192,7 +193,7 @@ class DataReader:
                     if line.startswith("num-rounds,"):
                         # Split the line by comma and get the second part
                         num_rounds = line.split(",")[1]
-                        print(int(num_rounds))
+                        #print(int(num_rounds))
                         total_rounds[sim_id - 1] = int(num_rounds)
                         break
 
