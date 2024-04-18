@@ -55,7 +55,7 @@ num_sim <- 1
 
 ############################# Reading tables  ##################################
 
-throughput.table <- read.csv(".\\csv_data\\bursty\\throughput.csv")
+throughput.table <- read.csv(".\\csv_data\\facebookDS\\throughput.csv")
 
 ############################# throughput  ##################################
 
@@ -100,5 +100,5 @@ throughput.plot <- throughput.plot + theme(panel.grid.minor = element_blank(),
 
 plot(throughput.plot)
 
-ggsave(filename = "./output/bursty-0.4-1/throughput.png", units = "cm",
+ggsave(filename = "./output/facebookDS/throughput.png", units = "cm",
        plot = throughput.plot, device = "png",  width = IMG_width, height = IMG_height, scale = scale_imgs)
