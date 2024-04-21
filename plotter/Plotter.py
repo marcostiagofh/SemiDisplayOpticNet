@@ -59,6 +59,54 @@ class Plotter:
         ax.legend(loc="best")
 
     @classmethod
+    def cbnet_link_updates (
+        cls, plot_data: list, normalize: int = 1, ax: plt.axes = None
+    ) -> None:
+        project_names = []
+        routing_means = []
+        alteration_means = []
+        heuristic_creation_means = []
+        switch_sizes = []
+        work_stds = []
+        heuristic_link_creation = []
+
+        for data in plot_data:
+            project_name = cls.get_project_name(data)
+            
+            avg_total_heuristic_link = 0
+            if "HL" in data.project:
+                total_routing, total_alterations, total_heuristic_link, total_work = data.read_operations_HL()
+                avg_total_heuristic_link = total_heuristic_link.mean()/normalize           
+            else:
+                total_routing, total_alterations, total_work = data.read_operations()
+                avg_total_heuristic_link = 0
+                
+            project_names.append(project_name)
+            routing_means.append(total_routing.mean() / normalize)
+            alteration_means.append(total_alterations.mean() / normalize)
+            work_stds.append((total_work / normalize).std())
+            heuristic_link_creation.append(avg_total_heuristic_link)
+            switch_sizes.append(data.switch_size)
+
+        if ax is None:
+            fig, ax = plt.subplots(figsize=(8, 4))
+            ax.legend(loc="right")
+            ax.set_title("Link Updates")
+            ax.set_xlabel("Project")
+            ax.set_ylabel("Work * 10 ^ 4")
+            
+        
+        ax.bar(
+            project_names, alteration_means, 
+            bottom=heuristic_link_creation, label="Link Updates",  color=["grey"]
+        )
+        ax.bar(
+            project_names, heuristic_link_creation, 
+            label="Heuristic Link Creation",  color=["red"]
+        )
+        ax.legend(loc="best")
+        
+    @classmethod
     def total_work_link_updates (
         cls, plot_data: list, normalize: int = 1, ax: plt.axes = None
     ) -> None:

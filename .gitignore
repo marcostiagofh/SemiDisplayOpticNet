@@ -8,3 +8,4 @@ src/projects/defaultProject/appConfig.xml
 *.pyc
 **/*-checkpoint*
 csv_data/
+old_logs/

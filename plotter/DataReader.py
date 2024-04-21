@@ -77,6 +77,21 @@ class DataReader:
             )
 
 
+    def cdf_active_switches (self) -> np.ndarray:
+        cdf = np.zeros(self.num_switches, dtype=np.float64)
+
+        rout_df = pd.read_csv(self.file_path / "1/routings.csv")
+        alt_df = pd.read_csv(self.file_path / "1/alterations.csv")
+
+        active_df = pd.concat(
+            [rout_df[["round", "switch"]], alt_df[["round", "switch"]]]
+        ).drop_duplicates().reset_index(drop=True)
+
+        for _, row in active_df.iterrows():
+            cdf[row["switch"]] += 1
+
+        return cdf / 10**3
+
     def cdf_active_ports (self) -> np.ndarray:
         cdf = np.zeros((self.num_switches, self.switch_ports), dtype=np.float64)
 

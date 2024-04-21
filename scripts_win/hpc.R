@@ -1,6 +1,5 @@
 setwd("C:\\Users\\marco\\Downloads\\SemiDisplayOpticNet")
 library(extrafont)
-
 ################################## Libraries ###################################
 
 library(ggplot2)
@@ -79,7 +78,7 @@ throughput.plot <- ggplot(throughput.table, aes(x = value, fill = abb)) +
   geom_density(aes(y = ..count..), alpha = 0.67) 
 
 # Modify theme components -------------------------------------------
-throughput.plot <- throughput.plot + theme(text = element_text(family="LM Roman 10", size = text_size),
+throughput.plot <- throughput.plot + theme(
                                            plot.title = element_blank(),
                                            plot.subtitle = element_blank(),
                                            plot.caption = element_blank(),
@@ -92,7 +91,7 @@ throughput.plot <- throughput.plot + theme(text = element_text(family="LM Roman 
                                            legend.position = c(0.82, 0.77)) #+
   #facet_grid(. ~ size)
 
-throughput.plot <- throughput.plot + theme(panel.grid.minor = element_blank(),
+throughput.plot <- throughput.plot + theme(text = element_text(family="LM Roman 10", size = text_size), panel.grid.minor = element_blank(),
                                            panel.grid.major = element_blank()) +
   labs(x = expression(paste("Time (rounds) x", 10^4)), y = "Requests completed/round") +
   scale_fill_manual(values = c(cbn_color, cbnhl_color, dsn_color, dsnhl_color, dsnhlap_color)) +
@@ -101,5 +100,5 @@ throughput.plot <- throughput.plot + theme(panel.grid.minor = element_blank(),
 
 plot(throughput.plot)
 
-ggsave(filename = "./output/hpcDS-exact_boxlib_cns_nospec_large/throughput.png", units = "cm",
-       plot = throughput.plot, device = "png",  width = IMG_width, height = IMG_height, scale = scale_imgs)
+ggsave(filename = "./output/hpcDS-exact_boxlib_cns_nospec_large/throughput.pdf", units = "cm",
+         width = IMG_width, height = IMG_height, scale = scale_imgs)

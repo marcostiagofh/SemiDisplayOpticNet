@@ -26,8 +26,8 @@ reload(Plotter)
 projects = [ "semiDisplayOpticNet",
 "semiDisplayOpticNetHL",
 "semiDisplayOpticNetHLAP",
-"cbOptNet",
-"cbOptNetHL",
+#"cbOptNet",
+#"cbOptNetHL"
 #,"SplayOpticNet"
 ]
 
@@ -57,7 +57,7 @@ output_folder = [
 ]
 
 # In[5]:
-for i in range(num_datasets):
+for i in range(1,num_datasets):
     if not os.path.exists(f"output/{output_folder[i]}"):
         os.makedirs(f"output/{output_folder[i]}")
 
@@ -95,9 +95,18 @@ for i in range(num_datasets):
 
     # In[9]:
     
-    '''fig, ax = plt.subplots(figsize=(7, 4))
-    ax.set_ylabel("Work 10**4")
+    '''
+    fig, ax = plt.subplots(figsize=(7, 4))
+    ax.set_ylabel("Link Updates 10**4")
     ax.set_xlabel("Project")
+
+    Plotter.Plotter.cbnet_link_updates(tor_data[slc], normalize=1e4, ax=ax)
+
+    ax.plot()
+    fig.savefig(f"output/{output_folder[i]}/cbnet_link_updates.png", dpi=300, transparent=False)
+    plt.close(fig)
+
+    print("finish")
     '''
     fig, ax = plt.subplots(figsize=(7, 4))
     ax.set_ylabel("Work 10**4")
@@ -139,7 +148,7 @@ for i in range(num_datasets):
     ], loc="best", frameon=False)
 
     ax.plot()
-    fig.savefig(f"output/{sys.argv[1]}/active_switches.png", dpi=300, transparent=False)
+    fig.savefig(f"output/{output_folder[i]}/active_switches.png", dpi=300, transparent=False)
     plt.close(fig)
 
     print("finish")

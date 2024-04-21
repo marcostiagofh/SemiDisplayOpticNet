@@ -102,5 +102,5 @@ throughput.plot <- throughput.plot + theme(
 
 plot(throughput.plot)
 
-ggsave(filename = "./output/bursty-0.4-1/throughput.png", units = "cm",
-       plot = throughput.plot, device = "png",  width = IMG_width, height = IMG_height, scale = scale_imgs)
+ggsave(filename = "./output/bursty-0.4-1/throughput.pdf", units = "cm",
+        width = IMG_width, height = IMG_height, scale = scale_imgs)

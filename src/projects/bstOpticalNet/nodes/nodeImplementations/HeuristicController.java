@@ -69,6 +69,7 @@ public abstract class HeuristicController extends LoggerLayer {
     private int SIZE_CLUSTER_TYPE2 = 4;
     
     public Map<AbstractMap.SimpleEntry<Integer,Integer>,Integer> heuristic_links = new HashMap<>();
+    public int freqHeuristicLinks[][];
 
     /* End of Attributes */
 
@@ -83,6 +84,12 @@ public abstract class HeuristicController extends LoggerLayer {
         int numNodes, int switchSize, ArrayList<NetworkNode> netNodes, boolean mirrored
     ) {
         this(numNodes, switchSize, netNodes, new ArrayList<Integer>(), mirrored);
+        
+        freqHeuristicLinks = new int[numNodes+1][numNodes+1];
+        
+        for(int i=1; i<=numNodes; i++)
+        	for(int j=1; j<=numNodes; j++)
+        		freqHeuristicLinks[i][j] = 0;
     }
 
     /**
@@ -164,6 +171,12 @@ public abstract class HeuristicController extends LoggerLayer {
 
         this.resetRoundInfo();
         this.setupTree(edgeList);
+        
+        freqHeuristicLinks = new int[numNodes+1][numNodes+1];
+        
+        for(int i=1; i<=numNodes; i++)
+        	for(int j=1; j<=numNodes; j++)
+        		freqHeuristicLinks[i][j] = 0;
     }
 
     /**
@@ -740,7 +753,7 @@ public abstract class HeuristicController extends LoggerLayer {
      * @return          True if the nodes can be used for this step, false if at
      * least one of them are already occupied
      */
-    protected boolean areAvailableNodes (InfraNode... nodes) {
+     protected boolean areAvailableNodes (InfraNode... nodes) {
         for (InfraNode infNode: nodes) {
             if (infNode.getId() != -1 && this.usedNodes.get(infNode.getId())) {
                 //System.out.println("used "+infNode.getNetId());
@@ -760,6 +773,17 @@ public abstract class HeuristicController extends LoggerLayer {
 
         return true;
     }
+    protected boolean areAvailableNodes1 (InfraNode... nodes) {
+         for (InfraNode infNode: nodes) {
+             if (infNode.getId() != -1 && this.usedNodes.get(infNode.getId())) {
+                 //System.out.println("used "+infNode.getNetId());
+             	return false;
+
+             }
+         }
+
+         return true;
+     }
     /* End of Rotations */
 
     /* Getters */

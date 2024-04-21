@@ -101,5 +101,5 @@ throughput.plot <- throughput.plot + theme(panel.grid.minor = element_blank(),
 
 plot(throughput.plot)
 
-ggsave(filename = "./output/skewed-1-0.4/throughput.png", units = "cm",
-       plot = throughput.plot, device = "png",  width = IMG_width, height = IMG_height, scale = scale_imgs)
+ggsave(filename = "./output/skewed-1-0.4/throughput.pdf", units = "cm",
+        width = IMG_width, height = IMG_height, scale = scale_imgs)
