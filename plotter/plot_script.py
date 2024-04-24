@@ -23,9 +23,9 @@ reload(Plotter)
 
 # In[3]:
 
-projects = [ "semiDisplayOpticNet",
+projects = [ #"semiDisplayOpticNet",
 "semiDisplayOpticNetHL",
-"semiDisplayOpticNetHLAP",
+#"semiDisplayOpticNetHLAP",
 #"cbOptNet",
 #"cbOptNetHL"
 #,"SplayOpticNet"
@@ -57,7 +57,7 @@ output_folder = [
 ]
 
 # In[5]:
-for i in range(1,num_datasets):
+for i in range(num_datasets):
     if not os.path.exists(f"output/{output_folder[i]}"):
         os.makedirs(f"output/{output_folder[i]}")
 
@@ -97,10 +97,17 @@ for i in range(1,num_datasets):
     
     '''
     fig, ax = plt.subplots(figsize=(7, 4))
-    ax.set_ylabel("Link Updates 10**4")
-    ax.set_xlabel("Project")
-
-    Plotter.Plotter.cbnet_link_updates(tor_data[slc], normalize=1e4, ax=ax)
+    ax.set_ylabel("Link Updates 10**3")
+    ax.set_xlabel(datasets[i][0]) #"Project")
+    ax.set_ylabel("Work 10**3")    
+    
+    if "facebook" in datasets[i][0] or "hpcDS" in datasets[i][0] or "pfabDS" in datasets[i][0]:
+        ax.set_ylim(0, 35)  # Setting y-axis limit
+        Plotter.Plotter.cbnet_link_updates(tor_data[slc], normalize=1e3, ax=ax)       
+    else:    
+        ax.set_ylabel("Work 10**3")
+        ax.set_ylim(0, 2.5)  # Setting y-axis limit
+        Plotter.Plotter.cbnet_link_updates(tor_data[slc], normalize=1e3, ax=ax)
 
     ax.plot()
     fig.savefig(f"output/{output_folder[i]}/cbnet_link_updates.png", dpi=300, transparent=False)
@@ -108,11 +115,17 @@ for i in range(1,num_datasets):
 
     print("finish")
     '''
+    '''
     fig, ax = plt.subplots(figsize=(7, 4))
-    ax.set_ylabel("Work 10**4")
-    ax.set_xlabel("Project")
-
-    Plotter.Plotter.total_work_link_updates(tor_data[slc], normalize=1e4, ax=ax)
+    ax.set_xlabel(datasets[i][0])
+    if "facebook" in datasets[i][0] or "hpcDS" in datasets[i][0] or "pfabDS" in datasets[i][0]:
+        ax.set_ylabel("Work 10**6")
+        ax.set_ylim(0, 60)  # Setting y-axis limit
+        Plotter.Plotter.total_work_link_updates(tor_data[slc], normalize=1e6, ax=ax)        
+    else:    
+        ax.set_ylabel("Work 10**4")
+        ax.set_ylim(0, 40)  # Setting y-axis limit
+        Plotter.Plotter.total_work_link_updates(tor_data[slc], normalize=1e4, ax=ax)
 
     ax.plot()
     fig.savefig(f"output/{output_folder[i]}/total_work.png", dpi=300, transparent=False)
@@ -121,19 +134,25 @@ for i in range(1,num_datasets):
     print("finish")
 
     fig, ax = plt.subplots(figsize=(7, 4))
-    ax.set_ylabel("Rounds 10**3")
-    ax.set_xlabel("Project")
-
-    Plotter.Plotter.total_rounds(tor_data[slc], normalize=1e3, ax=ax)
+    ax.set_xlabel(datasets[i][0])
+    
+    if "facebook" in datasets[i][0] or "hpcDS" in datasets[i][0] or "pfabDS" in datasets[i][0]:
+        ax.set_ylabel("Work 10**5")
+        ax.set_ylim(0, 52)  # Setting y-axis limit
+        Plotter.Plotter.total_rounds( tor_data[slc], normalize=1e5, ax=ax)      
+    else:
+        ax.set_ylabel("Rounds 10**3")
+        ax.set_ylim(0, 54)  # Setting y-axis limit
+        Plotter.Plotter.total_rounds( tor_data[slc], normalize=1e3, ax=ax)
 
     ax.plot()
     fig.savefig(f"output/{output_folder[i]}/rounds.png", dpi=300, transparent=False)
     plt.close(fig)
 
     print("finish")
-
-    # In[10]:
     '''
+    # In[10]:
+    
     fig, ax = plt.subplots(figsize=(8, 4))
     ax.set_title("CDF Active switches per round")
     ax.set_xlabel("Rounds")
@@ -143,7 +162,7 @@ for i in range(1,num_datasets):
         Plotter.Plotter.cdf_active_switches(data.cdf_active_switches(), ax)
 
     ax.legend([
-        f"{data.project}--{data.dataset}--{data.num_nodes}--{data.num_switches}"
+        f"{Plotter.Plotter.get_project_name(data)}--{data.dataset}--{data.num_nodes}--{data.num_switches}"
         for data in tor_data[slc]
     ], loc="best", frameon=False)
 
@@ -281,4 +300,4 @@ for i in range(1,num_datasets):
     fig.savefig(f"output/{output_folder[i]}/switch_alterations.png", dpi=300, transparent=False)
     plt.close(fig)
     print("finish")
-    '''
+    

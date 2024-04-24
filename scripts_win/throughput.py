@@ -6,7 +6,7 @@ import numpy as np
 
 #projects = ["cbnet", "cbnetAdapt", "seqcbnet", "displaynet", "splaynet"]
 num_datasets = 7
-projects = ["CBN", "CBNHL", "DSN", "DSNHL", "DSNHLAP"]
+projects = ["CBN", "CBNHL", "DSN", "DSNHL"] #, "DSNHLAP"]
 datasets = ["bursty-0.4-1", "facebookDS", "hpcDS-exact_boxlib_cns_nospec_large", "normalDS-0.2", "pfabDS-trace_0_5", "skewed-1-0.4", "tor"]
 numberOfNodes = [128, 367, 1024, 1024, 144, 128, 128]
 numberOfSimulations = 1
