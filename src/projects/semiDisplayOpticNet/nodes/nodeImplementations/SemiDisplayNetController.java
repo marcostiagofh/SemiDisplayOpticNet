@@ -213,6 +213,7 @@ public class SemiDisplayNetController extends HeuristicController {
             InfraNode dstNode = this.getInfraNode(hasmsg.getDst());
             
             freqHeuristicLinks[node.getNetId()][dstNode.getNetId()]++;
+            lastRoundUsedHeuristicLinks[node.getNetId()][dstNode.getNetId()] = this.getCurrentRound();
 
             
             //System.out.println("msg from "+node.getNetId()+" to "+dstNode.getNetId());
@@ -306,6 +307,9 @@ public class SemiDisplayNetController extends HeuristicController {
                 	
                 } else {
                 	boolean found = false;
+                	int removeFromNode = 0, removeToNode = 0, putSwitch = -1;
+                	InfraNode putFromNode = null,putToNode = null;
+                	this.cache_replacement_policy_min_value = this.getCurrentRound();
                 	if(clsId < this.numClustersType1) {
                 		for(int s=0; s<=3; s++) {
 	                		NetworkSwitch swt = clusters.get(clsId).get(s);    
@@ -317,43 +321,23 @@ public class SemiDisplayNetController extends HeuristicController {
 	    	            	//se a porta de entrada esta livre mas a de saida pertence a um link heuristico de menor freq, sobrescreva
 	    	            	if (avPorts == AvailablePorts.INPUT && 
 	    	            		switchOffset != null && (Integer)switchOffset == s &&
-    	            			freqHeuristicLinks[node.getNetId()][dstNode.getNetId()] >= freqHeuristicLinks[inNodeId][dstNode.getNetId()] &&
+    	            			applyCacheReplacementPolicy(inNodeId, dstNode.getNetId(), node.getNetId(), dstNode.getNetId()) &&
     	            			this.areAvailableNodes1(this.getInfraNode(inNodeId),dstNode)) {
-    	            		
-    	            			//apaga link heuristico da porta de saida
-	    	            		heuristic_links.remove(new AbstractMap.SimpleEntry<>(inNodeId,dstNode.getNetId()));
-	    	        			this.logRemoveHeuristicLink(1);
-	    	        			this.logDecrementActivePorts(s);
-    	            			//cria link heuristico (node,dstNode)
-	    	        			heuristic_links.put(new AbstractMap.SimpleEntry<>(node.getNetId(),dstNode.getNetId()),s);
-	    	                	swt.addLink(node.getNetId(),dstNode.getNetId());
-	    	                	this.logIncrementActivePorts(s);                	
-	    	                	this.logHeuristicLinks(1);
-	    	                	this.logIncrementAlterations(s, node);
-	    	                	this.areAvailableNodes(node,dstNode);
+	    	            		
+	    	            		removeFromNode = inNodeId; removeToNode = dstNode.getNetId(); putSwitch = s;
+	    	            		putFromNode = node; putToNode = dstNode;    	            			
 	    	                	found = true;
-    	            			break;
 	    	            	}
 	    	            	             	
 	    	            	switchOffset = heuristic_links.get(new AbstractMap.SimpleEntry<>(node.getNetId(),outNodeId));
 	    	            	if (avPorts == AvailablePorts.OUTPUT && 
 	    	            		switchOffset != null && (Integer)switchOffset == s &&
-    	            			freqHeuristicLinks[node.getNetId()][dstNode.getNetId()] >= freqHeuristicLinks[node.getNetId()][outNodeId] &&
-    	    	            	this.areAvailableNodes1(node,this.getInfraNode(outNodeId))) {
+	            				applyCacheReplacementPolicy(node.getNetId(), outNodeId, node.getNetId(), dstNode.getNetId()) &&
+    	            			this.areAvailableNodes1(node,this.getInfraNode(outNodeId))) {
     	            		
-    	            			//apaga link heuristico da porta de entrada
-	    	            		heuristic_links.remove(new AbstractMap.SimpleEntry<>(node.getNetId(),outNodeId));
-	    	        			this.logRemoveHeuristicLink(1);
-	    	        			this.logDecrementActivePorts(s);
-    	            			//cria link heuristico (node,dstNode)
-	    	        			heuristic_links.put(new AbstractMap.SimpleEntry<>(node.getNetId(),dstNode.getNetId()),s);
-	    	                	swt.addLink(node.getNetId(),dstNode.getNetId());
-	    	                	this.logIncrementActivePorts(s);                	
-	    	                	this.logHeuristicLinks(1);
-	    	                	this.logIncrementAlterations(s, node);
-	    	                	this.areAvailableNodes(node,dstNode);
+	    	            		removeFromNode = node.getNetId(); removeToNode = outNodeId; putSwitch = s;
+	    	            		putFromNode = node; putToNode = dstNode;    	            			
 	    	                	found = true;
-	    	            		break;
 	    	            	}
     	                }
     	                
@@ -371,89 +355,64 @@ public class SemiDisplayNetController extends HeuristicController {
     	            	AvailablePorts avPorts = swt.getAvailablePorts(node.getNetId(), dstNode.getNetId());
     	            	if (avPorts == AvailablePorts.INPUT && 
     	            		switchOffset != null && (Integer)switchOffset == swtOffset1 &&
-	            			freqHeuristicLinks[node.getNetId()][dstNode.getNetId()] >= freqHeuristicLinks[inNodeId][dstNode.getNetId()] &&
-	    	            	this.areAvailableNodes1(this.getInfraNode(inNodeId),dstNode)) {
+            				applyCacheReplacementPolicy(inNodeId, dstNode.getNetId(), node.getNetId(), dstNode.getNetId()) &&
+	            			this.areAvailableNodes1(this.getInfraNode(inNodeId),dstNode)) {
     	            		
-    	            			//apaga link heuristico da porta de saida
-	    	            		heuristic_links.remove(new AbstractMap.SimpleEntry<>(inNodeId,dstNode.getNetId()));
-	    	        			this.logRemoveHeuristicLink(1);
-	    	        			this.logDecrementActivePorts(swtOffset1);
-    	            			//cria link heuristico (node,dstNode)
-	    	        			heuristic_links.put(new AbstractMap.SimpleEntry<>(node.getNetId(),dstNode.getNetId()),swtOffset1);
-	    	                	swt.addLink(node.getNetId(),dstNode.getNetId());
-	    	                	this.logIncrementActivePorts(swtOffset1);                	
-	    	                	this.logHeuristicLinks(1);
-	    	                	this.logIncrementAlterations(swtOffset1, node);
-	    	                	this.areAvailableNodes(node,dstNode);
-	    	                	found = true;
+    	            		removeFromNode = inNodeId; removeToNode = dstNode.getNetId(); putSwitch = swtOffset1;
+    	            		putFromNode = node; putToNode = dstNode;    	            			
+    	                	found = true;
     	                } 
     	            	switchOffset = heuristic_links.get(new AbstractMap.SimpleEntry<>(node.getNetId(),outNodeId));
-    	            	if (!found &&
-	            			avPorts == AvailablePorts.OUTPUT && 
+    	            	if (avPorts == AvailablePorts.OUTPUT && 
 	            			switchOffset != null && (Integer)switchOffset == swtOffset1 &&
-	            			freqHeuristicLinks[node.getNetId()][dstNode.getNetId()] >= freqHeuristicLinks[node.getNetId()][outNodeId] &&
-	    	    	        this.areAvailableNodes1(node,this.getInfraNode(outNodeId))) {
+        					applyCacheReplacementPolicy(node.getNetId(), outNodeId, node.getNetId(), dstNode.getNetId()) &&
+	            			this.areAvailableNodes1(node,this.getInfraNode(outNodeId))) {
     	            		
-    	            			//apaga link heuristico da porta de entrada
-	    	            		heuristic_links.remove(new AbstractMap.SimpleEntry<>(node.getNetId(),outNodeId));
-	    	        			this.logRemoveHeuristicLink(1);
-	    	        			this.logDecrementActivePorts(swtOffset1);
-    	            			//cria link heuristico (node,dstNode)
-	    	        			heuristic_links.put(new AbstractMap.SimpleEntry<>(node.getNetId(),dstNode.getNetId()),swtOffset1);
-	    	                	swt.addLink(node.getNetId(),dstNode.getNetId());
-	    	                	this.logIncrementActivePorts(swtOffset1);                	
-	    	                	this.logHeuristicLinks(1);
-	    	                	this.logIncrementAlterations(swtOffset1, node);
-	    	                	this.areAvailableNodes(node,dstNode);
-	    	                	found = true;
+    	            		removeFromNode = node.getNetId(); removeToNode = outNodeId; putSwitch = swtOffset1;
+    	            		putFromNode = node; putToNode = dstNode;    	            			
+    	                	found = true;
 	    	            }
-    	            	if(!found){
-    	            		swt = clusters.get(clsId).get(swtOffset2);                
-                    		inNodeId = swt.getConnectedInputNodeId(dstNode.getNetId());
-                    		outNodeId = swt.getConnectedOutputNodeId(node.getNetId());
-                    		switchOffset = heuristic_links.get(new AbstractMap.SimpleEntry<>(inNodeId,dstNode.getNetId()));
-        	            	avPorts = swt.getAvailablePorts(node.getNetId(), dstNode.getNetId());
-        	            	if (avPorts == AvailablePorts.INPUT && 
-    	            			switchOffset != null && (Integer)switchOffset ==swtOffset2 &&
-    	            			freqHeuristicLinks[node.getNetId()][dstNode.getNetId()] >= freqHeuristicLinks[inNodeId][dstNode.getNetId()] &&
-    	    	    	    	this.areAvailableNodes1(this.getInfraNode(inNodeId),dstNode)) {
-            	            		
-        	            			//apaga link heuristico da porta de saida
-    	    	            		heuristic_links.remove(new AbstractMap.SimpleEntry<>(inNodeId,dstNode.getNetId()));
-    	    	        			this.logRemoveHeuristicLink(1);
-    	    	        			this.logDecrementActivePorts(swtOffset2);
-        	            			//cria link heuristico (node,dstNode)
-    	    	        			heuristic_links.put(new AbstractMap.SimpleEntry<>(node.getNetId(),dstNode.getNetId()),swtOffset2);
-    	    	                	swt.addLink(node.getNetId(),dstNode.getNetId());
-    	    	                	this.logIncrementActivePorts(swtOffset2);                	
-    	    	                	this.logHeuristicLinks(1);
-    	    	                	this.logIncrementAlterations(swtOffset2, node);
-    	    	                	this.areAvailableNodes(node,dstNode);
-    	    	                	found = true;
-        	                } 
-        	            	switchOffset = heuristic_links.get(new AbstractMap.SimpleEntry<>(node.getNetId(),outNodeId));
-        	            	if (!found &&
-    	            			avPorts == AvailablePorts.OUTPUT && 
-    	            			switchOffset != null && (Integer)switchOffset ==swtOffset2 &&
-    	            			freqHeuristicLinks[node.getNetId()][dstNode.getNetId()] >= freqHeuristicLinks[node.getNetId()][outNodeId] &&
-    	    	    	    	this.areAvailableNodes1(node,this.getInfraNode(outNodeId))) {
+    	            	
+	            		swt = clusters.get(clsId).get(swtOffset2);                
+                		inNodeId = swt.getConnectedInputNodeId(dstNode.getNetId());
+                		outNodeId = swt.getConnectedOutputNodeId(node.getNetId());
+                		switchOffset = heuristic_links.get(new AbstractMap.SimpleEntry<>(inNodeId,dstNode.getNetId()));
+    	            	avPorts = swt.getAvailablePorts(node.getNetId(), dstNode.getNetId());
+    	            	if (avPorts == AvailablePorts.INPUT && 
+	            			switchOffset != null && (Integer)switchOffset == swtOffset2 &&
+        					applyCacheReplacementPolicy(inNodeId, dstNode.getNetId(), node.getNetId(), dstNode.getNetId()) &&
+	            			this.areAvailableNodes1(this.getInfraNode(inNodeId),dstNode)) {
         	            		
-        	            			//apaga link heuristico da porta de entrada
-    	    	            		heuristic_links.remove(new AbstractMap.SimpleEntry<>(node.getNetId(),outNodeId));
-    	    	        			this.logRemoveHeuristicLink(1);
-    	    	        			this.logDecrementActivePorts(swtOffset2);
-        	            			//cria link heuristico (node,dstNode)
-    	    	        			heuristic_links.put(new AbstractMap.SimpleEntry<>(node.getNetId(),dstNode.getNetId()),swtOffset2);
-    	    	                	swt.addLink(node.getNetId(),dstNode.getNetId());
-    	    	                	this.logIncrementActivePorts(swtOffset2);                	
-    	    	                	this.logHeuristicLinks(1);
-    	    	                	this.logIncrementAlterations(swtOffset2, node);
-    	    	                	this.areAvailableNodes(node,dstNode);
-    	    	                	found = true;
-    	    	           }    	            		
-    	                }	   
+    	            		removeFromNode = inNodeId; removeToNode = dstNode.getNetId(); putSwitch = swtOffset2;
+    	            		putFromNode = node; putToNode = dstNode;    	            			
+    	                	found = true;
+    	                } 
+    	            	switchOffset = heuristic_links.get(new AbstractMap.SimpleEntry<>(node.getNetId(),outNodeId));
+    	            	if (avPorts == AvailablePorts.OUTPUT && 
+	            			switchOffset != null && (Integer)switchOffset == swtOffset2 &&
+        					applyCacheReplacementPolicy(node.getNetId(), outNodeId, node.getNetId(), dstNode.getNetId()) &&
+	            			this.areAvailableNodes1(node,this.getInfraNode(outNodeId))) {
+    	            		
+    	            		removeFromNode = node.getNetId(); removeToNode = outNodeId; putSwitch = swtOffset2;
+    	            		putFromNode = node; putToNode = dstNode;    	            			
+    	                	found = true;
+	    	           }    	            		
+    	                	   
                 	}
-                	if(!found) {
+                	if(found) {
+                		//apaga link heuristico da porta de saida
+	            		heuristic_links.remove(new AbstractMap.SimpleEntry<>(removeFromNode,removeToNode));
+	        			this.logRemoveHeuristicLink(1);
+	        			this.logDecrementActivePorts(putSwitch);
+            			//cria link heuristico (node,dstNode)
+	        			heuristic_links.put(new AbstractMap.SimpleEntry<>(putFromNode.getNetId(),putToNode.getNetId()),putSwitch);
+	        			NetworkSwitch swt = clusters.get(clsId).get(putSwitch);    
+	                	swt.addLink(putFromNode.getNetId(),putToNode.getNetId());
+	                	this.logIncrementActivePorts(putSwitch);                	
+	                	this.logHeuristicLinks(1);
+	                	this.logIncrementAlterations(putSwitch, putFromNode);
+	                	this.areAvailableNodes(putFromNode,putToNode);
+                	} else {
 	                	//System.out.println("rotation");
 	                	this.logHeuristicLinksRefused(1);
 	                	//se uma das portas estiver ocupada nos 2 casos, verifica a estrutura da arvore, 
@@ -573,5 +532,23 @@ public class SemiDisplayNetController extends HeuristicController {
             }
             this.areAvailableNodes(node);
         }
+    }
+    
+    public boolean applyCacheReplacementPolicy(int removeFromNodeId, int removeToNodeId, int putFromNodeId, int putToNodeId) {
+    	if(		this.cache_replacement_policy == "LFU" &&
+    			freqHeuristicLinks[removeFromNodeId][removeToNodeId] <= freqHeuristicLinks[putFromNodeId][putToNodeId] &&
+    			freqHeuristicLinks[removeFromNodeId][removeToNodeId] < this.cache_replacement_policy_min_value) {
+    			this.cache_replacement_policy_min_value = freqHeuristicLinks[removeFromNodeId][removeToNodeId];
+    			return true;    			
+    	}
+    	
+    	if(		this.cache_replacement_policy == "LRU" &&    			
+    			lastRoundUsedHeuristicLinks[removeFromNodeId][removeToNodeId] < this.cache_replacement_policy_min_value) {
+    			this.cache_replacement_policy_min_value = lastRoundUsedHeuristicLinks[removeFromNodeId][removeToNodeId];
+    			return true;    			
+    	}
+    	
+    	return false;
+    	
     }
 }

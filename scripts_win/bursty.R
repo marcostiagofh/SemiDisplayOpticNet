@@ -97,8 +97,7 @@ throughput.plot <- throughput.plot + theme(
   labs(x = expression(paste("Time (rounds) x", 10^4)), y = "Requests completed/round") +
   scale_fill_manual(values = c(cbn_color, cbnhl_color, dsn_color, dsnhl_color)) + #, dsnhlap_color)) +
   scale_y_continuous(lim = c(0, 1.0), breaks = seq(0, 5, 0.1)) +
-  scale_x_continuous(labels = function(x){paste0(x/10000)})+
-  coord_cartesian(xlim = c(1, 30000))
+  scale_x_continuous(labels = function(x){paste0(x/10000)}, limits = c(0, 30000)) 
 
 plot(throughput.plot)
 

@@ -31,7 +31,7 @@ projects = [ #"semiDisplayOpticNet",
 #,"SplayOpticNet"
 ]
 
-num_datasets = 7
+num_datasets = 2
 switch_sizes = [ [16,32,64,128,256],[16,32,92,162,734],[114,128,256,456,2048],[128,256,2048],[16,32,64,288],[16,32,256],[16,32,256] ]
 num_simulations = [ 30,1,1,1,1,1,30 ]
 datasets = [ 
@@ -115,7 +115,7 @@ for i in range(num_datasets):
 
     print("finish")
     '''
-    '''
+    
     fig, ax = plt.subplots(figsize=(7, 4))
     ax.set_xlabel(datasets[i][0])
     if "facebook" in datasets[i][0] or "hpcDS" in datasets[i][0] or "pfabDS" in datasets[i][0]:
@@ -300,4 +300,4 @@ for i in range(num_datasets):
     fig.savefig(f"output/{output_folder[i]}/switch_alterations.png", dpi=300, transparent=False)
     plt.close(fig)
     print("finish")
-    
+    '''

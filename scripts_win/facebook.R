@@ -63,12 +63,11 @@ throughput.table <- read.csv(".\\csv_data\\facebookDS\\throughput.csv")
 
 throughput.table["abb"] <- revalue(throughput.table$project, 
                                    c("CBOpticalNet-master" = "CBN",
-                                     "CBOpticalNet" = "CBNHL",
+                                     "CBOpticalNet" = "CBN(OP)",
                                      "SemiDisplayOpticNet-master" = "DSN",
-                                     "SemiDisplayOpticNet" = "DSNHL", 
-                                     "SemiDisplayOpticNet-AP" = "DSNHLAP"))
-
-throughput.table$abb <- factor(throughput.table$abb, levels = c("CBN", "CBNHL", "DSN", "DSNHL", "DSNHLAP"))
+                                     "SemiDisplayOpticNet" = "DSN(OP)")) 
+                                     #"SemiDisplayOpticNet-AP" = "DSN^{OPAP}"))
+throughput.table$abb <- factor(throughput.table$abb, levels = c("CBN", "CBN(OP)", "DSN", "DSN(OP)"))
 
 
 #throughput.table %>% filter(
@@ -94,10 +93,10 @@ throughput.plot <- throughput.plot + theme(text = element_text(family="LM Roman 
 
 throughput.plot <- throughput.plot + theme(panel.grid.minor = element_blank(),
                                            panel.grid.major = element_blank()) +
-  labs(x = expression(paste("Time (rounds) x", 10^4)), y = "Requests completed/round") +
+  labs(x = expression(paste("Time (rounds) x", 10^6)), y = "Requests completed/round") +
   scale_fill_manual(values = c(cbn_color, cbnhl_color, dsn_color, dsnhl_color, dsnhlap_color)) +
   scale_y_continuous(lim = c(0, 1.0), breaks = seq(0, 5, 0.1)) +
-  scale_x_continuous(labels = function(x){paste0(x/10000)})
+  scale_x_continuous(labels = function(x){paste0(x/1000000)}, limits = c(0, 5500000), breaks = seq(0, 6000000, 1000000))
 
 plot(throughput.plot)
 

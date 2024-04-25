@@ -69,8 +69,11 @@ public abstract class HeuristicController extends LoggerLayer {
     private int SIZE_CLUSTER_TYPE2 = 4;
     
     public Map<AbstractMap.SimpleEntry<Integer,Integer>,Integer> heuristic_links = new HashMap<>();
-    public int freqHeuristicLinks[][];
-
+    public long freqHeuristicLinks[][];
+    public long lastRoundUsedHeuristicLinks[][];
+    
+    public String cache_replacement_policy = "LFU"; //LRU
+    public long cache_replacement_policy_min_value;
     /* End of Attributes */
 
     /**
@@ -85,11 +88,15 @@ public abstract class HeuristicController extends LoggerLayer {
     ) {
         this(numNodes, switchSize, netNodes, new ArrayList<Integer>(), mirrored);
         
-        freqHeuristicLinks = new int[numNodes+1][numNodes+1];
+        freqHeuristicLinks = new long[numNodes+1][numNodes+1];
+        lastRoundUsedHeuristicLinks = new long[numNodes+1][numNodes+1];
         
         for(int i=1; i<=numNodes; i++)
-        	for(int j=1; j<=numNodes; j++)
+        	for(int j=1; j<=numNodes; j++) {
         		freqHeuristicLinks[i][j] = 0;
+        		lastRoundUsedHeuristicLinks[i][j] = -1;
+        	}
+        
     }
 
     /**
@@ -172,11 +179,14 @@ public abstract class HeuristicController extends LoggerLayer {
         this.resetRoundInfo();
         this.setupTree(edgeList);
         
-        freqHeuristicLinks = new int[numNodes+1][numNodes+1];
+        freqHeuristicLinks = new long[numNodes+1][numNodes+1];
+        lastRoundUsedHeuristicLinks = new long[numNodes+1][numNodes+1];
         
         for(int i=1; i<=numNodes; i++)
-        	for(int j=1; j<=numNodes; j++)
+        	for(int j=1; j<=numNodes; j++) {
         		freqHeuristicLinks[i][j] = 0;
+        		lastRoundUsedHeuristicLinks[i][j] = -1;
+        	}
     }
 
     /**
