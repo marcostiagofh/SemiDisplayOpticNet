@@ -72,7 +72,7 @@ public abstract class HeuristicController extends LoggerLayer {
     public long freqHeuristicLinks[][];
     public long lastRoundUsedHeuristicLinks[][];
     
-    public String cache_replacement_policy = "LFU"; //LRU
+    public String cache_replacement_policy = ""; //LRU
     public long cache_replacement_policy_min_value;
     /* End of Attributes */
 
@@ -1218,6 +1218,7 @@ public abstract class HeuristicController extends LoggerLayer {
             	
         		if(swtOffset_h != null && (Integer)swtOffset_h == edge.getSwtOffset()) {
         			heuristic_links.remove(new AbstractMap.SimpleEntry<>(edge.getFromNode().getNetId(),out.getIndex()));
+        			heuristic_links.remove(new AbstractMap.SimpleEntry<>(out.getIndex(), edge.getFromNode().getNetId()));
         			this.logRemoveHeuristicLink(1);
         			this.logDecrementActivePorts(swt.getIndex());
         			
@@ -1229,6 +1230,7 @@ public abstract class HeuristicController extends LoggerLayer {
             	
         		if(swtOffset_h != null && (Integer) swtOffset_h == edge.getSwtOffset()) {
         			heuristic_links.remove(new AbstractMap.SimpleEntry<>(in.getIndex(),edge.getToNode().getNetId()));
+        			heuristic_links.remove(new AbstractMap.SimpleEntry<>(edge.getToNode().getNetId(),in.getIndex()));
         			this.logRemoveHeuristicLink(1);
         			this.logDecrementActivePorts(swt.getIndex());            			
         		}  

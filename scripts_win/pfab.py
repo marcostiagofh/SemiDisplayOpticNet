@@ -24,7 +24,7 @@ projects = [ "semiDisplayOpticNet" ]
 
 # parameters of simulation
 num_nodes = [ 144 ]
-switch_sizes = [ 16,32,64,288 ]
+switch_sizes = [ 18,36,72,288 ]
 datasets = [ "trace_0_5"]
 sequential = [ "false" ]
 mus = [ 4 ]

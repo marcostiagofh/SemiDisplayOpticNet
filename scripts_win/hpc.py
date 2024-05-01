@@ -28,7 +28,7 @@ datasets = [
     "exact_boxlib_cns_nospec_large"#,
     #"exact_boxlib_multigrid_c_large"
 ]
-switch_sizes = [ 114,128,256,456,2048 ]
+switch_sizes = [ 16,128,256,2048 ]
 sequential = [ "false" ]
 mus = [ 4 ]
 
