@@ -23,7 +23,7 @@ reload(Plotter)
 
 # In[3]:
 
-projects = [ #"semiDisplayOpticNet",
+projects = [ "semiDisplayOpticNet",
 "semiDisplayOpticNetHL",
 #"semiDisplayOpticNetHLAP",
 #"cbOptNet",
@@ -32,7 +32,7 @@ projects = [ #"semiDisplayOpticNet",
 ]
 
 num_datasets = 7
-switch_sizes = [ [16,32,64,-1],[16,32,92,162,734],[16,128,256,2048],[16,128,256,2048],[18,36,72,288],[16,32,64,-1],[16,32,64,-1] ]
+switch_sizes = [ [16,32,64,256],[16,32,92,162,734],[16,128,256,2048],[16,128,256,2048],[18,36,72,288],[16,32,64,256],[16,32,64,256] ]
 num_simulations = [ 30,1,1,1,1,1,30 ]
 datasets = [ 
 ["bursty-0.4-1"], 

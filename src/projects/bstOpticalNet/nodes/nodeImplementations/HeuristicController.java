@@ -72,7 +72,7 @@ public abstract class HeuristicController extends LoggerLayer {
     public long freqHeuristicLinks[][];
     public long lastRoundUsedHeuristicLinks[][];
     
-    public String cache_replacement_policy = ""; //LRU
+    public String cache_replacement_policy = "LRU"; //LFU
     public long cache_replacement_policy_min_value;
     /* End of Attributes */
 

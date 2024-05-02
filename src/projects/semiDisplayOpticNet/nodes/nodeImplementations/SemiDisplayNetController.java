@@ -201,8 +201,8 @@ public class SemiDisplayNetController extends HeuristicController {
     @Override
     protected void updateConn () {
     	//this.printTree();
-    	this.printEdges();
-    	this.printHeuristicLinks();
+    	//this.printEdges();
+    	//this.printHeuristicLinks();
     	this.lockRoutingNodes();
 
         while (!this.nodesWithMsg.isEmpty()) {
@@ -259,13 +259,13 @@ public class SemiDisplayNetController extends HeuristicController {
     	            	if (avPorts == AvailablePorts.BOTH && !uv_available) {
     	            		uv_switch = swtOff;	
     	                	uv_available = true;
-    	                	System.out.println("u"+node.getNetId()+" v"+dstNode.getNetId() + " available at swtOff "+swtOff);
+    	                	//System.out.println("u"+node.getNetId()+" v"+dstNode.getNetId() + " available at swtOff "+swtOff);
     	                } 
     	            	avPorts = swt.getAvailablePorts(dstNode.getNetId(),node.getNetId());
     	            	if (avPorts == AvailablePorts.BOTH && !vu_available) {
     	            		vu_switch = swtOff;	
     	                	vu_available = true;
-    	                	System.out.println("v"+dstNode.getNetId() +" u"+node.getNetId()+ " available at swtOff "+swtOff);
+    	                	//System.out.println("v"+dstNode.getNetId() +" u"+node.getNetId()+ " available at swtOff "+swtOff);
     	                } 
     	            	if(uv_available && vu_available) break;
         			}
@@ -329,17 +329,19 @@ public class SemiDisplayNetController extends HeuristicController {
                 	
                 } else {
                 	boolean found = false;
-                	/*if(this.cache_replacement_policy != "") {
-	                	int removeFromNode = 0, removeToNode = 0, putSwitch = -1;
-	                	InfraNode putFromNode = null,putToNode = null;
+                	if(this.cache_replacement_policy != "") {
+                		uv_available=false; vu_available=false;
+	                	int removeFromNode_uv = 0, removeToNode_uv = 0, putSwitch_uv = -1;
 	                	this.cache_replacement_policy_min_value = this.getCurrentRound();
 	                	if(clsId < this.numClustersType1) {
 	                		for(int s=0; s<=3; s++) {
-		                		NetworkSwitch swt = clusters.get(clsId).get(s);    
-		
+	                			swt = clusters.get(clsId).get(s);    
+	                			if(swt.getAvailablePorts(node.getNetId(), dstNode.getNetId()) == AvailablePorts.BOTH){
+	                				uv_available = true; putSwitch_uv = s; found = true; break;
+	                			}
 		                		int inNodeId = swt.getConnectedInputNodeId(dstNode.getNetId());
 		                		int outNodeId = swt.getConnectedOutputNodeId(node.getNetId());
-		    	            	AvailablePorts avPorts = swt.getAvailablePorts(node.getNetId(), dstNode.getNetId());
+		    	            	avPorts = swt.getAvailablePorts(node.getNetId(), dstNode.getNetId());
 		    	            	Object switchOffset = heuristic_links.get(new AbstractMap.SimpleEntry<>(inNodeId,dstNode.getNetId()));
 		    	            	//se a porta de entrada esta livre mas a de saida pertence a um link heuristico de menor freq, sobrescreva
 		    	            	if (avPorts == AvailablePorts.INPUT && 
@@ -347,8 +349,7 @@ public class SemiDisplayNetController extends HeuristicController {
 	    	            			applyCacheReplacementPolicy(inNodeId, dstNode.getNetId(), node.getNetId(), dstNode.getNetId()) &&
 	    	            			this.areAvailableNodes1(this.getInfraNode(inNodeId),dstNode)) {
 		    	            		
-		    	            		removeFromNode = inNodeId; removeToNode = dstNode.getNetId(); putSwitch = s;
-		    	            		putFromNode = node; putToNode = dstNode;    	            			
+		    	            		removeFromNode_uv = inNodeId; removeToNode_uv = dstNode.getNetId(); putSwitch_uv = s;
 		    	                	found = true;
 		    	            	}
 		    	            	             	
@@ -358,8 +359,7 @@ public class SemiDisplayNetController extends HeuristicController {
 		            				applyCacheReplacementPolicy(node.getNetId(), outNodeId, node.getNetId(), dstNode.getNetId()) &&
 	    	            			this.areAvailableNodes1(node,this.getInfraNode(outNodeId))) {
 	    	            		
-		    	            		removeFromNode = node.getNetId(); removeToNode = outNodeId; putSwitch = s;
-		    	            		putFromNode = node; putToNode = dstNode;    	            			
+		    	            		removeFromNode_uv = node.getNetId(); removeToNode_uv = outNodeId; putSwitch_uv = s;
 		    	                	found = true;
 		    	            	}
 	    	                }
@@ -369,74 +369,187 @@ public class SemiDisplayNetController extends HeuristicController {
 	                		//só verificamos portas (a,b), a<b se swtOffset 1,3 
 	                		//e portas (b,a), a<b se swtOffset 0,2            	
 	                		int swtOffset1 = 0 +(node.getId()<dstNode.getId() ? 1 : 0);
-	                		int swtOffset2 = 3 -(node.getId()<dstNode.getId() ? 1 : 0);
-	                        				
-	                		NetworkSwitch swt = clusters.get(clsId).get(swtOffset1);                
-	                		int inNodeId = swt.getConnectedInputNodeId(dstNode.getNetId());
-	                		int outNodeId = swt.getConnectedOutputNodeId(node.getNetId());
-	                		Object switchOffset = heuristic_links.get(new AbstractMap.SimpleEntry<>(inNodeId,dstNode.getNetId()));
-	    	            	AvailablePorts avPorts = swt.getAvailablePorts(node.getNetId(), dstNode.getNetId());
-	    	            	if (avPorts == AvailablePorts.INPUT && 
-	    	            		switchOffset != null && (Integer)switchOffset == swtOffset1 &&
-	            				applyCacheReplacementPolicy(inNodeId, dstNode.getNetId(), node.getNetId(), dstNode.getNetId()) &&
-		            			this.areAvailableNodes1(this.getInfraNode(inNodeId),dstNode)) {
-	    	            		
-	    	            		removeFromNode = inNodeId; removeToNode = dstNode.getNetId(); putSwitch = swtOffset1;
-	    	            		putFromNode = node; putToNode = dstNode;    	            			
-	    	                	found = true;
-	    	                } 
-	    	            	switchOffset = heuristic_links.get(new AbstractMap.SimpleEntry<>(node.getNetId(),outNodeId));
-	    	            	if (avPorts == AvailablePorts.OUTPUT && 
-		            			switchOffset != null && (Integer)switchOffset == swtOffset1 &&
-	        					applyCacheReplacementPolicy(node.getNetId(), outNodeId, node.getNetId(), dstNode.getNetId()) &&
-		            			this.areAvailableNodes1(node,this.getInfraNode(outNodeId))) {
-	    	            		
-	    	            		removeFromNode = node.getNetId(); removeToNode = outNodeId; putSwitch = swtOffset1;
-	    	            		putFromNode = node; putToNode = dstNode;    	            			
-	    	                	found = true;
-		    	            }
-	    	            	
-		            		swt = clusters.get(clsId).get(swtOffset2);                
-	                		inNodeId = swt.getConnectedInputNodeId(dstNode.getNetId());
-	                		outNodeId = swt.getConnectedOutputNodeId(node.getNetId());
-	                		switchOffset = heuristic_links.get(new AbstractMap.SimpleEntry<>(inNodeId,dstNode.getNetId()));
-	    	            	avPorts = swt.getAvailablePorts(node.getNetId(), dstNode.getNetId());
-	    	            	if (avPorts == AvailablePorts.INPUT && 
-		            			switchOffset != null && (Integer)switchOffset == swtOffset2 &&
-	        					applyCacheReplacementPolicy(inNodeId, dstNode.getNetId(), node.getNetId(), dstNode.getNetId()) &&
-		            			this.areAvailableNodes1(this.getInfraNode(inNodeId),dstNode)) {
-	        	            		
-	    	            		removeFromNode = inNodeId; removeToNode = dstNode.getNetId(); putSwitch = swtOffset2;
-	    	            		putFromNode = node; putToNode = dstNode;    	            			
-	    	                	found = true;
-	    	                } 
-	    	            	switchOffset = heuristic_links.get(new AbstractMap.SimpleEntry<>(node.getNetId(),outNodeId));
-	    	            	if (avPorts == AvailablePorts.OUTPUT && 
-		            			switchOffset != null && (Integer)switchOffset == swtOffset2 &&
-	        					applyCacheReplacementPolicy(node.getNetId(), outNodeId, node.getNetId(), dstNode.getNetId()) &&
-		            			this.areAvailableNodes1(node,this.getInfraNode(outNodeId))) {
-	    	            		
-	    	            		removeFromNode = node.getNetId(); removeToNode = outNodeId; putSwitch = swtOffset2;
-	    	            		putFromNode = node; putToNode = dstNode;    	            			
-	    	                	found = true;
-		    	           }    	            		
+	                		int swtOffset2 = 3 -(node.getId()<dstNode.getId() ? 1 : 0);	                        				
+	                		
+	    	            	if(clusters.get(clsId).get(swtOffset1).getAvailablePorts(node.getNetId(), dstNode.getNetId()) == AvailablePorts.BOTH){
+                				uv_available = true; putSwitch_uv = swtOffset1; found = true;
+                			} else if (clusters.get(clsId).get(swtOffset2).getAvailablePorts(node.getNetId(), dstNode.getNetId()) == AvailablePorts.BOTH){
+                				uv_available = true; putSwitch_uv = swtOffset2; found = true;
+                			} else {
+                				swt = clusters.get(clsId).get(swtOffset1);                
+    	                		int inNodeId = swt.getConnectedInputNodeId(dstNode.getNetId());
+    	                		int outNodeId = swt.getConnectedOutputNodeId(node.getNetId());
+    	                		Object switchOffset = heuristic_links.get(new AbstractMap.SimpleEntry<>(inNodeId,dstNode.getNetId()));
+    	    	            	avPorts = swt.getAvailablePorts(node.getNetId(), dstNode.getNetId());
+		    	            	if (avPorts == AvailablePorts.INPUT && 
+		    	            		switchOffset != null && (Integer)switchOffset == swtOffset1 &&
+		            				applyCacheReplacementPolicy(inNodeId, dstNode.getNetId(), node.getNetId(), dstNode.getNetId()) &&
+			            			this.areAvailableNodes1(this.getInfraNode(inNodeId),dstNode)) {
+		    	            		
+		    	            		removeFromNode_uv = inNodeId; removeToNode_uv = dstNode.getNetId(); putSwitch_uv = swtOffset1;
+		    	                	found = true;
+		    	                } 
+		    	            	switchOffset = heuristic_links.get(new AbstractMap.SimpleEntry<>(node.getNetId(),outNodeId));
+		    	            	if (avPorts == AvailablePorts.OUTPUT && 
+			            			switchOffset != null && (Integer)switchOffset == swtOffset1 &&
+		        					applyCacheReplacementPolicy(node.getNetId(), outNodeId, node.getNetId(), dstNode.getNetId()) &&
+			            			this.areAvailableNodes1(node,this.getInfraNode(outNodeId))) {
+		    	            		
+		    	            		removeFromNode_uv = node.getNetId(); removeToNode_uv = outNodeId; putSwitch_uv = swtOffset1;
+		    	                	found = true;
+			    	            }
+		    	            	
+			            		swt = clusters.get(clsId).get(swtOffset2);                
+		                		inNodeId = swt.getConnectedInputNodeId(dstNode.getNetId());
+		                		outNodeId = swt.getConnectedOutputNodeId(node.getNetId());
+		                		switchOffset = heuristic_links.get(new AbstractMap.SimpleEntry<>(inNodeId,dstNode.getNetId()));
+		    	            	avPorts = swt.getAvailablePorts(node.getNetId(), dstNode.getNetId());
+		    	            	if (avPorts == AvailablePorts.INPUT && 
+			            			switchOffset != null && (Integer)switchOffset == swtOffset2 &&
+		        					applyCacheReplacementPolicy(inNodeId, dstNode.getNetId(), node.getNetId(), dstNode.getNetId()) &&
+			            			this.areAvailableNodes1(this.getInfraNode(inNodeId),dstNode)) {
+		        	            		
+		    	            		removeFromNode_uv = inNodeId; removeToNode_uv = dstNode.getNetId(); putSwitch_uv = swtOffset2;
+		    	                	found = true;
+		    	                } 
+		    	            	switchOffset = heuristic_links.get(new AbstractMap.SimpleEntry<>(node.getNetId(),outNodeId));
+		    	            	if (avPorts == AvailablePorts.OUTPUT && 
+			            			switchOffset != null && (Integer)switchOffset == swtOffset2 &&
+		        					applyCacheReplacementPolicy(node.getNetId(), outNodeId, node.getNetId(), dstNode.getNetId()) &&
+			            			this.areAvailableNodes1(node,this.getInfraNode(outNodeId))) {
+		    	            		
+		    	            		removeFromNode_uv = node.getNetId(); removeToNode_uv = outNodeId; putSwitch_uv = swtOffset2;
+		    	                	found = true;
+			    	           }    	            		
+                			}
 	    	                	   
 	                	}
 	                	if(found) {
-	                		//apaga link heuristico da porta de saida
-		            		heuristic_links.remove(new AbstractMap.SimpleEntry<>(removeFromNode,removeToNode));
-		        			this.logRemoveHeuristicLink(1);
-		        			this.logDecrementActivePorts(putSwitch);
-	            			//cria link heuristico (node,dstNode)
-		        			heuristic_links.put(new AbstractMap.SimpleEntry<>(putFromNode.getNetId(),putToNode.getNetId()),putSwitch);
-		        			NetworkSwitch swt = clusters.get(clsId).get(putSwitch);    
-		                	swt.addLink(putFromNode.getNetId(),putToNode.getNetId());
-		                	this.logIncrementActivePorts(putSwitch);                	
-		                	this.logHeuristicLinks(1);
-		                	this.logIncrementAlterations(putSwitch, putFromNode);
-		                	this.areAvailableNodes(putFromNode,putToNode);
+	                		found = false;
+	                		int removeFromNode_vu = 0, removeToNode_vu = 0, putSwitch_vu = -1;
+		                	this.cache_replacement_policy_min_value = this.getCurrentRound();
+		                	if(clsId < this.numClustersType1) {
+		                		for(int s=0; s<=3; s++) {
+		                			swt = clusters.get(clsId).get(s);    
+		                			if(swt.getAvailablePorts(dstNode.getNetId(), node.getNetId()) == AvailablePorts.BOTH){
+		                				vu_available = true; putSwitch_vu = s; found = true; break;
+		                			}
+			                		
+			                		int inNodeId = swt.getConnectedInputNodeId(node.getNetId());
+			                		int outNodeId = swt.getConnectedOutputNodeId(dstNode.getNetId());
+			    	            	avPorts = swt.getAvailablePorts(dstNode.getNetId(), node.getNetId());
+			    	            	Object switchOffset = heuristic_links.get(new AbstractMap.SimpleEntry<>(inNodeId,node.getNetId()));
+			    	            	//se a porta de entrada esta livre mas a de saida pertence a um link heuristico de menor freq, sobrescreva
+			    	            	if (avPorts == AvailablePorts.INPUT && 
+			    	            		switchOffset != null && (Integer)switchOffset == s &&
+		    	            			applyCacheReplacementPolicy(inNodeId, node.getNetId(), dstNode.getNetId(), node.getNetId()) &&
+		    	            			this.areAvailableNodes1(this.getInfraNode(inNodeId),dstNode)) {
+			    	            		
+			    	            		removeFromNode_vu = inNodeId; removeToNode_vu = node.getNetId(); putSwitch_vu = s;
+			    	                	found = true;
+			    	            	}
+			    	            	             	
+			    	            	switchOffset = heuristic_links.get(new AbstractMap.SimpleEntry<>(dstNode.getNetId(),outNodeId));
+			    	            	if (avPorts == AvailablePorts.OUTPUT && 
+			    	            		switchOffset != null && (Integer)switchOffset == s &&
+			            				applyCacheReplacementPolicy(dstNode.getNetId(),outNodeId, dstNode.getNetId(), node.getNetId()) &&
+		    	            			this.areAvailableNodes1(node,this.getInfraNode(outNodeId))) {
+		    	            		
+			    	            		removeFromNode_vu = dstNode.getNetId(); removeToNode_vu = outNodeId; putSwitch_vu = s;
+			    	                	found = true;
+			    	            	}
+		    	                }
+		    	                
+		                	} else {
+		                		//se clsid >= numClusterType1, o cluster é do tipo cross 
+		                		//só verificamos portas (a,b), a<b se swtOffset 1,3 
+		                		//e portas (b,a), a<b se swtOffset 0,2            	
+		                		int swtOffset1 = 0 +(dstNode.getId()< node.getId() ? 1 : 0);
+		                		int swtOffset2 = 3 -(dstNode.getId()< node.getId() ? 1 : 0);
+
+		                		if(clusters.get(clsId).get(swtOffset1).getAvailablePorts(dstNode.getNetId(), node.getNetId()) == AvailablePorts.BOTH){
+	                				vu_available = true; putSwitch_vu = swtOffset1; found = true;
+	                			} else if (clusters.get(clsId).get(swtOffset2).getAvailablePorts(dstNode.getNetId(), node.getNetId()) == AvailablePorts.BOTH){
+	                				vu_available = true; putSwitch_vu = swtOffset2; found = true;
+		                		} else {
+			                		swt = clusters.get(clsId).get(swtOffset1);                
+			                		int inNodeId = swt.getConnectedInputNodeId(node.getNetId());
+			                		int outNodeId = swt.getConnectedOutputNodeId(dstNode.getNetId());
+			                		Object switchOffset = heuristic_links.get(new AbstractMap.SimpleEntry<>(inNodeId,node.getNetId()));
+			    	            	avPorts = swt.getAvailablePorts(dstNode.getNetId(), node.getNetId());
+			    	            	if (avPorts == AvailablePorts.INPUT && 
+			    	            		switchOffset != null && (Integer)switchOffset == swtOffset1 &&
+			            				applyCacheReplacementPolicy(inNodeId, node.getNetId(), dstNode.getNetId(), node.getNetId()) &&
+				            			this.areAvailableNodes1(this.getInfraNode(inNodeId),node)) {
+			    	            		
+			    	            		removeFromNode_vu = inNodeId; removeToNode_vu = node.getNetId(); putSwitch_vu = swtOffset1;
+			    	                	found = true;
+			    	                } 
+			    	            	switchOffset = heuristic_links.get(new AbstractMap.SimpleEntry<>(dstNode.getNetId(),outNodeId));
+			    	            	if (avPorts == AvailablePorts.OUTPUT && 
+				            			switchOffset != null && (Integer)switchOffset == swtOffset1 &&
+			        					applyCacheReplacementPolicy(dstNode.getNetId(), outNodeId, dstNode.getNetId(), node.getNetId()) &&
+				            			this.areAvailableNodes1(dstNode,this.getInfraNode(outNodeId))) {
+			    	            		
+			    	            		removeFromNode_vu = dstNode.getNetId(); removeToNode_vu = outNodeId; putSwitch_vu = swtOffset1;
+			    	                	found = true;
+				    	            }
+			    	            	
+				            		swt = clusters.get(clsId).get(swtOffset2);                
+			                		inNodeId = swt.getConnectedInputNodeId(node.getNetId());
+			                		outNodeId = swt.getConnectedOutputNodeId(dstNode.getNetId());
+			                		switchOffset = heuristic_links.get(new AbstractMap.SimpleEntry<>(inNodeId,node.getNetId()));
+			    	            	avPorts = swt.getAvailablePorts(dstNode.getNetId(), node.getNetId());
+			    	            	if (avPorts == AvailablePorts.INPUT && 
+				            			switchOffset != null && (Integer)switchOffset == swtOffset2 &&
+			        					applyCacheReplacementPolicy(inNodeId, node.getNetId(), dstNode.getNetId(), node.getNetId()) &&
+				            			this.areAvailableNodes1(this.getInfraNode(inNodeId),node)) {
+			        	            		
+			    	            		removeFromNode_vu = inNodeId; removeToNode_vu = node.getNetId(); putSwitch_vu = swtOffset2;
+			    	                	found = true;
+			    	                } 
+			    	            	switchOffset = heuristic_links.get(new AbstractMap.SimpleEntry<>(dstNode.getNetId(),outNodeId));
+			    	            	if (avPorts == AvailablePorts.OUTPUT && 
+				            			switchOffset != null && (Integer)switchOffset == swtOffset2 &&
+			        					applyCacheReplacementPolicy(dstNode.getNetId(), outNodeId, dstNode.getNetId(), node.getNetId()) &&
+				            			this.areAvailableNodes1(node,this.getInfraNode(outNodeId))) {
+			    	            		
+			    	            		removeFromNode_vu = dstNode.getNetId(); removeToNode_vu = outNodeId; putSwitch_vu = swtOffset2;			    	            		 	            			
+			    	                	found = true;
+				    	           }    	            		
+		                		}
+		    	                	   
+		                	}
+		                	if(found) {
+		                		if(!uv_available) {
+		                			System.out.println("removing "+removeFromNode_uv+" "+removeToNode_uv);
+			                		heuristic_links.remove(new AbstractMap.SimpleEntry<>(removeFromNode_uv,removeToNode_uv));
+				        			this.logRemoveHeuristicLink(1);
+				        			this.logDecrementActivePorts(putSwitch_uv);
+		                		}
+		                		if(!vu_available) {
+		                			System.out.println("removing "+removeFromNode_vu+" "+removeToNode_vu);
+			                		heuristic_links.remove(new AbstractMap.SimpleEntry<>(removeFromNode_vu,removeToNode_vu));
+				        			this.logRemoveHeuristicLink(1);
+				        			this.logDecrementActivePorts(putSwitch_vu);
+		                		}
+		                		System.out.println("adding "+node.getNetId()+" "+dstNode.getNetId());
+		                		System.out.println("adding "+dstNode.getNetId()+" "+node.getNetId());
+			        			heuristic_links.put(new AbstractMap.SimpleEntry<>(node.getNetId(),dstNode.getNetId()),putSwitch_uv);
+			        			swt = clusters.get(clsId).get(putSwitch_uv);    
+			                	swt.addLink(node.getNetId(),dstNode.getNetId());
+			                	this.logIncrementActivePorts(putSwitch_uv);                	
+			                	this.logIncrementAlterations(putSwitch_uv, node);
+			                	heuristic_links.put(new AbstractMap.SimpleEntry<>(dstNode.getNetId(),node.getNetId()),putSwitch_vu);
+			        			swt = clusters.get(clsId).get(putSwitch_vu);    
+			                	swt.addLink(dstNode.getNetId(),node.getNetId());
+			                	this.logIncrementActivePorts(putSwitch_vu);                	
+			                	this.logIncrementAlterations(putSwitch_vu, dstNode);
+			                	this.logHeuristicLinks(1);
+			                	this.areAvailableNodes(node,dstNode);
+		                	}
 	                	}                	
-                	} */
+                	} 
 
                 	if(!found){
 	                	//System.out.println("rotation");
@@ -571,6 +684,7 @@ public class SemiDisplayNetController extends HeuristicController {
     	if(		this.cache_replacement_policy == "LRU" &&    			
     			lastRoundUsedHeuristicLinks[removeFromNodeId][removeToNodeId] < this.cache_replacement_policy_min_value) {
     			this.cache_replacement_policy_min_value = lastRoundUsedHeuristicLinks[removeFromNodeId][removeToNodeId];
+    			System.out.println("LRU ["+removeFromNodeId+"]["+removeToNodeId+"] "+lastRoundUsedHeuristicLinks[removeFromNodeId][removeToNodeId] + " "+this.cache_replacement_policy_min_value); 
     			return true;    			
     	}
     	
