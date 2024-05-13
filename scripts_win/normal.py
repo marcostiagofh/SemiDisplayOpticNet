@@ -26,7 +26,7 @@ projects = [ "semiDisplayOpticNet" ]
 # parameters of simulation
 num_nodes = [  1024 ]
 std = [ 0.2 ]
-switch_sizes = [ 16,128,256,2048 ]
+switch_sizes = [ 16,128,256,-1 ]
 sequential = [ "false" ]
 mus = [ 4 ]
 
@@ -79,12 +79,12 @@ for project in projects:
                         elif switch_size == 256 and num_nodes == 128:
                             continue
 
-                        elif switch_size <= 16 and num_node >= 256:
+                        '''elif switch_size <= 16 and num_node >= 256:
                             continue
 
                         elif switch_size <= 64 and num_node >= 512:
                             continue
-
+                        '''
                         if sequentiality == "true":
                             output_path = f"output/normalDS-{dataset}/SplayOpticNetHL_{num_node}/{switch_size}/{mu}/1/"
 

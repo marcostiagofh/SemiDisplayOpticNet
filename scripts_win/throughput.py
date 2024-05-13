@@ -6,7 +6,7 @@ import numpy as np
 
 #projects = ["cbnet", "cbnetAdapt", "seqcbnet", "displaynet", "splaynet"]
 num_datasets = 7
-projects = ["CBN", "CBNHL", "DSN", "DSNHL"] #, "DSNHLAP"]
+projects = [ "CBN", "CBNHL", "DSN", "DSNHL"] #, "DSNHLAP"] , "DSNHLLFU", "DSNHLLRU"
 datasets = ["bursty-0.4-1", "facebookDS", "hpcDS-exact_boxlib_cns_nospec_large", "normalDS-0.2", "pfabDS-trace_0_5", "skewed-1-0.4", "tor"]
 numberOfNodes = [128, 367, 1024, 1024, 144, 128, 128]
 numberOfSimulations = 1
@@ -21,6 +21,8 @@ abbr: dict[str, str] = {
     "CBNHL": "CBOpticalNet",
     "DSN": "SemiDisplayOpticNet-master",
     "DSNHL" : "SemiDisplayOpticNet",
+    "DSNHLLFU" : "SemiDisplayOpticNet-LFU",
+    "DSNHLLRU" : "SemiDisplayOpticNet-LRU",
     "DSNHLAP": "SemiDisplayOpticNet-AP"
 }
 
@@ -29,22 +31,24 @@ fullProject: dict[str, str] = {
     "CBNHL": "cbOptNet",
     "DSN": "semiDisplayOpticNet",
     "DSNHL" : "semiDisplayOpticNetHL",
+    "DSNHLLFU" : "semiDisplayOpticNetHL",
+    "DSNHLLRU" : "semiDisplayOpticNetHL",
     "DSNHLAP": "semiDisplayOpticNetHLAP"
 }
 
 #input_dir = "../../../Data/bursty"
 
 for i in range(num_datasets):
-    output_file = f"../csv_data/{datasets[i]}/throughput.csv"
+    output_file = f"./csv_data/{datasets[i]}/throughput.csv"
     pr_file = open(output_file, "w")
     pr_file.write("project,size,value\n")
     for project in projects:
         n = numberOfNodes[i]
         switch_size = 2 * n
         if "CBN" in project:
-            cluster_path = "../../{}/logs/output/{}/{}_{}/{}/mirrored/4/{}/throughput.csv".format(abbr[project], datasets[i], fullProject[project], n, switch_size, numberOfSimulations)
+            cluster_path = "../{}/logs/output/{}/{}_{}/{}/mirrored/4/{}/throughput.csv".format(abbr[project], datasets[i], fullProject[project], n, switch_size, numberOfSimulations)
         else:
-            cluster_path = "../../{}/logs/output/{}/{}_{}/{}/4/{}/throughput.csv".format(abbr[project], datasets[i], fullProject[project], n, switch_size, numberOfSimulations)
+            cluster_path = "../{}/logs/output/{}/{}_{}/{}/4/{}/throughput.csv".format(abbr[project], datasets[i], fullProject[project], n, switch_size, numberOfSimulations)
         
         with open(cluster_path) as f:
             content = f.readlines()

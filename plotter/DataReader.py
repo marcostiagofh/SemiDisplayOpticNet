@@ -55,6 +55,16 @@ class DataReader:
                 Path(__file__).parent.parent /
                 f"../SemiDisplayOpticNet-master/logs/output/{self.dataset}/{self.project}_{self.num_nodes}/{self.switch_size}/{self.mu}/"
             )
+        elif self.project == "semiDisplayOpticNetHLLFU":
+            return Path(
+                Path(__file__).parent.parent /
+                f"../SemiDisplayOpticNet-LFU/logs/output/{self.dataset}/semiDisplayOpticNetHL_{self.num_nodes}/{self.switch_size}/{self.mu}/"
+            )
+        elif self.project == "semiDisplayOpticNetHLLRU":
+            return Path(
+                Path(__file__).parent.parent /
+                f"../SemiDisplayOpticNet-LRU/logs/output/{self.dataset}/semiDisplayOpticNetHL_{self.num_nodes}/{self.switch_size}/{self.mu}/"
+            )
         elif self.project == "semiDisplayOpticNetHLAP":
             return Path(
                 Path(__file__).parent.parent /

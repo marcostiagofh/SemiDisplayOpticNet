@@ -13,7 +13,9 @@ abbr: dict[str, str] = {
     "semiDisplayOpticNet": "DSN",
     "semiDisplayOpticNetHL" : "DSN",
     "semiDisplayOpticNetHLAP": "DSN",
-    "SplayOpticNet": "SN"
+    "SplayOpticNet": "SN",
+    "semiDisplayOpticNetHLLRU": "DSN",
+    "semiDisplayOpticNetHLLFU": "DSN"
 }
 
 @dc.dataclass()
@@ -23,6 +25,10 @@ class Plotter:
         project = abbr[data.project]
         if data.project == "semiDisplayOpticNetHL":
             return "OpticNet$^{OP}$" + f"({project})"
+        elif data.project == "semiDisplayOpticNetHLLFU":
+            return "OpticNet$^{OP,LFU}$" + f"({project})"
+        elif data.project == "semiDisplayOpticNetHLLRU":
+            return "OpticNet$^{OP,LRU}$" + f"({project})"
         elif data.project == "semiDisplayOpticNetHLAP":
             return "OpticNet$^{OP AP}$" + f"({project})"
         elif data.project == "cbOptNetHL":

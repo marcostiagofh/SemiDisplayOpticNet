@@ -23,8 +23,10 @@ reload(Plotter)
 
 # In[3]:
 
-projects = [ "semiDisplayOpticNet",
+projects = [ #"semiDisplayOpticNet",
 "semiDisplayOpticNetHL",
+#"semiDisplayOpticNetHLLRU",
+#"semiDisplayOpticNetHLLFU",
 #"semiDisplayOpticNetHLAP",
 #"cbOptNet",
 #"cbOptNetHL"
@@ -88,10 +90,10 @@ for i in range(num_datasets):
     unique_switch_sizes = set(data.switch_size for data in tor_data[slc])
 
     # Define a list of unique colors
-    colors = plt.cm.tab10.colors[:len(unique_switch_sizes)]  # Using a predefined colormap for colors
+    colors_switch_size = plt.cm.tab10.colors[:len(unique_switch_sizes)]  # Using a predefined colormap for colors
 
     # Create a dictionary mapping each unique switch_size to a unique color
-    color_dict = dict(zip(unique_switch_sizes, colors))
+    color_dict_switch_size = dict(zip(unique_switch_sizes, colors_switch_size))
 
     # In[9]:
     
@@ -99,13 +101,13 @@ for i in range(num_datasets):
     fig, ax = plt.subplots(figsize=(7, 4))
     ax.set_ylabel("Link Updates 10**3")
     ax.set_xlabel(datasets[i][0]) #"Project")
-    ax.set_ylabel("Work 10**3")    
+    ax.set_ylabel("Work $10^3$")    
     
     if "facebook" in datasets[i][0] or "hpcDS" in datasets[i][0] or "pfabDS" in datasets[i][0]:
         ax.set_ylim(0, 35)  # Setting y-axis limit
         Plotter.Plotter.cbnet_link_updates(tor_data[slc], normalize=1e3, ax=ax)       
     else:    
-        ax.set_ylabel("Work 10**3")
+        ax.set_ylabel("Work $10^3$")
         ax.set_ylim(0, 2.5)  # Setting y-axis limit
         Plotter.Plotter.cbnet_link_updates(tor_data[slc], normalize=1e3, ax=ax)
 
@@ -114,55 +116,109 @@ for i in range(num_datasets):
     plt.close(fig)
 
     print("finish")
-    '''
+    
     
     fig, ax = plt.subplots(figsize=(7, 4))
     ax.set_xlabel(datasets[i][0])
     if "facebook" in datasets[i][0] or "hpcDS" in datasets[i][0] or "pfabDS" in datasets[i][0]:
-        ax.set_ylabel("Work 10**6")
-        ax.set_ylim(0, 60)  # Setting y-axis limit
-        Plotter.Plotter.total_work_link_updates(tor_data[slc], normalize=1e6, ax=ax)        
+        ax.set_ylabel("Work $10^7$")
+        ax.set_ylim(0, 6)  # Setting y-axis limit
+        Plotter.Plotter.total_work_link_updates(tor_data[slc], normalize=1e7, ax=ax)        
     else:    
-        ax.set_ylabel("Work 10**4")
-        ax.set_ylim(0, 40)  # Setting y-axis limit
-        Plotter.Plotter.total_work_link_updates(tor_data[slc], normalize=1e4, ax=ax)
+        ax.set_ylabel("Work $10^5$")
+        ax.set_ylim(0, 4)  # Setting y-axis limit
+        Plotter.Plotter.total_work_link_updates(tor_data[slc], normalize=1e5, ax=ax)
 
     ax.plot()
     fig.savefig(f"output/{output_folder[i]}/total_work.png", dpi=300, transparent=False)
     plt.close(fig)
 
     print("finish")
-
+    
     fig, ax = plt.subplots(figsize=(7, 4))
     ax.set_xlabel(datasets[i][0])
     
     if "facebook" in datasets[i][0] or "hpcDS" in datasets[i][0] or "pfabDS" in datasets[i][0]:
-        ax.set_ylabel("Work 10**5")
-        ax.set_ylim(0, 52)  # Setting y-axis limit
-        Plotter.Plotter.total_rounds( tor_data[slc], normalize=1e5, ax=ax)      
+        ax.set_ylabel("Rounds $10^6$")
+        ax.set_ylim(0, 5.5)  # Setting y-axis limit
+        Plotter.Plotter.total_rounds( tor_data[slc], normalize=1e6, ax=ax)      
     else:
-        ax.set_ylabel("Rounds 10**3")
-        ax.set_ylim(0, 54)  # Setting y-axis limit
-        Plotter.Plotter.total_rounds( tor_data[slc], normalize=1e3, ax=ax)
+        ax.set_ylabel("Rounds $10^4$")
+        ax.set_ylim(0, 5.5)  # Setting y-axis limit
+        Plotter.Plotter.total_rounds( tor_data[slc], normalize=1e4, ax=ax)
 
     ax.plot()
     fig.savefig(f"output/{output_folder[i]}/rounds.png", dpi=300, transparent=False)
     plt.close(fig)
 
     print("finish")
-    '''
+    
     # In[10]:
+    '''
+    # Collect unique values of data.switch_size
+    unique_projects = set(data.project for data in tor_data[slc])
+
+    # Define a list of unique colors
+    colors_project = plt.cm.tab10.colors[:len(unique_projects)]  # Using a predefined colormap for colors
+
+    # Create a dictionary mapping each unique switch_size to a unique color
+    color_dict_project = dict(zip(unique_projects, colors_project))
+    '''
+    fig, ax = plt.subplots(figsize=(8, 4))
+    ax.set_title("CDF Active switches per round per project")
+    ax.set_xlabel("Rounds $10^2$")
+    ax.set_ylabel("Switches Percentage")
+
+    data_filtered = [x for x in tor_data[slc] if x.switch_size == 16]
+    for data in data_filtered:
+        print(data.project, data.switch_size)
+        color = color_dict_project[data.project] 
+        Plotter.Plotter.cdf_active_switches(data.cdf_active_switches()*10, ax, color=color)
+
+    ax.legend([
+        f"{Plotter.Plotter.get_project_name(data)}--{data.dataset}--n={data.num_nodes}--p={int(data.switch_size/2)}--$|SW|$={data.num_switches}"
+        for data in data_filtered
+    ], loc="best", frameon=False)
+
+    ax.plot()
+    fig.savefig(f"output/{output_folder[i]}/active_switches_per_project.png", dpi=300, transparent=False)
+    plt.close(fig)
+
+    print("finish")
+    
+    fig, ax = plt.subplots(figsize=(8, 4))
+    ax.set_title("CDF \% of active ports for switches")
+    ax.set_xlabel("Ports Percentage")
+    ax.set_ylabel("Switch Percentage")
+
+    data_filtered = [x for x in tor_data[slc] if x.switch_size == 16]
+    for data in data_filtered:
+        color = color_dict_project[data.project]  
+        Plotter.Plotter.cdf_switches_active_ports(data.cdf_switch_active_ports(), ax, color=color)
+
+    ax.legend([
+        f"{Plotter.Plotter.get_project_name(data)}--{data.dataset}--n={data.num_nodes}--p={int(data.switch_size/2)}--$|SW|$={data.num_switches}"
+        for data in data_filtered
+    ], loc="best", frameon=False)
+
+    ax.plot()
+    fig.savefig(f"output/{output_folder[i]}/switches_active_ports_per_project.png", dpi=300, transparent=False)
+    plt.close(fig)
+    print("finish")
+    
+    
+    '''
     
     fig, ax = plt.subplots(figsize=(8, 4))
     ax.set_title("CDF Active switches per round")
-    ax.set_xlabel("Rounds")
+    ax.set_xlabel("Rounds $10^3$")
     ax.set_ylabel("Switches Percentage")
 
     for data in tor_data[slc]:
         Plotter.Plotter.cdf_active_switches(data.cdf_active_switches(), ax)
 
     ax.legend([
-        f"{Plotter.Plotter.get_project_name(data)}--{data.dataset}--{data.num_nodes}--{data.num_switches}"
+        f"{Plotter.Plotter.get_project_name(data)}--{data.dataset}--n={data.num_nodes}--p={int(data.switch_size/2)}--$|SW|$={data.num_switches}"
         for data in tor_data[slc]
     ], loc="best", frameon=False)
 
@@ -178,11 +234,11 @@ for i in range(num_datasets):
     ax.set_ylabel("Switch Percentage")
 
     for data in tor_data[slc]:
-        color = color_dict[data.switch_size]  # Get color based on switch_size
+        color = color_dict_switch_size[data.switch_size]  # Get color based on switch_size
         Plotter.Plotter.cdf_switches_active_ports(data.cdf_switch_active_ports(), ax, color=color)
 
     ax.legend([
-        f"{Plotter.Plotter.get_project_name(data)}--{data.dataset}--{data.num_nodes}--{data.num_switches}--{data.switch_size}"
+        f"{Plotter.Plotter.get_project_name(data)}--{data.dataset}--n={data.num_nodes}--p={int(data.switch_size/2)}--$|SW|$={data.num_switches}"
         for data in tor_data[slc]
     ], loc="best", frameon=False)
 
@@ -200,11 +256,11 @@ for i in range(num_datasets):
     ax.set_ylabel("Ports Percentage")
 
     for data in tor_data[slc]:
-        color = color_dict[data.switch_size]  # Get color based on switch_size
+        color = color_dict_switch_size[data.switch_size]  # Get color based on switch_size
         Plotter.Plotter.cdf_active_ports(data.cdf_active_ports(), ax, color=color)
 
     ax.legend([
-        f"{Plotter.Plotter.get_project_name(data)}--{data.dataset}--{data.num_nodes}--{data.num_switches}--{data.switch_size}"
+        f"{Plotter.Plotter.get_project_name(data)}--{data.dataset}--n={data.num_nodes}--p={int(data.switch_size/2)}--$|SW|$={data.num_switches}"
         for data in tor_data[slc]
     ], loc="best", frameon=False)
 
@@ -218,15 +274,15 @@ for i in range(num_datasets):
 
     fig, ax = plt.subplots(figsize=(8, 4))
     ax.set_title("CDF Routings per Node")
-    ax.set_xlabel("Routing")
+    ax.set_xlabel("Routing $10^3$")
     ax.set_ylabel("Node Percentage")
 
     for data in tor_data[slc]:
-        color = color_dict[data.switch_size]  # Get color based on switch_size
+        color = color_dict_switch_size[data.switch_size]  # Get color based on switch_size
         Plotter.Plotter.cdf_routings(data.cdf_node_routings(), ax, color=color)
 
     ax.legend([
-        f"{Plotter.Plotter.get_project_name(data)}--{data.dataset}--{data.num_nodes}--{data.num_switches}--{data.switch_size}"
+        f"{Plotter.Plotter.get_project_name(data)}--{data.dataset}--n={data.num_nodes}--p={int(data.switch_size/2)}--$|SW|$={data.num_switches}"
         for data in tor_data[slc]
     ], loc="best", frameon=False)
 
@@ -244,11 +300,11 @@ for i in range(num_datasets):
     ax.set_ylabel("Node Percentage")
 
     for data in tor_data[slc]:
-        color = color_dict[data.switch_size]  # Get color based on switch_size
+        color = color_dict_switch_size[data.switch_size]  # Get color based on switch_size
         Plotter.Plotter.cdf_alterations(data.cdf_node_alterations(), ax, color=color)
 
     ax.legend([
-        f"{Plotter.Plotter.get_project_name(data)}--{data.dataset}--{data.num_nodes}--{data.num_switches}--{data.switch_size}"
+        f"{Plotter.Plotter.get_project_name(data)}--{data.dataset}--n={data.num_nodes}--p={int(data.switch_size/2)}--$|SW|$={data.num_switches}"
         for data in tor_data[slc]
     ], loc="best", frameon=False)
 
@@ -266,11 +322,11 @@ for i in range(num_datasets):
     ax.set_ylabel("Switches Percentage")
 
     for data in tor_data[slc]:
-        color = color_dict[data.switch_size]  # Get color based on switch_size
+        color = color_dict_switch_size[data.switch_size]  # Get color based on switch_size
         Plotter.Plotter.cdf_routings(data.cdf_switch_routings(), ax, color=color)
 
     ax.legend([
-        f"{Plotter.Plotter.get_project_name(data)}--{data.dataset}--{data.num_nodes}--{data.num_switches}--{data.switch_size}"
+        f"{Plotter.Plotter.get_project_name(data)}--{data.dataset}--n={data.num_nodes}--p={int(data.switch_size/2)}--$|SW|$={data.num_switches}"
         for data in tor_data[slc]
     ], loc="best", frameon=False)
 
@@ -288,11 +344,11 @@ for i in range(num_datasets):
     ax.set_ylabel("Switches Percentage")
 
     for data in tor_data[slc]:
-        color = color_dict[data.switch_size]  # Get color based on switch_size
+        color = color_dict_switch_size[data.switch_size]  # Get color based on switch_size
         Plotter.Plotter.cdf_alterations(data.cdf_switch_alterations(), ax, color=color)
 
     ax.legend([
-        f"{Plotter.Plotter.get_project_name(data)}--{data.dataset}--{data.num_nodes}--{data.num_switches}--{data.switch_size}"
+        f"{Plotter.Plotter.get_project_name(data)}--{data.dataset}--n={data.num_nodes}--p={int(data.switch_size/2)}--$|SW|$={data.num_switches}"
         for data in tor_data[slc]
     ], loc="best", frameon=False)
 
@@ -300,4 +356,4 @@ for i in range(num_datasets):
     fig.savefig(f"output/{output_folder[i]}/switch_alterations.png", dpi=300, transparent=False)
     plt.close(fig)
     print("finish")
-    '''
+    

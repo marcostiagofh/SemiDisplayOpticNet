@@ -213,8 +213,9 @@ public class SemiDisplayNetController extends HeuristicController {
             InfraNode dstNode = this.getInfraNode(hasmsg.getDst());
             
             freqHeuristicLinks[node.getNetId()][dstNode.getNetId()]++;
+            freqHeuristicLinks[dstNode.getNetId()][node.getNetId()]++;
             lastRoundUsedHeuristicLinks[node.getNetId()][dstNode.getNetId()] = this.getCurrentRound();
-
+            lastRoundUsedHeuristicLinks[dstNode.getNetId()][node.getNetId()] = this.getCurrentRound();
             
             //System.out.println("msg from "+node.getNetId()+" to "+dstNode.getNetId());
 
@@ -284,12 +285,14 @@ public class SemiDisplayNetController extends HeuristicController {
 	                if (avPorts == AvailablePorts.BOTH) {
 	                	uv_switch = swtOff_uv1;
 	                	uv_available = true;
+	                	//System.out.println("u"+node.getNetId()+" v"+dstNode.getNetId() + " available at swtOff "+swtOff_uv1);
 	                } else {
 	                	swt = clusters.get(clsId).get(swtOff_uv2);                
 		            	avPorts = swt.getAvailablePorts(node.getNetId(), dstNode.getNetId());
 		                if (avPorts == AvailablePorts.BOTH) {
 		                	uv_switch = swtOff_uv2;
 		                	uv_available = true;
+		                	//System.out.println("u"+node.getNetId()+" v"+dstNode.getNetId() + " available at swtOff "+swtOff_uv2);
 		                }
 	                }      	     
 	                swt = clusters.get(clsId).get(swtOff_vu1);                
@@ -297,12 +300,14 @@ public class SemiDisplayNetController extends HeuristicController {
 	                if (avPorts == AvailablePorts.BOTH) {
 	                	vu_switch = swtOff_vu1;
 	                	vu_available = true;
+	                	//System.out.println("v"+dstNode.getNetId() +" u"+node.getNetId()+ " available at swtOff "+swtOff_vu1);
 	                } else {
 	                	swt = clusters.get(clsId).get(swtOff_vu2);                
 		            	avPorts = swt.getAvailablePorts(dstNode.getNetId(), node.getNetId());
 		                if (avPorts == AvailablePorts.BOTH) {
 		                	vu_switch = swtOff_vu2;
 		                	vu_available = true;
+		                	//System.out.println("v"+dstNode.getNetId() +" u"+node.getNetId()+ " available at swtOff "+swtOff_vu2);
 		                }
 	                }      	     
             	}
@@ -314,7 +319,9 @@ public class SemiDisplayNetController extends HeuristicController {
                 	heuristic_links.put(new AbstractMap.SimpleEntry<>(node.getNetId(),dstNode.getNetId()),uv_switch);
                 	heuristic_links.put(new AbstractMap.SimpleEntry<>(dstNode.getNetId(), node.getNetId()),vu_switch);
                 	
-                	swt = clusters.get(clsId).get(uv_switch);
+                	//System.out.println("adding "+uv_switch+" "+node.getNetId()+" "+dstNode.getNetId());
+            		//System.out.println("adding "+vu_switch+" "+dstNode.getNetId()+" "+node.getNetId());
+        			swt = clusters.get(clsId).get(uv_switch);
                 	swt.addLink(node.getNetId(),dstNode.getNetId());
                 	this.logIncrementActivePorts(swt.getIndex());                	
                 	this.logIncrementAlterations(swt.getIndex(), node);
@@ -522,19 +529,22 @@ public class SemiDisplayNetController extends HeuristicController {
 		                	}
 		                	if(found) {
 		                		if(!uv_available) {
-		                			System.out.println("removing "+removeFromNode_uv+" "+removeToNode_uv);
+		                			//System.out.println("removing "+removeFromNode_uv+" "+removeToNode_uv);
 			                		heuristic_links.remove(new AbstractMap.SimpleEntry<>(removeFromNode_uv,removeToNode_uv));
+			                		heuristic_links.remove(new AbstractMap.SimpleEntry<>(removeToNode_uv,removeFromNode_uv));
 				        			this.logRemoveHeuristicLink(1);
 				        			this.logDecrementActivePorts(putSwitch_uv);
 		                		}
-		                		if(!vu_available) {
-		                			System.out.println("removing "+removeFromNode_vu+" "+removeToNode_vu);
+		                		if(!vu_available && (heuristic_links.get(new AbstractMap.SimpleEntry<>(removeFromNode_vu,removeToNode_vu)) != null)) {
+		                			//System.out.println("removing "+removeFromNode_vu+" "+removeToNode_vu);
 			                		heuristic_links.remove(new AbstractMap.SimpleEntry<>(removeFromNode_vu,removeToNode_vu));
-				        			this.logRemoveHeuristicLink(1);
+			                		if(heuristic_links.get(new AbstractMap.SimpleEntry<>(removeToNode_vu,removeFromNode_vu)) != null)
+			                			heuristic_links.remove(new AbstractMap.SimpleEntry<>(removeToNode_vu,removeFromNode_vu));
+			                		this.logRemoveHeuristicLink(1);
 				        			this.logDecrementActivePorts(putSwitch_vu);
 		                		}
-		                		System.out.println("adding "+node.getNetId()+" "+dstNode.getNetId());
-		                		System.out.println("adding "+dstNode.getNetId()+" "+node.getNetId());
+		                		//System.out.println("adding "+putSwitch_uv+" "+node.getNetId()+" "+dstNode.getNetId());
+		                		//System.out.println("adding "+putSwitch_vu+" "+dstNode.getNetId()+" "+node.getNetId());
 			        			heuristic_links.put(new AbstractMap.SimpleEntry<>(node.getNetId(),dstNode.getNetId()),putSwitch_uv);
 			        			swt = clusters.get(clsId).get(putSwitch_uv);    
 			                	swt.addLink(node.getNetId(),dstNode.getNetId());
@@ -684,7 +694,7 @@ public class SemiDisplayNetController extends HeuristicController {
     	if(		this.cache_replacement_policy == "LRU" &&    			
     			lastRoundUsedHeuristicLinks[removeFromNodeId][removeToNodeId] < this.cache_replacement_policy_min_value) {
     			this.cache_replacement_policy_min_value = lastRoundUsedHeuristicLinks[removeFromNodeId][removeToNodeId];
-    			System.out.println("LRU ["+removeFromNodeId+"]["+removeToNodeId+"] "+lastRoundUsedHeuristicLinks[removeFromNodeId][removeToNodeId] + " "+this.cache_replacement_policy_min_value); 
+    			//System.out.println("LRU ["+removeFromNodeId+"]["+removeToNodeId+"] "+lastRoundUsedHeuristicLinks[removeFromNodeId][removeToNodeId] + " "+this.cache_replacement_policy_min_value); 
     			return true;    			
     	}
     	

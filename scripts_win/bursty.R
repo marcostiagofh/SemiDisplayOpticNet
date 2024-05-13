@@ -65,9 +65,11 @@ throughput.table["abb"] <- revalue(throughput.table$project,
                                    c("CBOpticalNet-master" = "CBN",
                                      "CBOpticalNet" = "CBN(OP)",
                                      "SemiDisplayOpticNet-master" = "DSN",
-                                     "SemiDisplayOpticNet" = "DSN(OP)")) 
+                                     "SemiDisplayOpticNet" = "DSN(OP)",
+									 "SemiDisplayOpticNet-LFU" = "DSN(OP,LFU)",
+									 "SemiDisplayOpticNet-LRU" = "DSN(OP,LRU)")) 
                                      #"SemiDisplayOpticNet-AP" = "DSN^{OPAP}"))
-throughput.table$abb <- factor(throughput.table$abb, levels = c("CBN", "CBN(OP)", "DSN", "DSN(OP)"))
+throughput.table$abb <- factor(throughput.table$abb, levels = c( "CBN", "CBN(OP)", "DSN", "DSN(OP)" )) # "DSN(OP,LFU)", "DSN(OP,LRU)"
 
 
 #throughput.table %>% filter(
